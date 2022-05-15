@@ -310,8 +310,8 @@ impl<'a, T: Component> OptionComponentStore<T> for Option<RefMutComponents<'a, T
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub type UpdateFn<T> = fn(&mut Entities, &mut T);
-pub type RenderFn<T> = fn(&mut Entities, &mut T);
+pub type UpdateFn<T> = fn(&mut T);
+pub type RenderFn<T> = fn(&mut T);
 
 pub struct ComponentSystems<U, R> {
     update_systems: Vec<UpdateFn<U>>,
@@ -339,15 +339,15 @@ impl<U, R> ComponentSystems<U, R> {
         self.render_systems.clear();
     }
 
-    pub fn update(&mut self, entities: &mut Entities, context: &mut U) {
+    pub fn update(&mut self, context: &mut U) {
         for f in self.update_systems.iter_mut() {
-            f(entities, context);
+            f(context);
         }
     }
 
-    pub fn render(&mut self, entities: &mut Entities, context: &mut R) {
+    pub fn render(&mut self, context: &mut R) {
         for f in self.render_systems.iter_mut() {
-            f(entities, context);
+            f(context);
         }
     }
 }
@@ -619,19 +619,30 @@ mod tests {
         assert!(healths.get(&b).is_none());
     }
 
-    struct UpdateContext(f32);
-    struct RenderContext(f32);
+    struct ComponentSystemContext {
+        pub delta: f32,
+        pub entities: Entities,
+    }
 
-    fn system_print_entity_positions(entities: &mut Entities, _context: &mut RenderContext) {
-        let positions = entities.components::<Position>().unwrap();
+    impl ComponentSystemContext {
+        pub fn new(entities: Entities) -> Self {
+            ComponentSystemContext {
+                delta: 0.0,
+                entities
+            }
+        }
+    }
+
+    fn system_print_entity_positions(context: &mut ComponentSystemContext) {
+        let positions = context.entities.components::<Position>().unwrap();
         for (entity, position) in positions.iter() {
             println!("entity {} at x:{}, y:{}", entity, position.0, position.1)
         }
     }
 
-    fn system_move_entities_forward(entities: &mut Entities, _context: &mut UpdateContext) {
-        let mut positions = entities.components_mut::<Position>().unwrap();
-        let velocities = entities.components::<Velocity>().unwrap();
+    fn system_move_entities_forward(context: &mut ComponentSystemContext) {
+        let mut positions = context.entities.components_mut::<Position>().unwrap();
+        let velocities = context.entities.components::<Velocity>().unwrap();
         for (entity, position) in positions.iter_mut() {
             if let Some(velocity) = velocities.get(&entity) {
                 position.0 += velocity.0;
@@ -640,15 +651,15 @@ mod tests {
         }
     }
 
-    fn system_increment_counter(entities: &mut Entities, _context: &mut UpdateContext) {
-        let mut counters = entities.components_mut::<Counter>().unwrap();
+    fn system_increment_counter(context: &mut ComponentSystemContext) {
+        let mut counters = context.entities.components_mut::<Counter>().unwrap();
         for (_entity, counter) in counters.iter_mut() {
             counter.0 += 1;
         }
     }
 
-    fn system_print_counter(entities: &mut Entities, _context: &mut RenderContext) {
-        let counters = entities.components::<Counter>().unwrap();
+    fn system_print_counter(context: &mut ComponentSystemContext) {
+        let counters = context.entities.components::<Counter>().unwrap();
         for (entity, counter) in counters.iter() {
             println!("entity {} has counter {}", entity, counter.0);
         }
@@ -656,20 +667,20 @@ mod tests {
 
     #[test]
     pub fn component_systems() {
-        let mut em = Entities::new();
+        let mut context = ComponentSystemContext::new(Entities::new());
 
         // create entities
-        let a = em.new_entity();
-        em.add_component(a, Position(5, 6));
-        em.add_component(a, Velocity(1, 1));
-        em.add_component(a, Counter(0));
-        let b = em.new_entity();
-        em.add_component(b, Position(-3, 0));
-        em.add_component(b, Velocity(1, 0));
-        em.add_component(b, Counter(0));
-        let c = em.new_entity();
-        em.add_component(c, Position(2, 9));
-        em.add_component(c, Counter(0));
+        let a = context.entities.new_entity();
+        context.entities.add_component(a, Position(5, 6));
+        context.entities.add_component(a, Velocity(1, 1));
+        context.entities.add_component(a, Counter(0));
+        let b = context.entities.new_entity();
+        context.entities.add_component(b, Position(-3, 0));
+        context.entities.add_component(b, Velocity(1, 0));
+        context.entities.add_component(b, Counter(0));
+        let c = context.entities.new_entity();
+        context.entities.add_component(c, Position(2, 9));
+        context.entities.add_component(c, Counter(0));
 
         // setup component systems
         let mut cs = ComponentSystems::new();
@@ -680,16 +691,15 @@ mod tests {
 
         // run some update+render iterations
         for _ in 0..5 {
-            let mut update_context = UpdateContext(0.0);
-            let mut render_context = RenderContext(0.0);
-            cs.update(&mut em, &mut update_context);
-            cs.render(&mut em, &mut render_context);
+            context.delta = 0.0;
+            cs.update(&mut context);
+            cs.render(&mut context);
         }
 
         // verify expected entity positions
-        let positions = em.components::<Position>().unwrap();
-        let velocities = em.components::<Velocity>().unwrap();
-        let counters = em.components::<Counter>().unwrap();
+        let positions = context.entities.components::<Position>().unwrap();
+        let velocities = context.entities.components::<Velocity>().unwrap();
+        let counters = context.entities.components::<Counter>().unwrap();
         assert_eq!(Position(10, 11), *positions.get(&a).unwrap());
         assert_eq!(Velocity(1, 1), *velocities.get(&a).unwrap());
         assert_eq!(Counter(5), *counters.get(&a).unwrap());
