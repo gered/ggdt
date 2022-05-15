@@ -164,6 +164,11 @@ impl<ContextType> States<ContextType> {
         }
     }
 
+    #[inline]
+    pub fn is_empty(&self) -> bool {
+        self.states.is_empty() && self.pending_state.is_none() && self.command.is_none()
+    }
+
     fn can_push_or_pop(&self) -> bool {
         if let Some(state) = self.states.front() {
             if state.current_state != State::Active {
