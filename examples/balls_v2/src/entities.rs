@@ -5,12 +5,12 @@ use libretrogd::utils::rnd_value;
 
 use crate::states::*;
 
-pub const BALL_BASE_SPEED: i32 = 8;
+pub const BALL_BASE_SPEED: i32 = 32;
 pub const BOUNCE_PARTICLE_COLOR: u8 = 32;
-pub const BOUNCE_PARTICLE_LIFETIME: f32 = 0.5;
+pub const BOUNCE_PARTICLE_LIFETIME: f32 = 0.2;
 pub const BOUNCE_PARTICLE_SPEED: i32 = 32;
-pub const BALL_TRAIL_PARTICLE_INTERVAL: f32 = 0.25;
-pub const TRAIL_PARTICLE_LIFETIME: f32 = 2.0;
+pub const BALL_TRAIL_PARTICLE_INTERVAL: f32 = 0.05;
+pub const TRAIL_PARTICLE_LIFETIME: f32 = 0.5;
 
 pub struct Position(Vector2);
 
