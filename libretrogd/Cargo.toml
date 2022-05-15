@@ -1,0 +1,32 @@
+[package]
+name = "libretrogd"
+description = "A 'retro'-like game development library, for funsies."
+version = "0.1.0"
+authors = ["Gered King <gered@blarg.ca>"]
+edition = "2021"
+
+[features]
+low_res = []
+wide = []
+
+[dependencies]
+sdl2 = { version = "0.34.5", features = ["static-link", "bundled", "unsafe_textures" ] }
+byte-slice-cast = "1.2.1"
+byteorder = "1.4.3"
+thiserror = "1.0.30"
+rand = "0.8.5"
+num-traits = "0.2.14"
+
+[dev-dependencies]
+claim = "0.5.0"
+criterion = "0.3.5"
+anyhow = "1.0.55"
+tempfile = "3.3.0"
+
+[[bench]]
+name = "bitmap"
+harness = false
+
+[[bench]]
+name = "blit"
+harness = false
