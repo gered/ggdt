@@ -203,11 +203,13 @@ impl Entities {
 pub trait ComponentStoreConvenience<T: Component> {
     fn single(&self) -> Option<(&EntityId, &T)>;
     fn get(&self, k: &EntityId) -> Option<&T>;
+    fn contains_key(&self, k: &EntityId) -> bool;
 }
 
 pub trait ComponentStoreConvenienceMut<T: Component> {
     fn single_mut(&mut self) -> Option<(&EntityId, &T)>;
     fn get_mut(&mut self, k: &EntityId) -> Option<&mut T>;
+    fn contains_key(&mut self, k: &EntityId) -> bool;
 }
 
 impl<'a, T: Component> ComponentStoreConvenience<T> for Option<RefComponents<'a, T>> {
@@ -225,6 +227,14 @@ impl<'a, T: Component> ComponentStoreConvenience<T> for Option<RefComponents<'a,
             components.get(k)
         } else {
             None
+        }
+    }
+
+    fn contains_key(&self, k: &EntityId) -> bool {
+        if let Some(components) = self {
+            components.contains_key(k)
+        } else {
+            false
         }
     }
 }
@@ -246,6 +256,14 @@ impl<'a, T: Component> ComponentStoreConvenience<T> for Option<RefMutComponents<
             None
         }
     }
+
+    fn contains_key(&self, k: &EntityId) -> bool {
+        if let Some(components) = self {
+            components.contains_key(k)
+        } else {
+            false
+        }
+    }
 }
 
 impl<'a, T: Component> ComponentStoreConvenienceMut<T> for Option<RefMutComponents<'a, T>> {
@@ -263,6 +281,14 @@ impl<'a, T: Component> ComponentStoreConvenienceMut<T> for Option<RefMutComponen
             components.get_mut(k)
         } else {
             None
+        }
+    }
+
+    fn contains_key(&mut self, k: &EntityId) -> bool {
+        if let Some(components) = self {
+            components.contains_key(k)
+        } else {
+            false
         }
     }
 }
