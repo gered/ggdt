@@ -113,6 +113,7 @@ impl<ContextType> StateContainer<ContextType> {
         }
     }
 
+    #[allow(dead_code)]
     #[inline]
     pub fn pending_transition_in(&mut self) {
         self.pending_state_change = Some(State::TransitionIn);
@@ -215,6 +216,8 @@ impl<ContextType> States<ContextType> {
     }
 
     fn process_state_changes(&mut self, context: &mut ContextType) -> Result<(), StateError> {
+        // TODO: this function is pretty gross honestly.
+
         if let Some(command) = self.command.take() {
             match command {
                 StateChange::Push(new_state) => {
@@ -245,11 +248,42 @@ impl<ContextType> States<ContextType> {
 
         // handle any pending state change queued from the previous frame, so that we can
         // process the state as necessary below ...
+        // for some pending state changes, we process them here instead of in the match later on
+        // in this function so that we're able to transition between old and new states all in
+        // a single frame. this way we don't have any 'dead' frames where no update/renders get
+        // run because a state is 'stuck' in a dead or pending state still.
         if let Some(state) = self.states.front_mut() {
             if let Some(pending_state_change) = state.pending_state_change() {
                 match pending_state_change {
-                    State::Dead => state.kill(context)?,
-                    State::Paused => state.pause(context)?,
+                    State::Dead => {
+                        state.kill(context)?;
+
+                        // remove the dead state
+                        self.states.pop_front();
+
+                        if self.pending_state.is_some() {
+                            // if there is a new pending state waiting, we can add it here right now
+                            let mut new_state = StateContainer::new(self.pending_state.take().unwrap());
+                            new_state.change_state(State::Pending, context);
+                            self.states.push_front(new_state);
+                        } else if self.state_of_front_state() == Some(State::Paused) {
+                            // otherwise, we're probably waking up a state that was paused and needs to
+                            // be resumed since it's once again on top
+                            let state = self.states.front_mut().unwrap();
+                            state.transition_in(context)?;
+                        }
+                    },
+                    State::Paused => {
+                        state.pause(context)?;
+
+                        if self.pending_state.is_some() {
+                            // top state is paused and we have a new state waiting to be added.
+                            // add the new state
+                            let mut new_state = StateContainer::new(self.pending_state.take().unwrap());
+                            new_state.change_state(State::Pending, context);
+                            self.states.push_front(new_state);
+                        }
+                    },
                     State::Active => state.activate(context)?,
                     State::TransitionOut(to) => state.transition_out(to, context)?,
                     State::TransitionIn => state.transition_in(context)?,
@@ -258,38 +292,20 @@ impl<ContextType> States<ContextType> {
             }
         }
 
+        // special case, switch pending state into transition right away so we don't lose a frame
+        if self.state_of_front_state() == Some(State::Pending) {
+            // top state is just sitting there pending, lets start it up ...
+            let state = self.states.front_mut().unwrap();
+            state.transition_in(context)?;
+        }
 
         // now figure out what state change processing is needed based on the current state ...
         match self.state_of_front_state() {
-            Some(State::Pending) => {
-                // top state is just sitting there pending, lets start it up ...
-                let state = self.states.front_mut().unwrap();
-                state.pending_transition_in();
-            },
             Some(State::Paused) => {
-                if self.pending_state.is_some() {
-                    // top state is paused and we have a new state waiting to be added.
-                    // add the new state
-                    let mut new_state = StateContainer::new(self.pending_state.take().unwrap());
-                    new_state.change_state(State::Pending, context);
-                    self.states.push_front(new_state);
-                }
+                panic!("oops - paused");
             },
             Some(State::Dead) => {
-                // remove the dead state
-                self.states.pop_front();
-
-                if self.pending_state.is_some() {
-                    // if there is a new pending state waiting, we can add it here right now
-                    let mut new_state = StateContainer::new(self.pending_state.take().unwrap());
-                    new_state.change_state(State::Pending, context);
-                    self.states.push_front(new_state);
-                } else if self.state_of_front_state() == Some(State::Paused) {
-                    // otherwise, we're probably waking up a state that was paused and needs to
-                    // be resumed since it's once again on top
-                    let state = self.states.front_mut().unwrap();
-                    state.pending_transition_in();
-                }
+                panic!("oops - dead");
             },
             Some(State::TransitionIn) => {
                 let state = self.states.front_mut().unwrap();
@@ -459,13 +475,13 @@ mod tests {
 
         states.push(TestState::new(FOO))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FOO, Pending, Dead)]);
+
         // state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FOO, Pending, Dead),
                 StateChange(FOO, TransitionIn, Pending),
                 Transition(FOO, TransitionIn),
                 Update(FOO, TransitionIn),
@@ -485,6 +501,7 @@ mod tests {
 
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -519,13 +536,13 @@ mod tests {
 
         states.push(TestState::new_with_transition_length(FOO, 5))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FOO, Pending, Dead)]);
+
         // state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FOO, Pending, Dead),
                 StateChange(FOO, TransitionIn, Pending),
                 Transition(FOO, TransitionIn),
                 Update(FOO, TransitionIn),
@@ -557,6 +574,7 @@ mod tests {
 
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -603,16 +621,15 @@ mod tests {
         let mut context = TestContext::new();
 
         // push first state
-
         states.push(TestState::new(FIRST))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FIRST, Pending, Dead)]);
+
         // first state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FIRST, Pending, Dead),
                 StateChange(FIRST, TransitionIn, Pending),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -631,9 +648,9 @@ mod tests {
         );
 
         // push second state
-
         states.push(TestState::new(SECOND))?;
         assert_eq!(context.take_log(), vec![]);
+
         // first state begins to transition out to 'paused' state
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -646,22 +663,13 @@ mod tests {
             ]
         );
         // state finished transitioning out, now is paused
+        // second state starts up, will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
                 StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
                 StateChange(SECOND, Pending, Dead),
-            ]
-        );
-        // second state starts up
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![]);
-        // second state will transition in
-        tick(&mut states, &mut context)?;
-        assert_eq!(
-            context.take_log(),
-            vec![
                 StateChange(SECOND, TransitionIn, Pending),
                 Transition(SECOND, TransitionIn),
                 Update(SECOND, TransitionIn),
@@ -680,9 +688,9 @@ mod tests {
         );
 
         // pop second state
-
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // second state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -694,14 +702,13 @@ mod tests {
                 Render(SECOND, TransitionOut(TransitionTo::Dead))
             ]
         );
-        // second state finished transitioning out, now dies. first state wakes up again.
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead))]);
-        // first state will transition in
+        // second state finished transitioning out, now dies. first state wakes up again and
+        // starts to transition back in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
                 StateChange(FIRST, TransitionIn, Paused),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -720,9 +727,9 @@ mod tests {
         );
 
         // pop first state
-
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // first state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -757,16 +764,15 @@ mod tests {
         let mut context = TestContext::new();
 
         // push first state
-
         states.push(TestState::new_with_transition_length(FIRST, 3))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FIRST, Pending, Dead)]);
+
         // first state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FIRST, Pending, Dead),
                 StateChange(FIRST, TransitionIn, Pending),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -800,6 +806,7 @@ mod tests {
 
         states.push(TestState::new_with_transition_length(SECOND, 5))?;
         assert_eq!(context.take_log(), vec![]);
+
         // first state begins to transition out to 'paused' state
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -823,23 +830,13 @@ mod tests {
                 ]
             );
         }
-        // first state finished transitioning out, now is paused
+        // first state finished transitioning out, now is paused. second state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
                 StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
-                StateChange(SECOND, Pending, Dead)
-            ]
-        );
-        // second state starts up
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![]);
-        // second state will transition in
-        tick(&mut states, &mut context)?;
-        assert_eq!(
-            context.take_log(),
-            vec![
+                StateChange(SECOND, Pending, Dead),
                 StateChange(SECOND, TransitionIn, Pending),
                 Transition(SECOND, TransitionIn),
                 Update(SECOND, TransitionIn),
@@ -870,9 +867,9 @@ mod tests {
         );
 
         // pop second state
-
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // second state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -896,14 +893,13 @@ mod tests {
                 ]
             );
         }
-        // second state finished transitioning out, now dies. first state wakes up again.
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead))]);
-        // first state will transition in
+        // second state finished transitioning out, now dies. first state wakes up again and
+        // starts to transition back in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
                 StateChange(FIRST, TransitionIn, Paused),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -934,9 +930,9 @@ mod tests {
         );
 
         // pop first state
-
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // first state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
@@ -1029,17 +1025,16 @@ mod tests {
         let mut states = States::<TestContext>::new();
         let mut context = TestContext::new();
 
-        // pop first state. it will do the rest this time ...
-
+        // push first state. it will do the rest this time ...
         states.push(SelfPushPopState::new(FIRST, Some(5), 10))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FIRST, Pending, Dead)]);
+
         // first state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FIRST, Pending, Dead),
                 StateChange(FIRST, TransitionIn, Pending),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -1079,23 +1074,13 @@ mod tests {
                 Render(FIRST, TransitionOut(TransitionTo::Paused))
             ]
         );
-        // first state finished transitioning out, now is paused
+        // first state finished transitioning out, now is paused. second state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
                 StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
-                StateChange(SECOND, Pending, Dead)
-            ]
-        );
-        // second state starts up
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![]);
-        // second state will transition in
-        tick(&mut states, &mut context)?;
-        assert_eq!(
-            context.take_log(),
-            vec![
+                StateChange(SECOND, Pending, Dead),
                 StateChange(SECOND, TransitionIn, Pending),
                 Transition(SECOND, TransitionIn),
                 Update(SECOND, TransitionIn),
@@ -1135,14 +1120,13 @@ mod tests {
                 Render(SECOND, TransitionOut(TransitionTo::Dead))
             ]
         );
-        // second state finished transitioning out, now dies. first state wakes up again.
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead))]);
-        // first state will transition in
+        // second state finished transitioning out, now dies. first state wakes up again and
+        // starts to transition back in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
                 StateChange(FIRST, TransitionIn, Paused),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
@@ -1205,17 +1189,13 @@ mod tests {
 
         states.push(TestState::new(FOO))?;
         assert_eq!(context.take_log(), vec![]);
-        tick(&mut states, &mut context)?;
-        assert_eq!(context.take_log(), vec![StateChange(FOO, Pending, Dead)]);
-
-        assert_matches!(states.push(TestState::new(123)), Err(StateError::HasPendingStateChange));
-        assert_matches!(states.pop(), Err(StateError::HasPendingStateChange));
 
         // state will transition in
         tick(&mut states, &mut context)?;
         assert_eq!(
             context.take_log(),
             vec![
+                StateChange(FOO, Pending, Dead),
                 StateChange(FOO, TransitionIn, Pending),
                 Transition(FOO, TransitionIn),
                 Update(FOO, TransitionIn),
@@ -1239,6 +1219,7 @@ mod tests {
 
         states.pop()?;
         assert_eq!(context.take_log(), vec![]);
+
         // state begins to transition out to 'dead'
         tick(&mut states, &mut context)?;
         assert_eq!(
