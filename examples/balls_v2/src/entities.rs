@@ -144,9 +144,12 @@ fn update_system_lifetime(context: &mut Context) {
 
 fn update_system_leave_particle_trail(context: &mut Context) {
     if let Some(mut leaves_trails) = context.entities.components_mut::<LeavesTrail>() {
+
         let positions = context.entities.components::<Position>();
+
         for (entity, leaves_trail) in leaves_trails.iter_mut() {
             leaves_trail.timer -= context.delta;
+
             if leaves_trail.timer <= 0.0 {
                 leaves_trail.timer = BALL_TRAIL_PARTICLE_INTERVAL;
                 let position = positions.get(&entity).unwrap();
@@ -161,7 +164,9 @@ fn update_system_leave_particle_trail(context: &mut Context) {
 
 fn render_system_sprites(context: &mut Context) {
     if let Some(sprite_indices) = context.entities.components::<SpriteIndex>() {
+
         let positions = context.entities.components::<Position>();
+
         for (entity, sprite_index) in sprite_indices.iter() {
             let position = positions.get(&entity).unwrap();
             context.system.video.blit(
@@ -176,10 +181,12 @@ fn render_system_sprites(context: &mut Context) {
 
 fn render_system_particles(context: &mut Context) {
     if let Some(particles) = context.entities.components::<Particle>() {
+
         let positions = context.entities.components::<Position>();
         let colors = context.entities.components::<Color>();
         let colors_by_lifetime = context.entities.components::<ColorByLifeTime>();
         let lifetimes = context.entities.components::<LifeLeft>();
+
         for (entity, _) in particles.iter() {
             let position = positions.get(&entity).unwrap();
 
