@@ -331,10 +331,12 @@ impl<ContextType> States<ContextType> {
         // now figure out what state change processing is needed based on the current state ...
         match self.state_of_front_state() {
             Some(State::Paused) => {
-                panic!("oops - paused");
+                // should never happen now. leaving here just in case ...
+                return Err(StateError::GameStateInvalidState(State::Paused));
             },
             Some(State::Dead) => {
-                panic!("oops - dead");
+                // should never happen now. leaving here just in case ...
+                return Err(StateError::GameStateInvalidState(State::Dead));
             },
             Some(State::TransitionIn) => {
                 let state = self.states.front_mut().unwrap();
