@@ -82,7 +82,7 @@ impl GameState<Game> for SimulationState {
         }
 
         if context.context.system.keyboard.is_key_pressed(Scancode::Escape) {
-            return Some(StateChange::Pop);
+            return Some(StateChange::Pop(1));
         }
 
         None

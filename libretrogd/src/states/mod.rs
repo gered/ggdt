@@ -30,7 +30,7 @@ pub enum State {
 pub enum StateChange<ContextType> {
     Push(Box<dyn GameState<ContextType>>),
     Swap(Box<dyn GameState<ContextType>>),
-    Pop,
+    Pop(u32),
 }
 
 pub trait GameState<ContextType> {
@@ -159,6 +159,7 @@ pub struct States<ContextType> {
     states: VecDeque<StateContainer<ContextType>>,
     command: Option<StateChange<ContextType>>,
     pending_state: Option<Box<dyn GameState<ContextType>>>,
+    pop_count: Option<u32>,
 }
 
 impl<ContextType> States<ContextType> {
@@ -167,6 +168,7 @@ impl<ContextType> States<ContextType> {
             states: VecDeque::new(),
             command: None,
             pending_state: None,
+            pop_count: None,
         }
     }
 
@@ -214,12 +216,12 @@ impl<ContextType> States<ContextType> {
         self.swap_boxed_state(Box::new(state))
     }
 
-    pub fn pop(&mut self) -> Result<(), StateError> {
+    pub fn pop(&mut self, count: u32) -> Result<(), StateError> {
         if !self.can_push_or_pop() {
             Err(StateError::HasPendingStateChange)
         } else {
             if !self.states.is_empty() {
-                self.command = Some(StateChange::Pop);
+                self.command = Some(StateChange::Pop(count));
             }
             Ok(())
         }
@@ -241,9 +243,10 @@ impl<ContextType> States<ContextType> {
                 StateChange::Push(new_state) => {
                     self.pending_state = Some(new_state);
                 },
-                StateChange::Pop => {
+                StateChange::Pop(count) => {
                     if let Some(state) = self.states.front_mut() {
                         state.pending_transition_out(TransitionTo::Dead);
+                        self.pop_count = Some(count);
                     }
                 }
                 StateChange::Swap(new_state) => {
@@ -285,10 +288,20 @@ impl<ContextType> States<ContextType> {
             if let Some(pending_state_change) = state.pending_state_change() {
                 match pending_state_change {
                     State::Dead => {
-                        state.kill(context)?;
-
-                        // remove the dead state
-                        self.states.pop_front();
+                        if let Some(pop_count) = self.pop_count {
+                            // pop the requested amount of states off the top
+                            for _ in 0..pop_count {
+                                if let Some(mut state) = self.states.pop_front() {
+                                    state.kill(context)?;
+                                }
+                            }
+                            self.pop_count = None;
+                        } else {
+                            // only need to pop off the top state since it is dead, because it
+                            // was swapped out
+                            state.kill(context)?;
+                            self.states.pop_front();
+                        }
 
                         if self.pending_state.is_some() {
                             // if there is a new pending state waiting, we can add it here right now
@@ -372,7 +385,7 @@ impl<ContextType> States<ContextType> {
                         match state_change {
                             StateChange::Push(state) => self.push_boxed_state(state)?,
                             StateChange::Swap(state) => self.swap_boxed_state(state)?,
-                            StateChange::Pop => self.pop()?,
+                            StateChange::Pop(count) => self.pop(count)?,
                         }
                     }
                 }
@@ -531,7 +544,7 @@ mod tests {
             ]
         );
 
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // state begins to transition out to 'dead'
@@ -604,7 +617,7 @@ mod tests {
             ]
         );
 
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // state begins to transition out to 'dead'
@@ -720,7 +733,7 @@ mod tests {
         );
 
         // pop second state
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // second state begins to transition out to 'dead'
@@ -759,7 +772,7 @@ mod tests {
         );
 
         // pop first state
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // first state begins to transition out to 'dead'
@@ -899,7 +912,7 @@ mod tests {
         );
 
         // pop second state
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // second state begins to transition out to 'dead'
@@ -962,7 +975,7 @@ mod tests {
         );
 
         // pop first state
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // first state begins to transition out to 'dead'
@@ -998,6 +1011,118 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn pop_multiple_states() -> Result<(), StateError> {
+        use LogEntry::*;
+        use State::*;
+
+        const FIRST: u32 = 1;
+        const SECOND: u32 = 2;
+
+        let mut states = States::<TestContext>::new();
+        let mut context = TestContext::new();
+
+        // push first state
+        states.push(TestState::new(FIRST))?;
+        assert_eq!(context.take_log(), vec![]);
+
+        // first state will transition in
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(FIRST, Pending, Dead),
+                StateChange(FIRST, TransitionIn, Pending),
+                Transition(FIRST, TransitionIn),
+                Update(FIRST, TransitionIn),
+                Render(FIRST, TransitionIn)
+            ]
+        );
+        // first state finished transitioning in, now moves to active
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(FIRST, Active, TransitionIn),
+                Update(FIRST, Active),
+                Render(FIRST, Active)
+            ]
+        );
+
+        // push second state
+        states.push(TestState::new(SECOND))?;
+        assert_eq!(context.take_log(), vec![]);
+
+        // first state begins to transition out to 'paused' state
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active),
+                Transition(FIRST, TransitionOut(TransitionTo::Paused)),
+                Update(FIRST, TransitionOut(TransitionTo::Paused)),
+                Render(FIRST, TransitionOut(TransitionTo::Paused))
+            ]
+        );
+        // state finished transitioning out, now is paused
+        // second state starts up, will transition in
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
+                StateChange(SECOND, Pending, Dead),
+                StateChange(SECOND, TransitionIn, Pending),
+                Transition(SECOND, TransitionIn),
+                Update(SECOND, TransitionIn),
+                Render(SECOND, TransitionIn)
+            ]
+        );
+        // second state finished transitioning in, now moves to active
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(SECOND, Active, TransitionIn),
+                Update(SECOND, Active),
+                Render(SECOND, Active)
+            ]
+        );
+
+        // pop both states
+        states.pop(2)?;
+        assert_eq!(context.take_log(), vec![]);
+
+        // second state begins to transition out to 'dead'
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+                Transition(SECOND, TransitionOut(TransitionTo::Dead)),
+                Update(SECOND, TransitionOut(TransitionTo::Dead)),
+                Render(SECOND, TransitionOut(TransitionTo::Dead))
+            ]
+        );
+        // second state finished transitioning out, now dies.
+        // first state only goes through a state change, paused to dead. no transition
+        tick(&mut states, &mut context)?;
+        assert_eq!(
+            context.take_log(),
+            vec![
+                StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
+                StateChange(FIRST, Dead, Paused)
+            ]
+        );
+
+        // nothing! no states anymore!
+        tick(&mut states, &mut context)?;
+        assert_eq!(context.take_log(), vec![]);
+
+        Ok(())
+    }
+
 
     #[test]
     fn swap_states() -> Result<(), StateError> {
@@ -1077,7 +1202,7 @@ mod tests {
             ]
         );
 
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // state begins to transition out to 'dead'
@@ -1128,7 +1253,7 @@ mod tests {
                 if self.push_after == Some(self.counter) {
                     return Some(StateChange::Push(Box::new(SelfPushPopState::new(self.id + 1, None, self.pop_after))));
                 } else if self.pop_after ==  self.counter {
-                    return Some(StateChange::Pop);
+                    return Some(StateChange::Pop(1));
                 }
             }
             None
@@ -1339,7 +1464,7 @@ mod tests {
         );
 
         assert_matches!(states.push(TestState::new(123)), Err(StateError::HasPendingStateChange));
-        assert_matches!(states.pop(), Err(StateError::HasPendingStateChange));
+        assert_matches!(states.pop(1), Err(StateError::HasPendingStateChange));
 
         // state finished transitioning in, now moves to active
         tick(&mut states, &mut context)?;
@@ -1352,7 +1477,7 @@ mod tests {
             ]
         );
 
-        states.pop()?;
+        states.pop(1)?;
         assert_eq!(context.take_log(), vec![]);
 
         // state begins to transition out to 'dead'
@@ -1368,13 +1493,13 @@ mod tests {
         );
 
         assert_matches!(states.push(TestState::new(123)), Err(StateError::HasPendingStateChange));
-        assert_matches!(states.pop(), Err(StateError::HasPendingStateChange));
+        assert_matches!(states.pop(1), Err(StateError::HasPendingStateChange));
 
         // state finished transitioning out, now dies
         tick(&mut states, &mut context)?;
         assert_eq!(context.take_log(), vec![StateChange(FOO, Dead, TransitionOut(TransitionTo::Dead))]);
 
-        states.pop()?;
+        states.pop(1)?;
 
         // nothing! no states anymore!
         tick(&mut states, &mut context)?;
