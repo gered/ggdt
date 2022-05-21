@@ -1,7 +1,7 @@
 use sdl2::event::Event;
 use sdl2::keyboard::Scancode;
 
-use super::{ButtonState, InputDevice};
+use super::*;
 
 const MAX_KEYS: usize = 256;
 

@@ -2,7 +2,8 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::{Bitmap, Rect};
+use crate::graphics::*;
+use crate::math::*;
 
 #[derive(Error, Debug)]
 pub enum BitmapAtlasError {
@@ -115,7 +116,7 @@ impl Index<usize> for BitmapAtlas {
 
 #[cfg(test)]
 pub mod tests {
-    use claim::assert_matches;
+    use claim::*;
 
     use super::*;
 

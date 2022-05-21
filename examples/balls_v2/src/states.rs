@@ -1,7 +1,11 @@
 use sdl2::keyboard::Scancode;
 
 use libretrogd::entities::*;
+use libretrogd::events::*;
+use libretrogd::graphics::*;
+use libretrogd::math::*;
 use libretrogd::states::*;
+use libretrogd::system::*;
 
 use crate::*;
 

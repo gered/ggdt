@@ -7,8 +7,8 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::utils::abs_diff;
 use crate::NUM_COLORS;
+use crate::utils::abs_diff;
 
 // silly "hack" (???) which allows us to alias the generic constraint `RangeBounds<u8> + Iterator<Item = u8>` to `ColorRange`
 pub trait ColorRange: RangeBounds<u8> + Iterator<Item = u8> {}

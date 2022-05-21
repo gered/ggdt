@@ -5,8 +5,8 @@ use std::path::Path;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
+use crate::graphics::*;
 use crate::utils::bytes::ReadFixedLengthByteArray;
-use crate::{from_rgb32, Bitmap, Palette, PaletteError, PaletteFormat};
 
 #[derive(Error, Debug)]
 pub enum PcxError {

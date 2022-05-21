@@ -3,8 +3,11 @@ use std::path::Path;
 use anyhow::Result;
 use sdl2::keyboard::Scancode;
 
-use libretrogd::utils::rnd_value;
 use libretrogd::*;
+use libretrogd::graphics::*;
+use libretrogd::math::*;
+use libretrogd::system::*;
+use libretrogd::utils::*;
 
 const NUM_BALLS: usize = 128;
 const NUM_BALL_SPRITES: usize = 16;

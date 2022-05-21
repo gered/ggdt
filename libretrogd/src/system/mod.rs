@@ -1,12 +1,16 @@
 use byte_slice_cast::AsByteSlice;
+use sdl2::{EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::event::Event;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, WindowCanvas};
-use sdl2::{EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use thiserror::Error;
 
-use crate::{Bitmap, BitmaskFont, InputDevice, Keyboard, Mouse, Palette};
 use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::graphics::*;
+
+pub use self::input_devices::*;
+pub use self::input_devices::keyboard::*;
+pub use self::input_devices::mouse::*;
 
 pub mod input_devices;
 

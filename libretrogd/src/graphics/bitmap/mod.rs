@@ -3,11 +3,13 @@ use std::slice;
 
 use thiserror::Error;
 
-pub use crate::blit::*;
-pub use crate::iff::*;
-pub use crate::pcx::*;
-pub use crate::primitives::*;
-use crate::{Palette, Rect};
+use crate::graphics::*;
+use crate::math::*;
+
+pub use self::blit::*;
+pub use self::iff::*;
+pub use self::pcx::*;
+pub use self::primitives::*;
 
 pub mod blit;
 pub mod iff;

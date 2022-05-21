@@ -1,7 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::Matrix3x3;
-use crate::{angle_between, angle_to_direction, nearly_equal, NearlyEqual};
+use crate::math::*;
 
 /// Represents a 2D vector and provides common methods for vector math.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -246,8 +245,6 @@ impl MulAssign<Matrix3x3> for Vector2 {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::math::*;
-
     use super::*;
 
     #[test]

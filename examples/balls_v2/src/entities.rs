@@ -1,7 +1,9 @@
 use libretrogd::*;
 use libretrogd::entities::*;
 use libretrogd::events::*;
-use libretrogd::utils::rnd_value;
+use libretrogd::graphics::*;
+use libretrogd::math::*;
+use libretrogd::utils::*;
 
 use crate::states::*;
 

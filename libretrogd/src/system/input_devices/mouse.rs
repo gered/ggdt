@@ -1,8 +1,9 @@
 use sdl2::event::Event;
 
-use crate::{Bitmap, BlitMethod, Rect};
+use crate::graphics::*;
+use crate::math::*;
 
-use super::{ButtonState, InputDevice};
+use super::*;
 
 const MAX_BUTTONS: usize = 32;
 

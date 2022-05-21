@@ -1,4 +1,5 @@
-use crate::{Bitmap, Rect};
+use crate::graphics::*;
+use crate::math::*;
 
 pub enum BlitMethod {
     Solid,
