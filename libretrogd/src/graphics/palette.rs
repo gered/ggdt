@@ -8,6 +8,7 @@ use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::NUM_COLORS;
+use crate::graphics::*;
 use crate::utils::abs_diff;
 
 // silly "hack" (???) which allows us to alias the generic constraint `RangeBounds<u8> + Iterator<Item = u8>` to `ColorRange`
@@ -453,6 +454,20 @@ impl Palette {
         }
 
         closest
+    }
+
+    /// Debug helper that draws this palette to the given bitmap as a 16x16 pixel grid, where each
+    /// pixel is one of the colors from this palette, in ascending order, left-to-right,
+    /// top-to-bottom. The coordinates given specify the top-left coordinate on the destination
+    /// bitmap to begin drawing the palette at.
+    pub fn draw(&self, dest: &mut Bitmap, x: i32, y: i32) {
+        let mut color = 0;
+        for yd in 0..16 {
+            for xd in 0..16 {
+                dest.set_pixel(x + xd, y + yd, color);
+                color = color.wrapping_add(1);
+            }
+        }
     }
 }
 
