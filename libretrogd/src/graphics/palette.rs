@@ -202,6 +202,14 @@ impl Palette {
         }
     }
 
+    /// Creates a new Palette with all initial colors having the RGB values specified.
+    pub fn new_with_default(r: u8, g: u8, b: u8) -> Palette {
+        let rgb = to_rgb32(r, g, b);
+        Palette {
+            colors: [rgb; NUM_COLORS],
+        }
+    }
+
     /// Creates a new Palette, pre-loaded with the default VGA BIOS colors.
     pub fn new_vga_palette() -> Result<Palette, PaletteError> {
         Palette::load_from_bytes(&mut Cursor::new(VGA_PALETTE_BYTES), PaletteFormat::Vga)
