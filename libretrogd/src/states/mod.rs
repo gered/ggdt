@@ -18,6 +18,7 @@ pub enum TransitionDirection {
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 pub enum State {
     Pending,
+    Resume,
     Active,
     Paused,
     TransitionIn,
@@ -108,7 +109,7 @@ impl<ContextType> StateContainer<ContextType> {
 
     pub fn transition_in(&mut self, context: &mut ContextType) -> Result<(), StateError> {
         match self.current_state {
-            State::Pending | State::Paused => {
+            State::Pending | State::Paused | State::Resume => {
                 self.change_state(State::TransitionIn, context);
                 Ok(())
             },
@@ -312,6 +313,7 @@ impl<ContextType> States<ContextType> {
                             // otherwise, we're probably waking up a state that was paused and needs to
                             // be resumed since it's once again on top
                             let state = self.states.front_mut().unwrap();
+                            state.change_state(State::Resume, context);
                             state.transition_in(context)?;
                         }
                     },
@@ -754,7 +756,8 @@ mod tests {
             context.take_log(),
             vec![
                 StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
-                StateChange(FIRST, TransitionIn, Paused),
+                StateChange(FIRST, Resume, Paused),
+                StateChange(FIRST, TransitionIn, Resume),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
                 Render(FIRST, TransitionIn)
@@ -945,7 +948,8 @@ mod tests {
             context.take_log(),
             vec![
                 StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
-                StateChange(FIRST, TransitionIn, Paused),
+                StateChange(FIRST, Resume, Paused),
+                StateChange(FIRST, TransitionIn, Resume),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
                 Render(FIRST, TransitionIn)
@@ -1387,7 +1391,8 @@ mod tests {
             context.take_log(),
             vec![
                 StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
-                StateChange(FIRST, TransitionIn, Paused),
+                StateChange(FIRST, Resume, Paused),
+                StateChange(FIRST, TransitionIn, Resume),
                 Transition(FIRST, TransitionIn),
                 Update(FIRST, TransitionIn),
                 Render(FIRST, TransitionIn)
