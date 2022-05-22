@@ -207,7 +207,7 @@ pub trait ComponentStoreConvenience<T: Component> {
 }
 
 pub trait ComponentStoreConvenienceMut<T: Component> {
-    fn single_mut(&mut self) -> Option<(&EntityId, &T)>;
+    fn single_mut(&mut self) -> Option<(&EntityId, &mut T)>;
     fn get_mut(&mut self, k: &EntityId) -> Option<&mut T>;
     fn contains_key(&mut self, k: &EntityId) -> bool;
 }
@@ -267,7 +267,7 @@ impl<'a, T: Component> ComponentStoreConvenience<T> for Option<RefMutComponents<
 }
 
 impl<'a, T: Component> ComponentStoreConvenienceMut<T> for Option<RefMutComponents<'a, T>> {
-    fn single_mut(&mut self) -> Option<(&EntityId, &T)> {
+    fn single_mut(&mut self) -> Option<(&EntityId, &mut T)> {
         if let Some(components) = self {
             if let Some((entity_id, component)) = components.iter_mut().next() {
                 return Some((entity_id, component));
