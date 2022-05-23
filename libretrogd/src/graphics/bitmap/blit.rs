@@ -1,6 +1,7 @@
 use crate::graphics::*;
 use crate::math::*;
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BlitMethod {
     Solid,
     Transparent(u8),
