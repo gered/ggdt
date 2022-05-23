@@ -89,6 +89,12 @@ impl Vector2 {
     pub fn angle_between(&self, other: &Vector2) -> f32 {
         angle_between(self.x, self.y, other.x, other.y)
     }
+
+    /// Returns true if this vector is nearly equal to the zero vector (0.0, 0.0).
+    #[inline]
+    pub fn almost_zero(&self, epsilon: f32) -> bool {
+        self.nearly_equal(Vector2::ZERO, epsilon)
+    }
 }
 
 impl Neg for Vector2 {
