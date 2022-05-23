@@ -5,6 +5,7 @@ use crate::math::*;
 pub enum BlitMethod {
     Solid,
     Transparent(u8),
+    TransparentSingle(u8, u8)   // transparent color, single visible color
 }
 
 /// Clips the region for a source bitmap to be used in a subsequent blit operation. The source
@@ -126,6 +127,36 @@ impl Bitmap {
         }
     }
 
+    pub unsafe fn transparent_single_color_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        single_color: u8,
+    ) {
+        let src_next_row_inc = (src.width - src_region.width) as usize;
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                let pixel = *src_pixels;
+                if pixel != transparent_color {
+                    *dest_pixels = single_color;
+                }
+
+                src_pixels = src_pixels.add(1);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.add(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
+        }
+    }
+
     pub fn blit_region(
         &mut self,
         method: BlitMethod,
@@ -163,7 +194,10 @@ impl Bitmap {
             Solid => self.solid_blit(src, src_region, dest_x, dest_y),
             Transparent(transparent_color) => {
                 self.transparent_blit(src, src_region, dest_x, dest_y, transparent_color)
-            }
+            },
+            TransparentSingle(transparent_color, single_color) => {
+                self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, single_color)
+            },
         }
     }
 
