@@ -124,6 +124,8 @@ pub fn kill_entity(context: &mut Core, entity: EntityId) {
     context.entities.remove_component::<RandomlyWalksAround>(entity);
     context.entities.remove_component::<WalkingTime>(entity);
     context.entities.remove_component::<Attackable>(entity);
+    context.entities.remove_component::<Pusher>(entity);
+    context.entities.remove_component::<Pushable>(entity);
     set_entity_activity(&mut context.entities, entity, EntityActivity::Dead);
     spawn_pickups_from_entity(context, entity);
 }
