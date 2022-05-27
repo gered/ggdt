@@ -109,7 +109,7 @@ fn main() -> Result<()> {
 
         system
             .video
-            .print_string("hello, world!", 10, 10, 15, &font);
+            .print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &font);
 
         for i in 0..NUM_BALLS {
             system.video.blit(

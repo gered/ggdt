@@ -3,6 +3,7 @@ use std::path::Path;
 use sdl2::keyboard::Scancode;
 
 use libretrogd::entities::*;
+use libretrogd::graphics::*;
 use libretrogd::math::Vector2;
 use libretrogd::states::*;
 
@@ -64,10 +65,10 @@ impl GameState<Game> for MainMenuState {
         draw_window(&mut context.core.system.video, &context.core.ui, x, y, x + width, y + height);
 
         let selection_y = y + SPACER + (self.selection as i32 * 16);
-        context.core.system.video.print_string(">", x + SPACER, selection_y, 15, &context.core.font);
+        context.core.system.video.print_string(">", x + SPACER, selection_y, FontRenderOpts::Color(15), &context.core.font);
 
-        context.core.system.video.print_string("Play", x + SPACER + SPACER, y + SPACER, 15, &context.core.font);
-        context.core.system.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, 15, &context.core.font);
+        context.core.system.video.print_string("Play", x + SPACER + SPACER, y + SPACER, FontRenderOpts::Color(15), &context.core.font);
+        context.core.system.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, FontRenderOpts::Color(15), &context.core.font);
     }
 
     fn transition(&mut self, state: State, context: &mut Game) -> bool {
@@ -176,10 +177,10 @@ impl GameState<Game> for GamePlayState {
             draw_window(&mut context.core.system.video, &context.core.ui, x, y, x + width, y + height);
 
             let selection_y = y + SPACER + (self.selection as i32 * 16);
-            context.core.system.video.print_string(">", x + SPACER, selection_y, 15, &context.core.font);
+            context.core.system.video.print_string(">", x + SPACER, selection_y, FontRenderOpts::Color(15), &context.core.font);
 
-            context.core.system.video.print_string("Continue", x + SPACER + SPACER, y + SPACER, 15, &context.core.font);
-            context.core.system.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, 15, &context.core.font);
+            context.core.system.video.print_string("Continue", x + SPACER + SPACER, y + SPACER, FontRenderOpts::Color(15), &context.core.font);
+            context.core.system.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, FontRenderOpts::Color(15), &context.core.font);
         }
     }
 

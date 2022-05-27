@@ -47,13 +47,13 @@ impl Bitmap {
 
     /// Renders a single character using the font given.
     #[inline]
-    pub fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, color: u8, font: &T) {
+    pub fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts, font: &T) {
         font.character(ch)
-            .draw(self, x, y, FontRenderOpts::Color(color));
+            .draw(self, x, y, opts);
     }
 
     /// Renders the string of text using the font given.
-    pub fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, color: u8, font: &T) {
+    pub fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts, font: &T) {
         let mut current_x = x;
         let mut current_y = y;
         for ch in text.chars() {
@@ -65,7 +65,7 @@ impl Bitmap {
                 }
                 '\r' => (),
                 otherwise => {
-                    self.print_char(otherwise, current_x, current_y, color, font);
+                    self.print_char(otherwise, current_x, current_y, opts, font);
                     current_x += font.character(otherwise).bounds().width as i32;
                 }
             }

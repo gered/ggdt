@@ -95,7 +95,7 @@ impl GameState<Game> for SimulationState {
     fn render(&mut self, _state: State, context: &mut Game) {
         context.context.system.video.clear(2);
         context.component_systems.render(&mut context.context);
-        context.context.system.video.print_string("hello, world!", 10, 10, 15, &context.context.font);
+        context.context.system.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &context.context.font);
     }
 
     fn transition(&mut self, _state: State, _context: &mut Game) -> bool {

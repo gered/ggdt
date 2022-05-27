@@ -13,7 +13,7 @@ fn main() -> Result<()> {
     let font = BitmaskFont::new_vga_font()?;
 
     system.video.clear(0);
-    system.video.print_string("Hello, world!", 20, 20, 15, &font);
+    system.video.print_string("Hello, world!", 20, 20, FontRenderOpts::Color(15), &font);
 
     while is_running {
         system.do_events_with(|event| {

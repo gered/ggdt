@@ -23,7 +23,7 @@ pub enum FontError {
     IOError(#[from] std::io::Error),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum FontRenderOpts {
     Color(u8),
     None,
