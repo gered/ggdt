@@ -1,3 +1,4 @@
+use std::f64::consts::PI;
 use std::path::Path;
 
 use anyhow::Result;
@@ -25,6 +26,31 @@ fn load_and_convert_wav(path: &Path, target_spec: &AudioSpec) -> Result<AudioBuf
         println!("{:?} did not need to be converted from {:?}", path, original_spec);
     }
     Ok(sound)
+}
+
+pub struct SineWaveGenerator {
+    t: usize,
+}
+
+impl SineWaveGenerator {
+    pub fn new() -> Self {
+        SineWaveGenerator {
+            t: 0
+        }
+    }
+}
+
+impl AudioGenerator for SineWaveGenerator {
+    fn gen_sample(&mut self, position: usize) -> Option<u8> {
+        const MAX_TIME: usize = AUDIO_FREQUENCY_22KHZ as usize * 3;  // 3 seconds
+        if self.t < MAX_TIME {
+            let sample = (self.t as f64 * 0.25).sin() * 80.0;
+            self.t += 1;
+            Some((sample + 128.0) as u8)
+        } else {
+            None
+        }
+    }
 }
 
 fn main() -> Result<()> {
@@ -71,6 +97,10 @@ fn main() -> Result<()> {
 
         if system.keyboard.is_key_pressed(Scancode::Num5) {
             audio_device.play_buffer(&sound5, false)?;
+        }
+
+        if system.keyboard.is_key_pressed(Scancode::Num6) {
+            audio_device.play_generator(Box::new(SineWaveGenerator::new()), false);
         }
 
         for index in 0..NUM_CHANNELS {

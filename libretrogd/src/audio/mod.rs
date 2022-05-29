@@ -55,11 +55,17 @@ impl AudioSpec {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Debug, Clone)]
+pub trait AudioGenerator: Send {
+    fn gen_sample(&mut self, position: usize) -> Option<u8>;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 pub struct AudioChannel {
     pub playing: bool,
     pub loops: bool,
     pub data: Vec<u8>,
+    pub generator: Option<Box<dyn AudioGenerator>>,
     pub volume: f32,
     pub position: usize,
 }
@@ -71,7 +77,16 @@ impl AudioChannel {
             loops: false,
             volume: 1.0,
             position: 0,
+            generator: None,
             data: Vec::new(),
+        }
+    }
+
+    fn data_at(&mut self, position: usize) -> Option<u8> {
+        if let Some(generator) = &mut self.generator {
+            generator.gen_sample(position)
+        } else {
+            self.data.get(self.position).copied()
         }
     }
 
@@ -84,9 +99,9 @@ impl AudioChannel {
     /// instead of 0 to 255).
     #[inline]
     fn next_sample(&mut self) -> Option<i16> {
-        if let Some(sample) = self.data.get(self.position) {
+        if let Some(sample) = self.data_at(self.position) {
             self.position += 1;
-            Some((*sample as i16) - 128)
+            Some(sample as i16 - 128)
         } else {
             None
         }
@@ -104,25 +119,25 @@ impl AudioChannel {
     pub fn sample(&mut self) -> Option<i16> {
         if !self.playing {
             return None;
-        } else if self.position >= self.data.len() {
-            if self.loops {
-                self.position = 0;
-            } else {
-                self.stop();
-                return None;
-            }
         }
 
-        if let Some(raw_sample) = self.next_sample() {
-            Some((raw_sample as f32 * self.volume) as i16)
+        if let Some(sample) = self.next_sample() {
+            Some((sample as f32 * self.volume) as i16)
         } else {
-            None
+            if self.loops {
+                self.position = 0;
+                None
+            } else {
+                self.stop();
+                None
+            }
         }
     }
 
     #[inline]
     pub fn reset(&mut self) {
         self.data.clear();
+        self.generator = None;
         self.position = 0;
         self.playing = false;
     }
@@ -131,14 +146,27 @@ impl AudioChannel {
     pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) {
         self.data.clear();
         self.data.extend(&buffer.data);
+        self.generator = None;
         self.position = 0;
         self.playing = true;
         self.loops = loops;
     }
 
+    pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) {
+        self.data.clear();
+        self.generator = Some(generator);
+        self.position = 0;
+        self.playing = true;
+        self.loops = loops;
+    }
+
+    pub fn is_playable(&self) -> bool {
+        !self.data.is_empty() || self.generator.is_some()
+    }
+
     #[inline]
     pub fn play(&mut self, loops: bool) {
-        if !self.data.is_empty() {
+        if self.is_playable() {
             self.position = 0;
             self.playing = true;
             self.loops = loops;
@@ -219,6 +247,15 @@ impl AudioDevice {
             } else {
                 Ok(None)
             }
+        }
+    }
+
+    pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+        if let Some(channel) = self.stopped_channels_iter_mut().next() {
+            channel.play_generator(generator, loops);
+            Ok(Some(channel))
+        } else {
+            Ok(None)
         }
     }
 
