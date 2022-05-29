@@ -4,9 +4,10 @@ use std::io::{BufReader, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
+use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
-use crate::audio::AudioBuffer;
+use crate::audio::{AudioBuffer, AudioSpec};
 
 #[derive(Error, Debug)]
 pub enum WavError {
@@ -234,7 +235,8 @@ impl AudioBuffer {
         let mut audio_buffer;
 
         if let Some(format) = format {
-            audio_buffer = AudioBuffer::new(format.frequency, format.channels as u8);
+            let spec = AudioSpec::new(format.frequency, format.channels as u8, AudioFormat::U8);
+            audio_buffer = AudioBuffer::new(spec);
         } else {
             return Err(WavError::BadFile(String::from("No 'fmt ' chunk was found")));
         }

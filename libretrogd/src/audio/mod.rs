@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use sdl2::audio::AudioCallback;
+use sdl2::audio::{AudioCallback, AudioFormat};
 use thiserror::Error;
 
 pub use self::wav::*;
@@ -15,13 +15,24 @@ pub const AUDIO_FREQUENCY_11KHZ: u32 = 11025;
 
 pub const SILENCE: u8 = sdl2::audio::AudioFormatNum::SILENCE;
 
+pub const TARGET_AUDIO_SPEC: AudioSpec = AudioSpec { frequency: AUDIO_FREQUENCY_22KHZ, channels: 1, format: AudioFormat::U8 };
+
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct AudioSpec {
-    pub frequency: u32,
-    pub channels: u8,
+    frequency: u32,
+    channels: u8,
+    format: AudioFormat,
 }
 
 impl AudioSpec {
+    pub fn new(frequency: u32, channels: u8, format: AudioFormat) -> Self {
+        AudioSpec {
+            frequency,
+            channels,
+            format
+        }
+    }
+
     #[inline]
     pub fn frequency(&self) -> u32 {
         self.frequency
@@ -30,6 +41,11 @@ impl AudioSpec {
     #[inline]
     pub fn channels(&self) -> u8 {
         self.channels
+    }
+
+    #[inline]
+    pub fn format(&self) -> AudioFormat {
+        self.format
     }
 }
 
@@ -264,12 +280,9 @@ pub struct AudioBuffer {
 }
 
 impl AudioBuffer {
-    pub fn new(frequency: u32, channels: u8) -> Self {
+    pub fn new(spec: AudioSpec) -> Self {
         AudioBuffer {
-            spec: AudioSpec {
-                frequency,
-                channels,
-            },
+            spec,
             data: Vec::new(),
         }
     }
@@ -279,22 +292,21 @@ impl AudioBuffer {
         &self.spec
     }
 
-    pub fn convert(self, frequency: u32, channels: u8) -> Result<Self, AudioBufferError> {
-        if self.spec.frequency == frequency && self.spec.channels == channels {
+    pub fn convert(self, to_spec: &AudioSpec) -> Result<Self, AudioBufferError> {
+        if self.spec == *to_spec {
             Ok(self)
         } else {
-            use sdl2::audio::AudioFormat;
             let converter = sdl2::audio::AudioCVT::new(
-                AudioFormat::U8,
-                self.spec.channels,
-                self.spec.frequency as i32,
-                AudioFormat::U8,
-                channels,
-                frequency as i32,
+                self.spec.format(),
+                self.spec.channels(),
+                self.spec.frequency() as i32,
+                to_spec.format(),
+                to_spec.channels(),
+                to_spec.frequency() as i32,
             );
             match converter {
                 Ok(converter) => {
-                    let mut result = AudioBuffer::new(frequency, channels);
+                    let mut result = AudioBuffer::new(*to_spec);
                     result.data = converter.convert(self.data);
                     Ok(result)
                 }

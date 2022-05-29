@@ -243,17 +243,13 @@ impl SystemBuilder {
         };
 
         let audio_spec = AudioSpecDesired {
-            freq: Some(AUDIO_FREQUENCY_22KHZ as i32),
-            channels: Some(1),
+            freq: Some(TARGET_AUDIO_SPEC.frequency() as i32),
+            channels: Some(TARGET_AUDIO_SPEC.channels()),
             samples: None,
         };
 
         let audio = match sdl_audio_subsystem.open_playback(None, &audio_spec, |spec| {
-            let our_spec = AudioSpec {
-                frequency: spec.freq as u32,
-                channels: spec.channels,
-            };
-
+            let our_spec = AudioSpec::new(spec.freq as u32, spec.channels, spec.format);
             AudioDevice::new(our_spec)
         }) {
             Ok(audio_device) => audio_device,
