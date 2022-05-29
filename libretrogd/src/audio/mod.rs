@@ -53,39 +53,59 @@ impl AudioChannel {
         }
     }
 
+    /// Returns the next sample from this channel's buffer. If this channel's buffer is done
+    /// playing or there is no buffer data at all, `None` is returned. If the next sample was
+    /// successfully loaded from the buffer, the channel's current position is advanced by 1.
+    ///
+    /// The returned sample will be a byte value, but in an `i16` with the buffer's original `u8`
+    /// value centered around 0 (meaning the returned sample will be within the range -128 to 127
+    /// instead of 0 to 255).
     #[inline]
-    fn next_sample(&mut self) -> i16 {
+    fn next_sample(&mut self) -> Option<i16> {
         if let Some(sample) = self.data.get(self.position) {
             self.position += 1;
-            (*sample as i16) - 128
+            Some((*sample as i16) - 128)
         } else {
-            0
+            None
         }
     }
 
+    /// Samples the channel's current audio buffer, advancing the position within that buffer by 1.
+    /// The channel will automatically stop playing when the end of the buffer is reached and if
+    /// the channel is not set to loop. `None` is returned if no data can be read from the buffer
+    /// for any reason, or if the channel is not currently playing.
+    ///
+    /// The returned sample will be a byte value, but in an `i16` with the buffer's original `u8`
+    /// value centered around 0 (meaning the returned sample will be within the range -128 to 127
+    /// instead of 0 to 255).
     #[inline]
-    pub fn get_audio_frame(&mut self) -> i16 {
+    pub fn sample(&mut self) -> Option<i16> {
         if !self.playing {
-            return 0;
+            return None;
         } else if self.position >= self.data.len() {
             if self.loops {
                 self.position = 0;
             } else {
                 self.stop();
-                return 0;
+                return None;
             }
         }
 
-        let raw_sample = self.next_sample();
-        (raw_sample as f32 * self.volume) as i16
+        if let Some(raw_sample) = self.next_sample() {
+            Some((raw_sample as f32 * self.volume) as i16)
+        } else {
+            None
+        }
     }
 
+    #[inline]
     pub fn reset(&mut self) {
         self.data.clear();
         self.position = 0;
         self.playing = false;
     }
 
+    #[inline]
     pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) {
         self.data.clear();
         self.data.extend(&buffer.data);
@@ -94,6 +114,7 @@ impl AudioChannel {
         self.loops = loops;
     }
 
+    #[inline]
     pub fn play(&mut self, loops: bool) {
         if !self.data.is_empty() {
             self.position = 0;
@@ -102,6 +123,7 @@ impl AudioChannel {
         }
     }
 
+    #[inline]
     pub fn stop(&mut self) {
         self.playing = false;
     }
@@ -119,7 +141,9 @@ impl AudioCallback for AudioDevice {
         for dest in out.iter_mut() {
             let mut sample: i16 = 0;
             for channel in self.channels.iter_mut() {
-                sample += channel.get_audio_frame();
+                if let Some(this_sample) = channel.sample() {
+                    sample += this_sample;
+                }
             }
             *dest = (sample.clamp(-128, 127) + 128) as u8;
         }
