@@ -82,6 +82,7 @@ impl AudioChannel {
         }
     }
 
+    #[inline]
     fn data_at(&mut self, position: usize) -> Option<u8> {
         if let Some(generator) = &mut self.generator {
             generator.gen_sample(position)
@@ -152,6 +153,7 @@ impl AudioChannel {
         self.loops = loops;
     }
 
+    #[inline]
     pub fn play_generator(&mut self, generator: impl AudioGenerator + 'static, loops: bool) {
         self.data.clear();
         self.generator = Some(Box::new(generator));
@@ -160,6 +162,7 @@ impl AudioChannel {
         self.loops = loops;
     }
 
+    #[inline]
     pub fn is_playable(&self) -> bool {
         !self.data.is_empty() || self.generator.is_some()
     }
