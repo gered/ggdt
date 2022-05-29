@@ -8,6 +8,7 @@ use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
 use crate::audio::{AudioBuffer, AudioSpec};
+use crate::utils::io::StreamSize;
 
 #[derive(Error, Debug)]
 pub enum WavError {
@@ -155,16 +156,29 @@ impl DataChunk {
     pub fn read<T: ReadBytesExt>(
         reader: &mut T,
         chunk_header: &SubChunkHeader,
+        is_probably_naive_file: bool,
     ) -> Result<Self, WavError> {
-        let mut buffer = vec![0u8; chunk_header.size as usize];
-        let bytes_read = reader.read(&mut buffer)?;
-        // bunch of tools (like sfxr, jsfxr) sometimes generating "data" chunks that are too large.
-        // probably these tools are just incorrectly hard-coded to always assume 16-bit, because
-        // every time so far i have seen this, the data chunk size is exactly twice what the actual
-        // data size is for an 8-bit wav file.
-        // so, lets chop off the excess, so we don't have a very large amount of zero's at the end
-        // which would probably result in audio clicking if played as-is!
-        buffer.truncate(bytes_read);
+        let mut buffer;
+        if is_probably_naive_file {
+            // in this scenario, we have doubts about the chunk size being recorded correctly
+            // (the tool that created this file may have used a buggy calculation). we assume that
+            // in this case, this wav file is probably written in a "naive" manner and likely only
+            // contains "fmt" and "data" chunks with the "data" chunk being at the end of the file.
+            // if this assumption is correct, then we can just read everything until EOF here as
+            // the "data" chunk contents and that should be ok (assuming this file isn't corrupt
+            // anyway).
+            buffer = Vec::new();
+            reader.read_to_end(&mut buffer)?;
+        } else {
+            // alternatively, this scenario means we are assuming the file was written out more
+            // properly and we will assume the chunk size is correct and read that many bytes.
+            // this is best if there is the possibility that there are more chunks than just "fmt"
+            // and "data" in this wav file and maybe they are in a different order, etc.
+            // it is important to note that this seems to be an uncommon case for wav files. most
+            // wav files seem to be written in a fairly "naive" manner.
+            buffer = vec![0u8; chunk_header.size as usize];
+            reader.read_exact(&mut buffer)?;
+        }
         Ok(DataChunk {
             data: buffer.into_boxed_slice(),
         })
@@ -179,6 +193,8 @@ impl DataChunk {
 
 impl AudioBuffer {
     pub fn load_wav_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<AudioBuffer, WavError> {
+        let file_size = reader.stream_size()?;
+
         let header = WavHeader::read(reader)?;
         if header.file_chunk.chunk_id.id != *b"RIFF" {
             return Err(WavError::BadFile(String::from(
@@ -190,6 +206,17 @@ impl AudioBuffer {
                 "Unexpected RIFF container id, probably not a WAV file",
             )));
         }
+
+        // some tools like sfxr and jsfxr incorrectly calculate data sizes, seemingly using a
+        // hardcoded 16-bit sample size in their calculations even when the file being created has
+        // 8-bit sample sizes. this means the chunk size here and the "data" chunk size will be
+        // larger than they should be for the _actual_ data present in the file.
+        // of course, if the chunk size here is wrong, it could also mean a corrupt file. but we'll
+        // proceed regardless, with the assumption that an incorrect size here probably means that
+        // the file was created using these semi-broken tools and should act accordingly later on.
+        // if the file is actually corrupt (maybe truncated accidentally or something), then we'll
+        // hit an EOF earlier than expected somewhere too ...
+        let is_probably_naive_file = file_size - 8 != header.file_chunk.size as u64;
 
         let mut format: Option<FormatChunk> = None;
         let mut data: Option<DataChunk> = None;
@@ -220,7 +247,7 @@ impl AudioBuffer {
                     )));
                 }
             } else if chunk_header.chunk_id.id == *b"data" {
-                data = Some(DataChunk::read(reader, &chunk_header)?);
+                data = Some(DataChunk::read(reader, &chunk_header, is_probably_naive_file)?);
             }
 
             // move to the start of the next chunk (possibly skipping over the current chunk if we
@@ -259,14 +286,21 @@ impl AudioBuffer {
 
 #[cfg(test)]
 mod tests {
+    use crate::audio::*;
+
     use super::*;
 
     #[test]
     pub fn load_wav_file() -> Result<(), WavError> {
         let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/22khz_8bit_1ch.wav"))?;
-        assert_eq!(22050, wav_buffer.spec().frequency());
+        assert_eq!(AUDIO_FREQUENCY_22KHZ, wav_buffer.spec().frequency());
         assert_eq!(1, wav_buffer.spec().channels());
-        assert_eq!(8184, wav_buffer.data.len());
+        assert_eq!(11248, wav_buffer.data.len());
+
+        let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/44khz_8bit_1ch.wav"))?;
+        assert_eq!(AUDIO_FREQUENCY_44KHZ, wav_buffer.spec().frequency());
+        assert_eq!(1, wav_buffer.spec().channels());
+        assert_eq!(22496, wav_buffer.data.len());
         Ok(())
     }
 }
