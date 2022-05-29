@@ -129,6 +129,12 @@ impl AudioChannel {
     }
 }
 
+#[derive(Debug, Error)]
+pub enum AudioDeviceError {
+    #[error("That buffer's AudioSpec does not match the device's AudioSpec")]
+    AudioSpecMismatch
+}
+
 pub struct AudioDevice {
     spec: AudioSpec,
     channels: Vec<AudioChannel>,
@@ -175,12 +181,16 @@ impl AudioDevice {
         }
     }
 
-    pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Option<&mut AudioChannel> {
-        if let Some(channel) = self.stopped_channels_iter_mut().next() {
-            channel.play_buffer(buffer, loops);
-            Some(channel)
+    pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+        if buffer.spec != self.spec {
+            Err(AudioDeviceError::AudioSpecMismatch)
         } else {
-            None
+            if let Some(channel) = self.stopped_channels_iter_mut().next() {
+                channel.play_buffer(buffer, loops);
+                Ok(Some(channel))
+            } else {
+                Ok(None)
+            }
         }
     }
 

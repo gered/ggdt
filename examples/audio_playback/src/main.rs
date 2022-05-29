@@ -41,23 +41,23 @@ fn main() -> Result<()> {
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num1) {
-            audio_device.play_buffer(&sound1, false);
+            audio_device.play_buffer(&sound1, false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num2) {
-            audio_device.play_buffer(&sound2, false);
+            audio_device.play_buffer(&sound2, false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num3) {
-            audio_device.play_buffer(&sound3, false);
+            audio_device.play_buffer(&sound3, false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num4) {
-            audio_device.play_buffer(&sound4, false);
+            audio_device.play_buffer(&sound4, false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num5) {
-            audio_device.play_buffer(&sound5, false);
+            audio_device.play_buffer(&sound5, false)?;
         }
 
         for index in 0..NUM_CHANNELS {
