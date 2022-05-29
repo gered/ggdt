@@ -23,6 +23,9 @@ pub enum SystemError {
 
     #[error("System display error: {0}")]
     DisplayError(String),
+
+    #[error("System audio error: {0}")]
+    AudioError(#[from] crate::audio::AudioError),
 }
 
 /// Builder for configuring and constructing an instance of [`System`].
@@ -247,14 +250,7 @@ impl SystemBuilder {
             channels: Some(TARGET_AUDIO_SPEC.channels()),
             samples: None,
         };
-
-        let audio = match sdl_audio_subsystem.open_playback(None, &audio_spec, |spec| {
-            let our_spec = AudioSpec::new(spec.freq as u32, spec.channels, spec.format);
-            AudioDevice::new(our_spec)
-        }) {
-            Ok(audio_device) => audio_device,
-            Err(error) => return Err(SystemError::InitError(error)),
-        };
+        let mut audio = Audio::new(audio_spec, &sdl_audio_subsystem)?;
         audio.resume();
 
         // create input device objects, exposed to the application
@@ -305,7 +301,7 @@ pub struct System {
     target_framerate_delta: Option<i64>,
     next_tick: i64,
 
-    pub audio: sdl2::audio::AudioDevice<AudioDevice>,
+    pub audio: Audio,
 
     /// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
     /// [`System::display`] is called. Regardless of the actual window size, this bitmap is always
