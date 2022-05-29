@@ -1,6 +1,6 @@
 use std::ops::{Index, IndexMut};
 
-use sdl2::audio::{AudioCallback, AudioFormat, AudioSpecDesired};
+use sdl2::audio::{AudioCallback, AudioFormat, AudioFormatNum, AudioSpecDesired};
 use sdl2::AudioSubsystem;
 use thiserror::Error;
 
@@ -14,13 +14,10 @@ pub const AUDIO_FREQUENCY_44KHZ: u32 = 44100;
 pub const AUDIO_FREQUENCY_22KHZ: u32 = 22050;
 pub const AUDIO_FREQUENCY_11KHZ: u32 = 11025;
 
-pub const SILENCE: u8 = sdl2::audio::AudioFormatNum::SILENCE;
+pub const SILENCE: u8 = AudioFormatNum::SILENCE;
 
-pub const TARGET_AUDIO_SPEC: AudioSpec = AudioSpec {
-    frequency: AUDIO_FREQUENCY_22KHZ,
-    channels: 1,
-    format: AudioFormat::U8,
-};
+pub const TARGET_AUDIO_FREQUENCY: u32 = AUDIO_FREQUENCY_22KHZ;
+pub const TARGET_AUDIO_CHANNELS: u8 = 1;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -246,8 +246,8 @@ impl SystemBuilder {
         };
 
         let audio_spec = AudioSpecDesired {
-            freq: Some(TARGET_AUDIO_SPEC.frequency() as i32),
-            channels: Some(TARGET_AUDIO_SPEC.channels()),
+            freq: Some(TARGET_AUDIO_FREQUENCY as i32),
+            channels: Some(TARGET_AUDIO_CHANNELS),
             samples: None,
         };
         let mut audio = Audio::new(audio_spec, &sdl_audio_subsystem)?;
