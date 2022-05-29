@@ -14,10 +14,10 @@ struct AudioChannelStatus {
     playing: bool
 }
 
-fn load_and_convert_wav(path: &Path) -> Result<AudioBuffer> {
+fn load_and_convert_wav(path: &Path, target_spec: &AudioSpec) -> Result<AudioBuffer> {
     let sound = AudioBuffer::load_wav_file(path)?;
     let original_spec = *sound.spec();
-    let sound = sound.convert(&TARGET_AUDIO_SPEC)?;
+    let sound = sound.convert(target_spec)?;
     let final_spec = *sound.spec();
     if original_spec != final_spec {
         println!("{:?} was converted from {:?} to {:?}", path, original_spec, final_spec);
@@ -32,11 +32,11 @@ fn main() -> Result<()> {
 
     let mut is_running = true;
 
-    let sound1 = load_and_convert_wav(Path::new("./assets/pickup-coin.wav"))?;
-    let sound2 = load_and_convert_wav(Path::new("./assets/powerup.wav"))?;
-    let sound3 = load_and_convert_wav(Path::new("./assets/explosion.wav"))?;
-    let sound4 = load_and_convert_wav(Path::new("./assets/jump.wav"))?;
-    let sound5 = load_and_convert_wav(Path::new("./assets/laser-shoot.wav"))?;
+    let sound1 = load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.audio.spec())?;
+    let sound2 = load_and_convert_wav(Path::new("./assets/powerup.wav"), system.audio.spec())?;
+    let sound3 = load_and_convert_wav(Path::new("./assets/explosion.wav"), system.audio.spec())?;
+    let sound4 = load_and_convert_wav(Path::new("./assets/jump.wav"), system.audio.spec())?;
+    let sound5 = load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.audio.spec())?;
 
     let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];
 
