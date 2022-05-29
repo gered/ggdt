@@ -15,7 +15,13 @@ pub const AUDIO_FREQUENCY_11KHZ: u32 = 11025;
 
 pub const SILENCE: u8 = sdl2::audio::AudioFormatNum::SILENCE;
 
-pub const TARGET_AUDIO_SPEC: AudioSpec = AudioSpec { frequency: AUDIO_FREQUENCY_22KHZ, channels: 1, format: AudioFormat::U8 };
+pub const TARGET_AUDIO_SPEC: AudioSpec = AudioSpec {
+    frequency: AUDIO_FREQUENCY_22KHZ,
+    channels: 1,
+    format: AudioFormat::U8,
+};
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct AudioSpec {
@@ -29,7 +35,7 @@ impl AudioSpec {
         AudioSpec {
             frequency,
             channels,
-            format
+            format,
         }
     }
 
@@ -48,6 +54,8 @@ impl AudioSpec {
         self.format
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Clone)]
 pub struct AudioChannel {
@@ -145,10 +153,12 @@ impl AudioChannel {
     }
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Debug, Error)]
 pub enum AudioDeviceError {
     #[error("That buffer's AudioSpec does not match the device's AudioSpec")]
-    AudioSpecMismatch
+    AudioSpecMismatch,
 }
 
 pub struct AudioDevice {
@@ -197,7 +207,11 @@ impl AudioDevice {
         }
     }
 
-    pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+    pub fn play_buffer(
+        &mut self,
+        buffer: &AudioBuffer,
+        loops: bool,
+    ) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
         if buffer.spec != self.spec {
             Err(AudioDeviceError::AudioSpecMismatch)
         } else {
@@ -266,6 +280,8 @@ impl IndexMut<usize> for AudioDevice {
         self.get_mut(index).unwrap()
     }
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Error, Debug)]
 pub enum AudioBufferError {
