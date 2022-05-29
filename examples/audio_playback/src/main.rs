@@ -100,7 +100,7 @@ fn main() -> Result<()> {
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num6) {
-            audio_device.play_generator(Box::new(SineWaveGenerator::new()), false);
+            audio_device.play_generator(SineWaveGenerator::new(), false);
         }
 
         for index in 0..NUM_CHANNELS {

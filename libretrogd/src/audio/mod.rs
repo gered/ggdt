@@ -152,9 +152,9 @@ impl AudioChannel {
         self.loops = loops;
     }
 
-    pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) {
+    pub fn play_generator(&mut self, generator: impl AudioGenerator + 'static, loops: bool) {
         self.data.clear();
-        self.generator = Some(generator);
+        self.generator = Some(Box::new(generator));
         self.position = 0;
         self.playing = true;
         self.loops = loops;
@@ -250,7 +250,7 @@ impl AudioDevice {
         }
     }
 
-    pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+    pub fn play_generator(&mut self, generator: impl AudioGenerator + 'static, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
         if let Some(channel) = self.stopped_channels_iter_mut().next() {
             channel.play_generator(generator, loops);
             Ok(Some(channel))
