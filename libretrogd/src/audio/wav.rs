@@ -241,9 +241,10 @@ impl AudioBuffer {
                         "Only PCM format WAV files are supported",
                     )));
                 }
-                if format.as_ref().unwrap().bits_per_sample != 8 {
+                if format.as_ref().unwrap().bits_per_sample != 8 &&
+                    format.as_ref().unwrap().bits_per_sample != 16 {
                     return Err(WavError::BadFile(String::from(
-                        "Only 8-bit sample WAV files are supported",
+                        "Only 8-bit and 16-bit sample WAV files are supported",
                     )));
                 }
             } else if chunk_header.chunk_id.id == *b"data" {
@@ -262,7 +263,14 @@ impl AudioBuffer {
         let mut audio_buffer;
 
         if let Some(format) = format {
-            let spec = AudioSpec::new(format.frequency, format.channels as u8, AudioFormat::U8);
+            let sample_format = match format.bits_per_sample {
+                8 => AudioFormat::U8,
+                16 => AudioFormat::S16LSB,
+                // this shouldn't be able to happen given the above checks when reading the
+                // "fmt" chunk
+                _ => return Err(WavError::BadFile(String::from("Unsupported sample bit size.")))
+            };
+            let spec = AudioSpec::new(format.frequency, format.channels as u8, sample_format);
             audio_buffer = AudioBuffer::new(spec);
         } else {
             return Err(WavError::BadFile(String::from("No 'fmt ' chunk was found")));
@@ -295,12 +303,27 @@ mod tests {
         let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/22khz_8bit_1ch.wav"))?;
         assert_eq!(AUDIO_FREQUENCY_22KHZ, wav_buffer.spec().frequency());
         assert_eq!(1, wav_buffer.spec().channels());
+        assert_eq!(AudioFormat::U8, wav_buffer.spec.format);
         assert_eq!(11248, wav_buffer.data.len());
 
         let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/44khz_8bit_1ch.wav"))?;
         assert_eq!(AUDIO_FREQUENCY_44KHZ, wav_buffer.spec().frequency());
         assert_eq!(1, wav_buffer.spec().channels());
+        assert_eq!(AudioFormat::U8, wav_buffer.spec.format);
         assert_eq!(22496, wav_buffer.data.len());
+
+        let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/22khz_16bit_1ch.wav"))?;
+        assert_eq!(AUDIO_FREQUENCY_22KHZ, wav_buffer.spec().frequency());
+        assert_eq!(1, wav_buffer.spec().channels());
+        assert_eq!(AudioFormat::S16LSB, wav_buffer.spec.format);
+        assert_eq!(22496, wav_buffer.data.len());
+
+        let wav_buffer = AudioBuffer::load_wav_file(Path::new("./test-assets/44khz_16bit_1ch.wav"))?;
+        assert_eq!(AUDIO_FREQUENCY_44KHZ, wav_buffer.spec().frequency());
+        assert_eq!(1, wav_buffer.spec().channels());
+        assert_eq!(AudioFormat::S16LSB, wav_buffer.spec.format);
+        assert_eq!(44992, wav_buffer.data.len());
+
         Ok(())
     }
 }
