@@ -1,11 +1,13 @@
 use byte_slice_cast::AsByteSlice;
-use sdl2::{EventPump, Sdl, TimerSubsystem, VideoSubsystem};
+use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
+use sdl2::audio::AudioSpecDesired;
 use sdl2::event::Event;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, WindowCanvas};
 use thiserror::Error;
 
 use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::audio::*;
 use crate::graphics::*;
 
 pub use self::input_devices::*;
@@ -147,6 +149,11 @@ impl SystemBuilder {
             Err(message) => return Err(SystemError::InitError(message)),
         };
 
+        let sdl_audio_subsystem = match sdl_context.audio() {
+            Ok(audio_subsystem) => audio_subsystem,
+            Err(message) => return Err(SystemError::InitError(message)),
+        };
+
         // create the window
 
         let window_width = screen_width * self.initial_scale_factor;
@@ -235,6 +242,25 @@ impl SystemBuilder {
             Err(error) => return Err(SystemError::InitError(error.to_string())),
         };
 
+        let audio_spec = AudioSpecDesired {
+            freq: Some(AUDIO_FREQUENCY_22KHZ as i32),
+            channels: Some(1),
+            samples: None,
+        };
+
+        let audio = match sdl_audio_subsystem.open_playback(None, &audio_spec, |spec| {
+            let our_spec = AudioSpec {
+                frequency: spec.freq as u32,
+                channels: spec.channels,
+            };
+
+            AudioDevice::new(our_spec)
+        }) {
+            Ok(audio_device) => audio_device,
+            Err(error) => return Err(SystemError::InitError(error)),
+        };
+        audio.resume();
+
         // create input device objects, exposed to the application
 
         let keyboard = Keyboard::new();
@@ -242,6 +268,7 @@ impl SystemBuilder {
 
         Ok(System {
             sdl_context,
+            sdl_audio_subsystem,
             sdl_video_subsystem,
             sdl_timer_subsystem,
             sdl_canvas,
@@ -249,6 +276,7 @@ impl SystemBuilder {
             sdl_texture_pitch,
             sdl_event_pump,
             texture_pixels,
+            audio,
             video: framebuffer,
             palette,
             font,
@@ -267,6 +295,7 @@ impl SystemBuilder {
 #[allow(dead_code)]
 pub struct System {
     sdl_context: Sdl,
+    sdl_audio_subsystem: AudioSubsystem,
     sdl_video_subsystem: VideoSubsystem,
     sdl_timer_subsystem: TimerSubsystem,
     sdl_canvas: WindowCanvas,
@@ -279,6 +308,8 @@ pub struct System {
     target_framerate: Option<u32>,
     target_framerate_delta: Option<i64>,
     next_tick: i64,
+
+    pub audio: sdl2::audio::AudioDevice<AudioDevice>,
 
     /// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
     /// [`System::display`] is called. Regardless of the actual window size, this bitmap is always

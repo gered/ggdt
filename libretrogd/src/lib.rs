@@ -1,6 +1,7 @@
 extern crate core;
 extern crate sdl2;
 
+pub mod audio;
 pub mod entities;
 pub mod events;
 pub mod graphics;
