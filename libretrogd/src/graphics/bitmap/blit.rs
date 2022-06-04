@@ -1,11 +1,13 @@
 use crate::graphics::*;
 use crate::math::*;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BlitMethod {
     Solid,
     Transparent(u8),
-    TransparentSingle(u8, u8)   // transparent color, single visible color
+    TransparentSingle(u8, u8),   // transparent color, single visible color
+    RotoZoom { angle: f32, scale_x: f32, scale_y: f32 },
+    RotoZoomTransparent { angle: f32, scale_x: f32, scale_y: f32, transparent_color: u8 },
 }
 
 /// Clips the region for a source bitmap to be used in a subsequent blit operation. The source
@@ -157,6 +159,71 @@ impl Bitmap {
         }
     }
 
+    pub unsafe fn rotozoom_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: Option<u8>,
+    ) {
+        // TODO: this isn't the best rotozoom algorithm i guess. it has some floating point issues
+        //       that result in missing pixels/rows still in a few places. also the double pixel
+        //       write exists to mask that issue (even worse without it).
+        //       need to re-do this with a better rotozoom algorithm!
+
+        let new_width = src_region.width as f32 * scale_x;
+        let new_height = src_region.height as f32 * scale_y;
+        if new_width as i32 <= 0 || new_height as i32 <= 0 {
+            return;
+        }
+
+        let angle_cos = angle.cos();
+        let angle_sin = angle.sin();
+
+        let src_delta_x = src_region.width as f32 / new_width;
+        let src_delta_y = src_region.height as f32 / new_height;
+
+        let mut src_x = 0.0;
+        let mut src_y = 0.0;
+
+        let dest_center_x = dest_x as f32 + (new_width / 2.0);
+        let dest_center_y = dest_y as f32 + (new_height / 2.0);
+
+        for point_y in 0..new_height as i32 {
+            let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
+
+            for point_x in 0..new_width as i32 {
+                let pixel = src_pixels[src_x as usize];
+                if transparent_color.is_none() || transparent_color != Some(pixel) {
+                    let draw_x = (
+                        (angle_cos * (point_x as f32 - (new_width / 2.0)))
+                            - (angle_sin * (point_y as f32 - (new_height / 2.0)))
+                            + dest_center_x
+                    ) as i32;
+                    let draw_y = (
+                        (angle_cos * (point_y as f32 - (new_height / 2.0)))
+                            + (angle_sin * (point_x as f32 - (new_width / 2.0)))
+                            + dest_center_y
+                    ) as i32;
+
+                    // write the same pixel twice to mask some floating point issues (?) which would
+                    // manifest as "gap" pixels on the destination. ugh!
+                    self.set_pixel(draw_x, draw_y, pixel);
+                    self.set_pixel(draw_x + 1, draw_y, pixel);
+                }
+
+                src_x += src_delta_x;
+            }
+
+            src_x = 0.0;
+            src_y += src_delta_y;
+        }
+    }
+
     pub fn blit_region(
         &mut self,
         method: BlitMethod,
@@ -165,14 +232,31 @@ impl Bitmap {
         mut dest_x: i32,
         mut dest_y: i32,
     ) {
+        // make sure the source region is clipped or even valid at all for the source bitmap given
         let mut src_region = *src_region;
-        if !clip_blit(
-            self.clip_region(),
-            &mut src_region,
-            &mut dest_x,
-            &mut dest_y,
-        ) {
+        if !src_region.clamp_to(&src.clip_region) {
             return;
+        }
+
+        // some blit methods need to handle clipping a bit differently than others
+        use BlitMethod::*;
+        match method {
+            // rotozoom blits internally clip per-pixel right now ... and regardless, the normal
+            // clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
+            RotoZoom { .. } => {},
+            RotoZoomTransparent { .. } => {},
+
+            // otherwise clip like normal!
+            _ => {
+                if !clip_blit(
+                    self.clip_region(),
+                    &mut src_region,
+                    &mut dest_x,
+                    &mut dest_y,
+                ) {
+                    return;
+                }
+            }
         }
 
         unsafe {
@@ -198,6 +282,12 @@ impl Bitmap {
             TransparentSingle(transparent_color, single_color) => {
                 self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, single_color)
             },
+            RotoZoom { angle, scale_x, scale_y } => {
+                self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None)
+            },
+            RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
+                self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color))
+            }
         }
     }
 
