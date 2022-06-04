@@ -104,7 +104,14 @@ impl Bitmap {
         }
     }
 
-    pub unsafe fn solid_blit_palette_offset(&mut self, src: &Bitmap, src_region: &Rect, dest_x: i32, dest_y: i32, offset: u8) {
+    pub unsafe fn solid_blit_palette_offset(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        offset: u8,
+    ) {
         let src_next_row_inc = (src.width - src_region.width) as usize;
         let dest_next_row_inc = (self.width - src_region.width) as usize;
         let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
@@ -251,16 +258,12 @@ impl Bitmap {
             for point_x in 0..new_width as i32 {
                 let pixel = src_pixels[src_x as usize];
                 if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = (
-                        (angle_cos * (point_x as f32 - (new_width / 2.0)))
-                            - (angle_sin * (point_y as f32 - (new_height / 2.0)))
-                            + dest_center_x
-                    ) as i32;
-                    let draw_y = (
-                        (angle_cos * (point_y as f32 - (new_height / 2.0)))
-                            + (angle_sin * (point_x as f32 - (new_width / 2.0)))
-                            + dest_center_y
-                    ) as i32;
+                    let draw_x = ((angle_cos * (point_x as f32 - (new_width / 2.0)))
+                        - (angle_sin * (point_y as f32 - (new_height / 2.0)))
+                        + dest_center_x) as i32;
+                    let draw_y = ((angle_cos * (point_y as f32 - (new_height / 2.0)))
+                        + (angle_sin * (point_x as f32 - (new_width / 2.0)))
+                        + dest_center_y) as i32;
 
                     // write the same pixel twice to mask some floating point issues (?) which would
                     // manifest as "gap" pixels on the destination. ugh!
@@ -317,16 +320,12 @@ impl Bitmap {
             for point_x in 0..new_width as i32 {
                 let pixel = src_pixels[src_x as usize];
                 if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = (
-                        (angle_cos * (point_x as f32 - (new_width / 2.0)))
-                            - (angle_sin * (point_y as f32 - (new_height / 2.0)))
-                            + dest_center_x
-                    ) as i32;
-                    let draw_y = (
-                        (angle_cos * (point_y as f32 - (new_height / 2.0)))
-                            + (angle_sin * (point_x as f32 - (new_width / 2.0)))
-                            + dest_center_y
-                    ) as i32;
+                    let draw_x = ((angle_cos * (point_x as f32 - (new_width / 2.0)))
+                        - (angle_sin * (point_y as f32 - (new_height / 2.0)))
+                        + dest_center_x) as i32;
+                    let draw_y = ((angle_cos * (point_y as f32 - (new_height / 2.0)))
+                        + (angle_sin * (point_x as f32 - (new_width / 2.0)))
+                        + dest_center_y) as i32;
 
                     let pixel = pixel.wrapping_add(offset);
 
@@ -363,8 +362,8 @@ impl Bitmap {
         match method {
             // rotozoom blits internally clip per-pixel right now ... and regardless, the normal
             // clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
-            RotoZoom { .. } => {},
-            RotoZoomTransparent { .. } => {},
+            RotoZoom { .. } => {}
+            RotoZoomTransparent { .. } => {}
 
             // otherwise clip like normal!
             _ => {
@@ -385,6 +384,7 @@ impl Bitmap {
     }
 
     #[inline]
+    #[rustfmt::skip]
     pub unsafe fn blit_region_unchecked(
         &mut self,
         method: BlitMethod,
