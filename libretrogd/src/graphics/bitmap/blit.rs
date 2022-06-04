@@ -3,15 +3,50 @@ use crate::math::*;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum BlitMethod {
+    /// Solid blit, no transparency or other per-pixel adjustments.
     Solid,
+    /// Transparent blit, the specified source color pixels are skipped.
     Transparent(u8),
-    TransparentSingle(u8, u8),   // transparent color, single visible color
+    /// Same as [BlitMethod::Transparent] except that the visible pixels on the destination are all
+    /// drawn using the same color.
+    TransparentSingle(u8, u8),
+    /// Same as [BlitMethod::Solid] except that the drawn pixels have their color indices offset
+    /// by the amount given.
     SolidOffset(u8),
+    /// Same as [BlitMethod::Transparent] except that the drawn pixels have their color indices
+    /// offset by the amount given.
     TransparentOffset(u8, u8),
-    RotoZoom { angle: f32, scale_x: f32, scale_y: f32 },
-    RotoZoomTransparent { angle: f32, scale_x: f32, scale_y: f32, transparent_color: u8 },
-    RotoZoomOffset { angle: f32, scale_x: f32, scale_y: f32, offset: u8 },
-    RotoZoomTransparentOffset { angle: f32, scale_x: f32, scale_y: f32, transparent_color: u8, offset: u8 },
+    /// Rotozoom blit, works the same as [BlitMethod::Solid] except that rotation and scaling is
+    /// performed.
+    RotoZoom {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+    },
+    /// Same as [BlitMethod::RotoZoom] except that the specified source color pixels are skipped.
+    RotoZoomTransparent {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+    },
+    /// Same as [BlitMethod::RotoZoom] except that the drawn pixels have their color indices
+    /// offset by the amount given.
+    RotoZoomOffset {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        offset: u8,
+    },
+    /// Same as [BlitMethod::RotoZoomTransparent] except that the drawn pixels have their color
+    /// indices offset by the amount given.
+    RotoZoomTransparentOffset {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+        offset: u8,
+    },
 }
 
 /// Clips the region for a source bitmap to be used in a subsequent blit operation. The source
