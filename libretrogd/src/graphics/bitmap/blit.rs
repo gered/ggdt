@@ -274,6 +274,8 @@ impl Bitmap {
         if new_width as i32 <= 0 || new_height as i32 <= 0 {
             return;
         }
+        let half_new_width = new_width * 0.5;
+        let half_new_height = new_height * 0.5;
 
         let angle_cos = angle.cos();
         let angle_sin = angle.sin();
@@ -284,8 +286,8 @@ impl Bitmap {
         let mut src_x = 0.0;
         let mut src_y = 0.0;
 
-        let dest_center_x = dest_x as f32 + (new_width / 2.0);
-        let dest_center_y = dest_y as f32 + (new_height / 2.0);
+        let dest_center_x = dest_x as f32 + half_new_width;
+        let dest_center_y = dest_y as f32 + half_new_height;
 
         for point_y in 0..new_height as i32 {
             let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
@@ -293,11 +295,11 @@ impl Bitmap {
             for point_x in 0..new_width as i32 {
                 let pixel = src_pixels[src_x as usize];
                 if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = ((angle_cos * (point_x as f32 - (new_width / 2.0)))
-                        - (angle_sin * (point_y as f32 - (new_height / 2.0)))
+                    let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
+                        - (angle_sin * (point_y as f32 - half_new_height))
                         + dest_center_x) as i32;
-                    let draw_y = ((angle_cos * (point_y as f32 - (new_height / 2.0)))
-                        + (angle_sin * (point_x as f32 - (new_width / 2.0)))
+                    let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
+                        + (angle_sin * (point_x as f32 - half_new_width))
                         + dest_center_y) as i32;
 
                     // write the same pixel twice to mask some floating point issues (?) which would
@@ -337,6 +339,9 @@ impl Bitmap {
             return;
         }
 
+        let half_new_width = new_width * 0.5;
+        let half_new_height = new_height * 0.5;
+
         let angle_cos = angle.cos();
         let angle_sin = angle.sin();
 
@@ -346,8 +351,8 @@ impl Bitmap {
         let mut src_x = 0.0;
         let mut src_y = 0.0;
 
-        let dest_center_x = dest_x as f32 + (new_width / 2.0);
-        let dest_center_y = dest_y as f32 + (new_height / 2.0);
+        let dest_center_x = dest_x as f32 + half_new_width;
+        let dest_center_y = dest_y as f32 + half_new_height;
 
         for point_y in 0..new_height as i32 {
             let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
@@ -355,11 +360,11 @@ impl Bitmap {
             for point_x in 0..new_width as i32 {
                 let pixel = src_pixels[src_x as usize];
                 if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = ((angle_cos * (point_x as f32 - (new_width / 2.0)))
-                        - (angle_sin * (point_y as f32 - (new_height / 2.0)))
+                    let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
+                        - (angle_sin * (point_y as f32 - half_new_height))
                         + dest_center_x) as i32;
-                    let draw_y = ((angle_cos * (point_y as f32 - (new_height / 2.0)))
-                        + (angle_sin * (point_x as f32 - (new_width / 2.0)))
+                    let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
+                        + (angle_sin * (point_x as f32 - half_new_width))
                         + dest_center_y) as i32;
 
                     let pixel = pixel.wrapping_add(offset);
