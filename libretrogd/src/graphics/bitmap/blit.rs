@@ -241,7 +241,7 @@ impl Bitmap {
         }
     }
 
-    pub unsafe fn solid_blit_palette_offset(
+    pub unsafe fn solid_palette_offset_blit(
         &mut self,
         src: &Bitmap,
         src_region: &Rect,
@@ -357,7 +357,7 @@ impl Bitmap {
         }
     }
 
-    pub unsafe fn transparent_blit_palette_offset(
+    pub unsafe fn transparent_palette_offset_blit(
         &mut self,
         src: &Bitmap,
         src_region: &Rect,
@@ -548,7 +548,7 @@ impl Bitmap {
         }
     }
 
-    pub unsafe fn rotozoom_blit_palette_offset(
+    pub unsafe fn rotozoom_palette_offset_blit(
         &mut self,
         src: &Bitmap,
         src_region: &Rect,
@@ -671,7 +671,7 @@ impl Bitmap {
             SolidFlipped { horizontal_flip, vertical_flip } => {
                 self.solid_flipped_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip)
             }
-            SolidOffset(offset) => self.solid_blit_palette_offset(src, src_region, dest_x, dest_y, offset),
+            SolidOffset(offset) => self.solid_palette_offset_blit(src, src_region, dest_x, dest_y, offset),
             SolidFlippedOffset { horizontal_flip, vertical_flip, offset } => {
                 self.solid_flipped_palette_offset_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, offset)
             },
@@ -682,7 +682,7 @@ impl Bitmap {
                 self.transparent_flipped_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip)
             },
             TransparentOffset { transparent_color, offset } => {
-                self.transparent_blit_palette_offset(src, src_region, dest_x, dest_y, transparent_color, offset)
+                self.transparent_palette_offset_blit(src, src_region, dest_x, dest_y, transparent_color, offset)
             },
             TransparentFlippedOffset { transparent_color, horizontal_flip, vertical_flip, offset } => {
                 self.transparent_flipped_palette_offset_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, offset)
@@ -697,13 +697,13 @@ impl Bitmap {
                 self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None)
             },
             RotoZoomOffset { angle, scale_x, scale_y, offset } => {
-                self.rotozoom_blit_palette_offset(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None, offset)
+                self.rotozoom_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None, offset)
             },
             RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
                 self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color))
             },
             RotoZoomTransparentOffset { angle, scale_x, scale_y, transparent_color, offset } => {
-                self.rotozoom_blit_palette_offset(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color), offset)
+                self.rotozoom_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color), offset)
             },
         }
     }
