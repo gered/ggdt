@@ -58,6 +58,7 @@ fn main() -> Result<()> {
     let mut system = SystemBuilder::new().window_title("Audio Playback").vsync(true).build()?;
 
     let mut is_running = true;
+    let mut volume = 1.0;
 
     let sounds = [
         load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.audio.spec())?,
@@ -77,6 +78,7 @@ fn main() -> Result<()> {
         });
 
         let mut audio_device = system.audio.lock();
+        audio_device.volume = volume;
 
         if system.keyboard.is_key_pressed(Scancode::Escape) {
             is_running = false;
@@ -111,6 +113,13 @@ fn main() -> Result<()> {
             audio_device.play_buffer_on_channel(7, &sounds[index], false)?;
         }
 
+        if system.keyboard.is_key_pressed(Scancode::KpMinus) {
+            volume -= 0.1;
+        }
+        if system.keyboard.is_key_pressed(Scancode::KpPlus) {
+            volume += 0.1;
+        }
+
         for index in 0..NUM_CHANNELS {
             let channel = &audio_device[index];
             let mut status = &mut statuses[index];
@@ -123,9 +132,11 @@ fn main() -> Result<()> {
 
         system.video.clear(0);
 
-        system.video.print_string("Audio Channels", 16, 16, FontRenderOpts::Color(14), &system.font);
+        system.video.print_string(&format!("Volume: {:2.2}", volume), 16, 16, FontRenderOpts::Color(10), &system.font);
 
-        let mut y = 32;
+        system.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.font);
+
+        let mut y = 48;
         for index in 0..NUM_CHANNELS {
             let status = &statuses[index];
             system.video.print_string(

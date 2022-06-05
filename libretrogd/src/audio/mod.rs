@@ -196,6 +196,7 @@ pub enum AudioDeviceError {
 pub struct AudioDevice {
     spec: AudioSpec,
     channels: Vec<AudioChannel>,
+    pub volume: f32,
 }
 
 impl AudioCallback for AudioDevice {
@@ -209,6 +210,7 @@ impl AudioCallback for AudioDevice {
                     sample += this_sample;
                 }
             }
+            sample = ((sample as f32) * self.volume) as i16;
             *dest = (sample.clamp(-128, 127) + 128) as u8;
         }
     }
@@ -220,7 +222,11 @@ impl AudioDevice {
         for _ in 0..NUM_CHANNELS {
             channels.push(AudioChannel::new());
         }
-        AudioDevice { spec, channels }
+        AudioDevice {
+            spec,
+            channels,
+            volume: 1.0,
+        }
     }
 
     #[inline]
