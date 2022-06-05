@@ -689,8 +689,11 @@ fn render_system_sprites(context: &mut Core) {
                                 // skip to the next entity, this one isn't visible
                                 continue;
                             },
-                            FlickerMethod::Color(color) => {
-                                blit_method = BlitMethod::TransparentSingle(0, color);
+                            FlickerMethod::Color(draw_color) => {
+                                blit_method = BlitMethod::TransparentSingle {
+                                    transparent_color: 0,
+                                    draw_color
+                                };
                             }
                         }
                     }

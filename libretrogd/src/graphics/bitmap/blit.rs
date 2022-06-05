@@ -9,13 +9,19 @@ pub enum BlitMethod {
     Transparent(u8),
     /// Same as [BlitMethod::Transparent] except that the visible pixels on the destination are all
     /// drawn using the same color.
-    TransparentSingle(u8, u8),
+    TransparentSingle {
+        transparent_color: u8,
+        draw_color: u8,
+    },
     /// Same as [BlitMethod::Solid] except that the drawn pixels have their color indices offset
     /// by the amount given.
     SolidOffset(u8),
     /// Same as [BlitMethod::Transparent] except that the drawn pixels have their color indices
     /// offset by the amount given.
-    TransparentOffset(u8, u8),
+    TransparentOffset {
+        transparent_color: u8,
+        offset: u8,
+    },
     /// Rotozoom blit, works the same as [BlitMethod::Solid] except that rotation and scaling is
     /// performed.
     RotoZoom {
@@ -230,7 +236,7 @@ impl Bitmap {
         dest_x: i32,
         dest_y: i32,
         transparent_color: u8,
-        single_color: u8,
+        draw_color: u8,
     ) {
         let src_next_row_inc = (src.width - src_region.width) as usize;
         let dest_next_row_inc = (self.width - src_region.width) as usize;
@@ -241,7 +247,7 @@ impl Bitmap {
             for _ in 0..src_region.width {
                 let pixel = *src_pixels;
                 if pixel != transparent_color {
-                    *dest_pixels = single_color;
+                    *dest_pixels = draw_color;
                 }
 
                 src_pixels = src_pixels.add(1);
@@ -440,11 +446,11 @@ impl Bitmap {
             Transparent(transparent_color) => {
                 self.transparent_blit(src, src_region, dest_x, dest_y, transparent_color)
             },
-            TransparentOffset(transparent_color, offset) => {
+            TransparentOffset { transparent_color, offset } => {
                 self.transparent_blit_palette_offset(src, src_region, dest_x, dest_y, transparent_color, offset)
             },
-            TransparentSingle(transparent_color, single_color) => {
-                self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, single_color)
+            TransparentSingle { transparent_color, draw_color } => {
+                self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, draw_color)
             },
             RotoZoom { angle, scale_x, scale_y } => {
                 self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None)
