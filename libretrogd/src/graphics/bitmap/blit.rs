@@ -5,21 +5,51 @@ use crate::math::*;
 pub enum BlitMethod {
     /// Solid blit, no transparency or other per-pixel adjustments.
     Solid,
+    /// Same as [BlitMethod::Solid] but the drawn image can also be flipped horizontally
+    /// and/or vertically.
+    SolidFlipped {
+        horizontal_flip: bool,
+        vertical_flip: bool,
+    },
     /// Transparent blit, the specified source color pixels are skipped.
     Transparent(u8),
+    /// Same as [BlitMethod::Transparent] but the drawn image can also be flipped horizontally
+    /// and/or vertically.
+    TransparentFlipped {
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+    },
     /// Same as [BlitMethod::Transparent] except that the visible pixels on the destination are all
     /// drawn using the same color.
     TransparentSingle {
         transparent_color: u8,
         draw_color: u8,
     },
+    /// Combination of [BlitMethod::TransparentFlipped] and [BlitMethod::TransparentSingle].
+    TransparentFlippedSingle {
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        draw_color: u8,
+    },
     /// Same as [BlitMethod::Solid] except that the drawn pixels have their color indices offset
     /// by the amount given.
     SolidOffset(u8),
+    /// Combination of [BlitMethod::SolidFlipped] and [BlitMethod::SolidOffset].
+    SolidFlippedOffset {
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        offset: u8,
+    },
     /// Same as [BlitMethod::Transparent] except that the drawn pixels have their color indices
     /// offset by the amount given.
-    TransparentOffset {
+    TransparentOffset { transparent_color: u8, offset: u8 },
+    /// Combination of [BlitMethod::TransparentFlipped] and [BlitMethod::TransparentOffset].
+    TransparentFlippedOffset {
         transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
         offset: u8,
     },
     /// Rotozoom blit, works the same as [BlitMethod::Solid] except that rotation and scaling is
@@ -131,6 +161,44 @@ pub fn clip_blit(
 }
 
 impl Bitmap {
+    #[inline]
+    fn get_flipped_blit_properties(
+        &self,
+        src: &Bitmap,
+        src_region: &Rect,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+    ) -> (isize, i32, i32, isize) {
+        let x_inc;
+        let src_start_x;
+        let src_start_y;
+        let src_next_row_inc;
+
+        if !horizontal_flip && !vertical_flip {
+            x_inc = 1;
+            src_start_x = src_region.x;
+            src_start_y = src_region.y;
+            src_next_row_inc = (src.width - src_region.width) as isize;
+        } else if horizontal_flip && !vertical_flip {
+            x_inc = -1;
+            src_start_x = src_region.right();
+            src_start_y = src_region.y;
+            src_next_row_inc = (src.width + src_region.width) as isize;
+        } else if !horizontal_flip && vertical_flip {
+            x_inc = 1;
+            src_start_x = src_region.x;
+            src_start_y = src_region.bottom();
+            src_next_row_inc = -((src.width + src_region.width) as isize);
+        } else {
+            x_inc = -1;
+            src_start_x = src_region.right();
+            src_start_y = src_region.bottom();
+            src_next_row_inc = -((src.width - src_region.width) as isize);
+        }
+
+        (x_inc, src_start_x, src_start_y, src_next_row_inc)
+    }
+
     pub unsafe fn solid_blit(&mut self, src: &Bitmap, src_region: &Rect, dest_x: i32, dest_y: i32) {
         let src_row_length = src_region.width as usize;
         let src_pitch = src.width as usize;
@@ -142,6 +210,34 @@ impl Bitmap {
             dest_pixels.copy_from(src_pixels, src_row_length);
             src_pixels = src_pixels.add(src_pitch);
             dest_pixels = dest_pixels.add(dest_pitch);
+        }
+    }
+
+    pub unsafe fn solid_flipped_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+    ) {
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                *dest_pixels = *src_pixels;
+                src_pixels = src_pixels.offset(x_inc);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.offset(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
         }
     }
 
@@ -166,6 +262,35 @@ impl Bitmap {
             }
 
             src_pixels = src_pixels.add(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
+        }
+    }
+
+    pub unsafe fn solid_flipped_palette_offset_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        offset: u8,
+    ) {
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                *dest_pixels = (*src_pixels).wrapping_add(offset);
+                src_pixels = src_pixels.offset(x_inc);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.offset(src_next_row_inc);
             dest_pixels = dest_pixels.add(dest_next_row_inc);
         }
     }
@@ -195,6 +320,39 @@ impl Bitmap {
             }
 
             src_pixels = src_pixels.add(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
+        }
+    }
+
+    pub unsafe fn transparent_flipped_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+    ) {
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                let pixel = *src_pixels;
+                if pixel != transparent_color {
+                    *dest_pixels = pixel;
+                }
+
+                src_pixels = src_pixels.offset(x_inc);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.offset(src_next_row_inc);
             dest_pixels = dest_pixels.add(dest_next_row_inc);
         }
     }
@@ -229,6 +387,40 @@ impl Bitmap {
         }
     }
 
+    pub unsafe fn transparent_flipped_palette_offset_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        offset: u8,
+    ) {
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                let pixel = *src_pixels;
+                if pixel != transparent_color {
+                    *dest_pixels = pixel.wrapping_add(offset);
+                }
+
+                src_pixels = src_pixels.offset(x_inc);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.offset(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
+        }
+    }
+
     pub unsafe fn transparent_single_color_blit(
         &mut self,
         src: &Bitmap,
@@ -255,6 +447,40 @@ impl Bitmap {
             }
 
             src_pixels = src_pixels.add(src_next_row_inc);
+            dest_pixels = dest_pixels.add(dest_next_row_inc);
+        }
+    }
+
+    pub unsafe fn transparent_flipped_single_color_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        draw_color: u8,
+    ) {
+        let dest_next_row_inc = (self.width - src_region.width) as usize;
+        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+        for _ in 0..src_region.height {
+            for _ in 0..src_region.width {
+                let pixel = *src_pixels;
+                if pixel != transparent_color {
+                    *dest_pixels = draw_color;
+                }
+
+                src_pixels = src_pixels.offset(x_inc);
+                dest_pixels = dest_pixels.add(1);
+            }
+
+            src_pixels = src_pixels.offset(src_next_row_inc);
             dest_pixels = dest_pixels.add(dest_next_row_inc);
         }
     }
@@ -442,15 +668,30 @@ impl Bitmap {
         use BlitMethod::*;
         match method {
             Solid => self.solid_blit(src, src_region, dest_x, dest_y),
+            SolidFlipped { horizontal_flip, vertical_flip } => {
+                self.solid_flipped_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip)
+            }
             SolidOffset(offset) => self.solid_blit_palette_offset(src, src_region, dest_x, dest_y, offset),
+            SolidFlippedOffset { horizontal_flip, vertical_flip, offset } => {
+                self.solid_flipped_palette_offset_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, offset)
+            },
             Transparent(transparent_color) => {
                 self.transparent_blit(src, src_region, dest_x, dest_y, transparent_color)
+            },
+            TransparentFlipped { transparent_color, horizontal_flip, vertical_flip } => {
+                self.transparent_flipped_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip)
             },
             TransparentOffset { transparent_color, offset } => {
                 self.transparent_blit_palette_offset(src, src_region, dest_x, dest_y, transparent_color, offset)
             },
+            TransparentFlippedOffset { transparent_color, horizontal_flip, vertical_flip, offset } => {
+                self.transparent_flipped_palette_offset_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, offset)
+            },
             TransparentSingle { transparent_color, draw_color } => {
                 self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, draw_color)
+            },
+            TransparentFlippedSingle { transparent_color, horizontal_flip, vertical_flip, draw_color } => {
+                self.transparent_flipped_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, draw_color)
             },
             RotoZoom { angle, scale_x, scale_y } => {
                 self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None)
