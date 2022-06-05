@@ -188,6 +188,9 @@ impl AudioChannel {
 pub enum AudioDeviceError {
     #[error("That buffer's AudioSpec does not match the device's AudioSpec")]
     AudioSpecMismatch,
+
+    #[error("The channel index {0} is out of range")]
+    ChannelIndexOutOfRange(usize),
 }
 
 pub struct AudioDevice {
@@ -230,6 +233,15 @@ impl AudioDevice {
         self.channels.iter().any(|channel| channel.playing)
     }
 
+    pub fn stop_channel(&mut self, channel_index: usize) -> Result<(), AudioDeviceError> {
+        if channel_index >= NUM_CHANNELS {
+            Err(AudioDeviceError::ChannelIndexOutOfRange(channel_index))
+        } else {
+            self.channels[channel_index].stop();
+            Ok(())
+        }
+    }
+
     pub fn stop_all(&mut self) {
         for channel in self.channels.iter_mut() {
             channel.stop();
@@ -253,12 +265,46 @@ impl AudioDevice {
         }
     }
 
-    pub fn play_generator(&mut self, generator: impl AudioGenerator + 'static, loops: bool) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+    pub fn play_buffer_on_channel(
+        &mut self,
+        channel_index: usize,
+        buffer: &AudioBuffer,
+        loops: bool,
+    ) -> Result<(), AudioDeviceError> {
+        if buffer.spec != self.spec {
+            Err(AudioDeviceError::AudioSpecMismatch)
+        } else if channel_index >= NUM_CHANNELS {
+            Err(AudioDeviceError::ChannelIndexOutOfRange(channel_index))
+        } else {
+            self.channels[channel_index].play_buffer(buffer, loops);
+            Ok(())
+        }
+    }
+
+    pub fn play_generator(
+        &mut self,
+        generator: impl AudioGenerator + 'static,
+        loops: bool,
+    ) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
         if let Some(channel) = self.stopped_channels_iter_mut().next() {
             channel.play_generator(generator, loops);
             Ok(Some(channel))
         } else {
             Ok(None)
+        }
+    }
+
+    pub fn play_generator_on_channel(
+        &mut self,
+        channel_index: usize,
+        generator: impl AudioGenerator + 'static,
+        loops: bool,
+    ) -> Result<(), AudioDeviceError> {
+        if channel_index >= NUM_CHANNELS {
+            Err(AudioDeviceError::ChannelIndexOutOfRange(channel_index))
+        } else {
+            self.channels[channel_index].play_generator(generator, loops);
+            Ok(())
         }
     }
 

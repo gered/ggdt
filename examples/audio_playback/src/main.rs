@@ -7,6 +7,7 @@ use sdl2::keyboard::Scancode;
 use libretrogd::audio::*;
 use libretrogd::graphics::*;
 use libretrogd::system::*;
+use libretrogd::utils::rnd_value;
 
 #[derive(Debug, Copy, Clone)]
 struct AudioChannelStatus {
@@ -58,11 +59,13 @@ fn main() -> Result<()> {
 
     let mut is_running = true;
 
-    let sound1 = load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.audio.spec())?;
-    let sound2 = load_and_convert_wav(Path::new("./assets/powerup.wav"), system.audio.spec())?;
-    let sound3 = load_and_convert_wav(Path::new("./assets/explosion.wav"), system.audio.spec())?;
-    let sound4 = load_and_convert_wav(Path::new("./assets/jump.wav"), system.audio.spec())?;
-    let sound5 = load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.audio.spec())?;
+    let sounds = [
+        load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.audio.spec())?,
+        load_and_convert_wav(Path::new("./assets/powerup.wav"), system.audio.spec())?,
+        load_and_convert_wav(Path::new("./assets/explosion.wav"), system.audio.spec())?,
+        load_and_convert_wav(Path::new("./assets/jump.wav"), system.audio.spec())?,
+        load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.audio.spec())?,
+    ];
 
     let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];
 
@@ -80,27 +83,32 @@ fn main() -> Result<()> {
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num1) {
-            audio_device.play_buffer(&sound1, false)?;
+            audio_device.play_buffer(&sounds[0], false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num2) {
-            audio_device.play_buffer(&sound2, false)?;
+            audio_device.play_buffer(&sounds[1], false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num3) {
-            audio_device.play_buffer(&sound3, false)?;
+            audio_device.play_buffer(&sounds[2], false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num4) {
-            audio_device.play_buffer(&sound4, false)?;
+            audio_device.play_buffer(&sounds[3], false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num5) {
-            audio_device.play_buffer(&sound5, false)?;
+            audio_device.play_buffer(&sounds[4], false)?;
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num6) {
             audio_device.play_generator(SineWaveGenerator::new(), false);
+        }
+
+        if system.keyboard.is_key_pressed(Scancode::Num7) {
+            let index = rnd_value(0, sounds.len() - 1);
+            audio_device.play_buffer_on_channel(7, &sounds[index], false)?;
         }
 
         for index in 0..NUM_CHANNELS {
