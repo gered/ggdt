@@ -43,7 +43,8 @@ pub enum BlitMethod {
         offset: u8,
     },
     /// Same as [BlitMethod::Transparent] except that the drawn pixels have their color indices
-    /// offset by the amount given.
+    /// offset by the amount given. The transparent color check is not affected by the offset and
+    /// is always treated as an absolute palette color index.
     TransparentOffset { transparent_color: u8, offset: u8 },
     /// Combination of [BlitMethod::TransparentFlipped] and [BlitMethod::TransparentOffset].
     TransparentFlippedOffset {
@@ -75,7 +76,8 @@ pub enum BlitMethod {
         offset: u8,
     },
     /// Same as [BlitMethod::RotoZoomTransparent] except that the drawn pixels have their color
-    /// indices offset by the amount given.
+    /// indices offset by the amount given. The transparent color check is not affected by the
+    /// offset and is always treated as an absolute palette color index.
     RotoZoomTransparentOffset {
         angle: f32,
         scale_x: f32,
