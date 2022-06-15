@@ -101,6 +101,8 @@ pub enum BlitMethod {
 ///   source to, which may be adjusted as necessary during clipping
 /// * `dest_y`: the y (top) coordinate of the location on the destination bitmap to blit the source
 ///   to, which may be adjusted as necessary during clipping
+/// * `horizontal_flip`: whether the blit is supposed to flip the source image horizontally
+/// * `vertical_flip`: whether the blit is supposed to flip the source image vertically
 ///
 /// returns: true if the results of the clip is partially or entirely visible on the destination
 /// bitmap, or false if the blit is entirely outside of the destination bitmap (and so no blit
@@ -110,6 +112,8 @@ pub fn clip_blit(
     src_blit_region: &mut Rect,
     dest_x: &mut i32,
     dest_y: &mut i32,
+    horizontal_flip: bool,
+    vertical_flip: bool,
 ) -> bool {
     // off the left edge?
     if *dest_x < dest_clip_region.x {
@@ -119,7 +123,9 @@ pub fn clip_blit(
         }
 
         let offset = dest_clip_region.x - *dest_x;
-        src_blit_region.x += offset;
+        if !horizontal_flip {
+            src_blit_region.x += offset;
+        }
         src_blit_region.width = (src_blit_region.width as i32 - offset) as u32;
         *dest_x = dest_clip_region.x;
     }
@@ -132,6 +138,9 @@ pub fn clip_blit(
         }
 
         let offset = *dest_x + src_blit_region.width as i32 - dest_clip_region.width as i32;
+        if horizontal_flip {
+            src_blit_region.x += offset;
+        }
         src_blit_region.width = (src_blit_region.width as i32 - offset) as u32;
     }
 
@@ -143,7 +152,9 @@ pub fn clip_blit(
         }
 
         let offset = dest_clip_region.y - *dest_y;
-        src_blit_region.y += offset;
+        if !vertical_flip {
+            src_blit_region.y += offset;
+        }
         src_blit_region.height = (src_blit_region.height as i32 - offset) as u32;
         *dest_y = dest_clip_region.y;
     }
@@ -156,6 +167,9 @@ pub fn clip_blit(
         }
 
         let offset = *dest_y + src_blit_region.height as i32 - dest_clip_region.height as i32;
+        if vertical_flip {
+            src_blit_region.y += offset;
+        }
         src_blit_region.height = (src_blit_region.height as i32 - offset) as u32;
     }
 
@@ -639,6 +653,24 @@ impl Bitmap {
             RotoZoom { .. } => {}
             RotoZoomTransparent { .. } => {}
 
+            // set axis flip arguments
+            SolidFlipped { horizontal_flip, vertical_flip, ..  } |
+            SolidFlippedOffset { horizontal_flip, vertical_flip, .. } |
+            TransparentFlipped { horizontal_flip, vertical_flip, .. } |
+            TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } |
+            TransparentFlippedOffset { horizontal_flip, vertical_flip, .. } => {
+                if !clip_blit(
+                    self.clip_region(),
+                    &mut src_region,
+                    &mut dest_x,
+                    &mut dest_y,
+                    horizontal_flip,
+                    vertical_flip,
+                ) {
+                    return;
+                }
+            }
+
             // otherwise clip like normal!
             _ => {
                 if !clip_blit(
@@ -646,6 +678,8 @@ impl Bitmap {
                     &mut src_region,
                     &mut dest_x,
                     &mut dest_y,
+                    false,
+                    false,
                 ) {
                     return;
                 }
@@ -738,7 +772,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 16));
         assert_eq!(10, x);
         assert_eq!(10, y);
@@ -748,7 +782,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 0;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 16));
         assert_eq!(0, x);
         assert_eq!(10, y);
@@ -756,7 +790,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = -5;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(5, 0, 11, 16));
         assert_eq!(0, x);
         assert_eq!(10, y);
@@ -764,14 +798,14 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = -16;
         y = 10;
-        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
 
         // right edge
 
         src = Rect::new(0, 0, 16, 16);
         x = 304;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 16));
         assert_eq!(304, x);
         assert_eq!(10, y);
@@ -779,7 +813,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 310;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 10, 16));
         assert_eq!(310, x);
         assert_eq!(10, y);
@@ -787,14 +821,14 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 320;
         y = 10;
-        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
 
         // top edge
 
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = 0;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 16));
         assert_eq!(10, x);
         assert_eq!(0, y);
@@ -802,7 +836,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = -5;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 5, 16, 11));
         assert_eq!(10, x);
         assert_eq!(0, y);
@@ -810,14 +844,14 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = -16;
-        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
 
         // bottom edge
 
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = 224;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 16));
         assert_eq!(10, x);
         assert_eq!(224, y);
@@ -825,7 +859,7 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = 229;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 16, 11));
         assert_eq!(10, x);
         assert_eq!(229, y);
@@ -833,12 +867,12 @@ pub mod tests {
         src = Rect::new(0, 0, 16, 16);
         x = 10;
         y = 240;
-        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(!clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
 
         src = Rect::new(16, 16, 16, 16);
         x = -1;
         y = 112;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(17, 16, 15, 16));
         assert_eq!(0, x);
         assert_eq!(112, y);
@@ -855,7 +889,7 @@ pub mod tests {
         src = Rect::new(0, 0, 128, 128);
         x = 0;
         y = 0;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 0, 64, 64));
         assert_eq!(0, x);
         assert_eq!(0, y);
@@ -863,7 +897,7 @@ pub mod tests {
         src = Rect::new(0, 0, 128, 128);
         x = -16;
         y = -24;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(16, 24, 64, 64));
         assert_eq!(0, x);
         assert_eq!(0, y);
@@ -871,7 +905,7 @@ pub mod tests {
         src = Rect::new(0, 0, 32, 128);
         x = 10;
         y = -20;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(0, 20, 32, 64));
         assert_eq!(10, x);
         assert_eq!(0, y);
@@ -879,7 +913,7 @@ pub mod tests {
         src = Rect::new(0, 0, 128, 32);
         x = -20;
         y = 10;
-        assert!(clip_blit(&dest, &mut src, &mut x, &mut y));
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, false));
         assert_eq!(src, Rect::new(20, 0, 64, 32));
         assert_eq!(0, x);
         assert_eq!(10, y);
