@@ -879,6 +879,127 @@ pub mod tests {
     }
 
     #[test]
+    pub fn clip_blit_regions_flipped() {
+        let dest = Rect::new(0, 0, 320, 240);
+
+        let mut src: Rect;
+        let mut x: i32;
+        let mut y: i32;
+
+        // left edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = -6;
+        y = 10;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, false));
+        assert_eq!(src, Rect::new(0, 0, 10, 16));
+        assert_eq!(0, x);
+        assert_eq!(10, y);
+
+        src = Rect::new(0, 0, 16, 16);
+        x = -6;
+        y = 10;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(0, 0, 10, 16));
+        assert_eq!(0, x);
+        assert_eq!(10, y);
+
+        // right edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 312;
+        y = 10;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, false));
+        assert_eq!(src, Rect::new(8, 0, 8, 16));
+        assert_eq!(312, x);
+        assert_eq!(10, y);
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 312;
+        y = 10;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(8, 0, 8, 16));
+        assert_eq!(312, x);
+        assert_eq!(10, y);
+
+        // top edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 10;
+        y = -2;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, true));
+        assert_eq!(src, Rect::new(0, 0, 16, 14));
+        assert_eq!(10, x);
+        assert_eq!(0, y);
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 10;
+        y = -2;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(0, 0, 16, 14));
+        assert_eq!(10, x);
+        assert_eq!(0, y);
+
+        // bottom edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 10;
+        y = 235;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, false, true));
+        assert_eq!(src, Rect::new(0, 11, 16, 5));
+        assert_eq!(10, x);
+        assert_eq!(235, y);
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 10;
+        y = 235;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(0, 11, 16, 5));
+        assert_eq!(10, x);
+        assert_eq!(235, y);
+
+        // top-left edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = -2;
+        y = -6;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(0, 0, 14, 10));
+        assert_eq!(0, x);
+        assert_eq!(0, y);
+
+        // top-right edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 311;
+        y = -12;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(7, 0, 9, 4));
+        assert_eq!(311, x);
+        assert_eq!(0, y);
+
+        // bottom-left edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = -1;
+        y = 232;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(0, 8, 15, 8));
+        assert_eq!(0, x);
+        assert_eq!(232, y);
+
+        // bottom-right edge
+
+        src = Rect::new(0, 0, 16, 16);
+        x = 314;
+        y = 238;
+        assert!(clip_blit(&dest, &mut src, &mut x, &mut y, true, true));
+        assert_eq!(src, Rect::new(10, 14, 6, 2));
+        assert_eq!(314, x);
+        assert_eq!(238, y);
+    }
+
+    #[test]
     pub fn clip_blit_regions_large_source() {
         let dest = Rect::new(0, 0, 64, 64);
 
