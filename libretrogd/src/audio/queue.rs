@@ -91,7 +91,7 @@ impl AudioQueue {
             Err(AudioDeviceError::AudioSpecMismatch)
         } else {
             self.commands.push_back(AudioCommand::PlayRcBuffer {
-                buffer: buffer.clone(),
+                buffer,
                 loops,
             });
             Ok(())
@@ -131,7 +131,7 @@ impl AudioQueue {
         } else {
             self.commands.push_back(AudioCommand::PlayRcBufferOnChannel {
                 channel: channel_index,
-                buffer: buffer.clone(),
+                buffer,
                 loops,
             });
             Ok(())
