@@ -58,6 +58,7 @@ fn main() -> Result<()> {
     let mut system = SystemBuilder::new().window_title("Audio Playback").vsync(true).build()?;
 
     let mut is_running = true;
+    let mut using_queue_commands = false;
     let mut volume = 1.0;
 
     let sounds = [
@@ -77,47 +78,90 @@ fn main() -> Result<()> {
             }
         });
 
-        let mut audio_device = system.audio.lock();
-        audio_device.volume = volume;
-
         if system.keyboard.is_key_pressed(Scancode::Escape) {
             is_running = false;
         }
 
+        let mut audio_device = system.audio.lock();
+        audio_device.volume = volume;
+
         if system.keyboard.is_key_pressed(Scancode::Num1) {
-            audio_device.play_buffer(&sounds[0], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer(&sounds[0], false);
+            } else {
+                audio_device.play_buffer(&sounds[0], false)?;
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num2) {
-            audio_device.play_buffer(&sounds[1], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer(&sounds[1], false);
+            } else {
+                audio_device.play_buffer(&sounds[1], false)?;
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num3) {
-            audio_device.play_buffer(&sounds[2], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer(&sounds[2], false);
+
+            } else {
+                audio_device.play_buffer(&sounds[2], false)?;
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num4) {
-            audio_device.play_buffer(&sounds[3], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer(&sounds[3], false);
+
+            } else {
+                audio_device.play_buffer(&sounds[3], false)?;
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num5) {
-            audio_device.play_buffer(&sounds[4], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer(&sounds[4], false);
+            } else {
+                audio_device.play_buffer(&sounds[4], false)?;
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num6) {
-            audio_device.play_generator(SineWaveGenerator::new(), false);
+            if using_queue_commands {
+                system.audio_queue.play_generator(Box::new(SineWaveGenerator::new()), false);
+            } else {
+                audio_device.play_generator(Box::new(SineWaveGenerator::new()), false);
+            }
         }
 
         if system.keyboard.is_key_pressed(Scancode::Num7) {
             let index = rnd_value(0, sounds.len() - 1);
-            audio_device.play_buffer_on_channel(7, &sounds[index], false)?;
+            if using_queue_commands {
+                system.audio_queue.play_buffer_on_channel(7, &sounds[index], false)?;
+            } else {
+                audio_device.play_buffer_on_channel(7, &sounds[index], false)?;
+            }
         }
+
+        if system.keyboard.is_key_pressed(Scancode::S) {
+            if using_queue_commands {
+                system.audio_queue.stop_all();
+            } else {
+                audio_device.stop_all();
+            }
+        }
+
+        system.audio_queue.apply(&mut audio_device)?;
 
         if system.keyboard.is_key_pressed(Scancode::KpMinus) {
             volume -= 0.1;
         }
         if system.keyboard.is_key_pressed(Scancode::KpPlus) {
             volume += 0.1;
+        }
+        if system.keyboard.is_key_pressed(Scancode::Q) {
+            using_queue_commands = !using_queue_commands;
         }
 
         for index in 0..NUM_CHANNELS {
@@ -133,6 +177,14 @@ fn main() -> Result<()> {
         system.video.clear(0);
 
         system.video.print_string(&format!("Volume: {:2.2}", volume), 16, 16, FontRenderOpts::Color(10), &system.font);
+        system.video.print_string(
+            if using_queue_commands {
+                "Queueing Commands"
+            } else {
+                "Direct Commands"
+            },
+            160, 16, FontRenderOpts::Color(9), &system.font
+        );
 
         system.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.font);
 

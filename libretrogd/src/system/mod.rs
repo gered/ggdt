@@ -252,6 +252,7 @@ impl SystemBuilder {
         };
         let mut audio = Audio::new(audio_spec, &sdl_audio_subsystem)?;
         audio.resume();
+        let mut audio_queue = AudioQueue::from(&audio);
 
         // create input device objects, exposed to the application
 
@@ -269,6 +270,7 @@ impl SystemBuilder {
             sdl_event_pump,
             texture_pixels,
             audio,
+            audio_queue,
             video: framebuffer,
             palette,
             font,
@@ -302,6 +304,7 @@ pub struct System {
     next_tick: i64,
 
     pub audio: Audio,
+    pub audio_queue: AudioQueue,
 
     /// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
     /// [`System::display`] is called. Regardless of the actual window size, this bitmap is always

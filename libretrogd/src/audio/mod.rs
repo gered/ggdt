@@ -4,9 +4,11 @@ use thiserror::Error;
 
 pub use self::buffer::*;
 pub use self::device::*;
+pub use self::queue::*;
 
 pub mod buffer;
 pub mod device;
+pub mod queue;
 
 pub const NUM_CHANNELS: usize = 8;
 

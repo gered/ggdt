@@ -98,9 +98,9 @@ impl AudioChannel {
     }
 
     #[inline]
-    pub fn play_generator(&mut self, generator: impl AudioGenerator + 'static, loops: bool) {
+    pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) {
         self.data.clear();
-        self.generator = Some(Box::new(generator));
+        self.generator = Some(generator);
         self.position = 0;
         self.playing = true;
         self.loops = loops;
@@ -233,7 +233,7 @@ impl AudioDevice {
 
     pub fn play_generator(
         &mut self,
-        generator: impl AudioGenerator + 'static,
+        generator: Box<dyn AudioGenerator>,
         loops: bool,
     ) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
         if let Some(channel) = self.stopped_channels_iter_mut().next() {
@@ -247,7 +247,7 @@ impl AudioDevice {
     pub fn play_generator_on_channel(
         &mut self,
         channel_index: usize,
-        generator: impl AudioGenerator + 'static,
+        generator: Box<dyn AudioGenerator>,
         loops: bool,
     ) -> Result<(), AudioDeviceError> {
         if channel_index >= NUM_CHANNELS {
