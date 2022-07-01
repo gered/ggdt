@@ -7,7 +7,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
-use crate::audio::{AudioBuffer, AudioSpec};
+use crate::audio::*;
 use crate::utils::io::StreamSize;
 
 #[derive(Error, Debug)]
