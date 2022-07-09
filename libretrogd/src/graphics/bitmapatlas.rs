@@ -92,11 +92,12 @@ impl BitmapAtlas {
 
         Ok(self.tiles.len() - 1)
     }
-
+    
     pub fn clear(&mut self) {
         self.tiles.clear()
     }
 
+    #[inline]
     pub fn len(&self) -> usize {
         self.tiles.len()
     }
@@ -106,6 +107,7 @@ impl BitmapAtlas {
         self.tiles.get(index)
     }
 
+    #[inline]
     pub fn bitmap(&self) -> &Bitmap {
         &self.bitmap
     }
@@ -114,6 +116,7 @@ impl BitmapAtlas {
 impl Index<usize> for BitmapAtlas {
     type Output = Rect;
 
+    #[inline]
     fn index(&self, index: usize) -> &Self::Output {
         self.get(index).unwrap()
     }
