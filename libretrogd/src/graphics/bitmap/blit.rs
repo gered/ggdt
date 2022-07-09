@@ -751,9 +751,23 @@ impl Bitmap {
     }
 
     #[inline]
+    pub fn blit_atlas(&mut self, method: BlitMethod, src: &BitmapAtlas, index: usize, x: i32, y: i32) {
+        if let Some(src_region) = src.get(index) {
+            self.blit_region(method, src.bitmap(), src_region, x, y);
+        }
+    }
+
+    #[inline]
     pub unsafe fn blit_unchecked(&mut self, method: BlitMethod, src: &Bitmap, x: i32, y: i32) {
         let src_region = Rect::new(0, 0, src.width, src.height);
         self.blit_region_unchecked(method, src, &src_region, x, y);
+    }
+
+    #[inline]
+    pub unsafe fn blit_atlas_unchecked(&mut self, method: BlitMethod, src: &BitmapAtlas, index: usize, x: i32, y: i32) {
+        if let Some(src_region) = src.get(index) {
+            self.blit_region_unchecked(method, src.bitmap(), &src_region, x, y);
+        }
     }
 }
 

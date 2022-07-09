@@ -707,10 +707,10 @@ fn render_system_sprites(context: &mut Core) {
             // now render them in the correct order ...
             for (entity, position, blit_method) in context.sprite_render_list.iter() {
                 let sprite = sprites.get(entity).unwrap();
-                context.system.video.blit_region(
+                context.system.video.blit_atlas(
                     *blit_method,
-                    sprite.atlas.bitmap(),
-                    &sprite.atlas[sprite.index],
+                    &sprite.atlas,
+                    sprite.index,
                     position.x as i32 - camera.x,
                     position.y as i32 - camera.y,
                 );
