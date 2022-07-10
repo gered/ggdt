@@ -48,10 +48,12 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
         }
     }
 
+    #[inline]
     pub fn len(&self) -> usize {
         self.listeners.len()
     }
 
+    #[inline]
     pub fn clear(&mut self) {
         self.listeners.clear();
     }
