@@ -41,7 +41,7 @@ pub struct AudioQueue {
 }
 
 impl AudioQueue {
-    pub fn from(audio: &Audio) -> Self {
+    pub fn new(audio: &Audio) -> Self {
         AudioQueue {
             spec: audio.spec,
             commands: VecDeque::new(),

@@ -252,7 +252,7 @@ impl SystemBuilder {
         };
         let mut audio = Audio::new(audio_spec, &sdl_audio_subsystem)?;
         audio.resume();
-        let audio_queue = AudioQueue::from(&audio);
+        let audio_queue = AudioQueue::new(&audio);
 
         // create input device objects, exposed to the application
 
