@@ -192,6 +192,8 @@ impl DataChunk {
 }
 
 impl AudioBuffer {
+    /// Loads the bytes of a WAV file into an [`AudioBuffer`]. The returned buffer will be in its
+    /// original format and may need to be converted before it can be played.
     pub fn load_wav_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<AudioBuffer, WavError> {
         let file_size = reader.stream_size()?;
 
@@ -285,6 +287,8 @@ impl AudioBuffer {
         Ok(audio_buffer)
     }
 
+    /// Loads a WAV file into an [`AudioBuffer`]. The returned buffer will be in its original
+    /// format and may need to be converted before it can be played.
     pub fn load_wav_file(path: &Path) -> Result<AudioBuffer, WavError> {
         let f = File::open(path)?;
         let mut reader = BufReader::new(f);

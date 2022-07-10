@@ -10,6 +10,7 @@ pub enum AudioBufferError {
     ConversionError(String),
 }
 
+/// Holds audio sample data that can be played via [`AudioDevice`].
 #[derive(Debug, Clone)]
 pub struct AudioBuffer {
     spec: AudioSpec,
@@ -17,6 +18,8 @@ pub struct AudioBuffer {
 }
 
 impl AudioBuffer {
+    /// Creates and returns a new, empty, [`AudioBuffer`] that will hold audio sample data in the
+    /// spec/format given.
     pub fn new(spec: AudioSpec) -> Self {
         AudioBuffer {
             spec,
@@ -24,11 +27,14 @@ impl AudioBuffer {
         }
     }
 
+    /// Returns the spec of the audio sample data that this buffer contains.
     #[inline]
     pub fn spec(&self) -> &AudioSpec {
         &self.spec
     }
 
+    /// Converts the audio sample data in this buffer to the spec given, returning the newly
+    /// converted buffer.
     pub fn convert(self, to_spec: &AudioSpec) -> Result<Self, AudioBufferError> {
         if self.spec == *to_spec {
             Ok(self)

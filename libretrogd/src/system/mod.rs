@@ -303,7 +303,13 @@ pub struct System {
     target_framerate_delta: Option<i64>,
     next_tick: i64,
 
+    /// An [`Audio`] instance that allows interacting with the system's audio output device.
     pub audio: Audio,
+
+    /// An [`AudioQueue`] instance that can queue up playback/stop commands to be issued to the
+    /// system's [`Audio`] instance a bit more flexibly. If you use this, your application must
+    /// manually call [`AudioQueue::apply`] or [`AudioQueue::apply_to_device`] in your loop to
+    /// flush the queued commands, otherwise this queue will not do anything.
     pub audio_queue: AudioQueue,
 
     /// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
