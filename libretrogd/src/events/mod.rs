@@ -28,7 +28,7 @@ impl<EventType> EventPublisher<EventType> {
         self.queue.push_back(event);
     }
 
-    pub fn take_queue(&mut self, destination: &mut VecDeque<EventType>) {
+    fn take_queue(&mut self, destination: &mut VecDeque<EventType>) {
         destination.clear();
         destination.append(&mut self.queue);
         self.clear();
