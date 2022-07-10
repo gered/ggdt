@@ -185,10 +185,10 @@ impl AudioQueue {
                         device.play_buffer_on_channel(channel, &buffer, loops)?;
                     },
                     PlayGenerator { generator, loops } => {
-                        device.play_generator(generator, loops);
+                        device.play_generator(generator, loops)?;
                     },
                     PlayGeneratorOnChannel { channel, generator, loops } => {
-                        device.play_generator_on_channel(channel, generator, loops);
+                        device.play_generator_on_channel(channel, generator, loops)?;
                     },
                 }
             } else {
