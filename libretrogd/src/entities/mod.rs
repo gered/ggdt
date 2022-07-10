@@ -17,8 +17,14 @@ pub type RefComponents<'a, T> = Ref<'a, HashMap<EntityId, T>>;
 pub type RefMutComponents<'a, T> = RefMut<'a, HashMap<EntityId, T>>;
 
 pub trait GenericComponentStore: AsAny {
+    /// Returns true if this component store currently has a component for the specified entity.
     fn has(&self, entity: EntityId) -> bool;
+
+    /// If this component store has a component for the specified entity, removes it and returns
+    /// true. Otherwise, returns false.
     fn remove(&mut self, entity: EntityId) -> bool;
+
+    /// Removes all components from this store.
     fn clear(&mut self);
 }
 
@@ -55,6 +61,7 @@ pub fn as_component_store_mut<T: Component>(
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// Entity manager. Stores entity components and manages entity IDs.
 pub struct Entities {
     entities: HashSet<EntityId>,
     component_stores: HashMap<TypeId, Box<dyn GenericComponentStore>>,
@@ -62,6 +69,7 @@ pub struct Entities {
 }
 
 impl Entities {
+    /// Creates and returns a new instance of an entity manager.
     pub fn new() -> Self {
         Entities {
             entities: HashSet::new(),
@@ -99,11 +107,13 @@ impl Entities {
         }
     }
 
+    /// Returns true if the entity manager currently is aware of an entity with the given ID.
     #[inline]
     pub fn has_entity(&self, entity: EntityId) -> bool {
         self.entities.contains(&entity)
     }
 
+    /// Returns a previously unused entity ID. Use this to "create" a new entity.
     pub fn new_entity(&mut self) -> EntityId {
         let new_entity_id = self.next_id;
         self.next_id = self.next_id.wrapping_add(1);
@@ -111,6 +121,9 @@ impl Entities {
         new_entity_id
     }
 
+    /// Removes an entity, making the entity ID unusable with this entity manager as well as
+    /// removing all of the entity's components. Returns true if the entity was removed, false if
+    /// the entity ID given did not exist.
     pub fn remove_entity(&mut self, entity: EntityId) -> bool {
         if !self.has_entity(entity) {
             return false;
@@ -123,6 +136,7 @@ impl Entities {
         true
     }
 
+    /// Removes all entities from the entity manager, as well as all of their components.
     pub fn remove_all_entities(&mut self) {
         self.entities.clear();
         for (_, component_store) in self.component_stores.iter_mut() {
@@ -130,6 +144,7 @@ impl Entities {
         }
     }
 
+    /// Returns true if the given entity currently has a component of the specified type.
     pub fn has_component<T: Component>(&self, entity: EntityId) -> bool {
         if !self.has_entity(entity) {
             false
@@ -143,6 +158,9 @@ impl Entities {
         }
     }
 
+    /// Adds the given component to the entity manager, associating it with the given entity ID.
+    /// If this entity already had a component of the same type, that existing component is replaced
+    /// with this one. Returns true if the component was set to the entity.
     pub fn add_component<T: Component>(&mut self, entity: EntityId, component: T) -> bool {
         if !self.has_entity(entity) {
             false
@@ -158,6 +176,8 @@ impl Entities {
         }
     }
 
+    /// Removes any component of the given type from the specified entity. If the entity had a
+    /// component of that type and it was removed, returns true.
     pub fn remove_component<T: Component>(&mut self, entity: EntityId) -> bool {
         if !self.has_entity(entity) {
             false
@@ -171,6 +191,9 @@ impl Entities {
         }
     }
 
+    /// Returns a reference to the component store for the given component type. This allows you
+    /// to get components of the specified type for any number of entities. If there is currently
+    /// no component store for this type of component, `None` is returned.
     #[inline]
     pub fn components<T: Component>(&self) -> Option<RefComponents<T>> {
         if let Some(component_store) = self.get_component_store() {
@@ -180,6 +203,13 @@ impl Entities {
         }
     }
 
+    /// Returns a reference to the mutable component store for the given component type. This allows
+    /// you to get and modify components of the specified type for any number of entities. IF there
+    /// is currently no component store for this type of component, `None` is returned.
+    ///
+    /// Note that while technically you can add/remove components using the returned store, you
+    /// should instead prefer to use [`Entities::add_component`] and [`Entities::remove_component`]
+    /// instead.
     #[inline]
     pub fn components_mut<T: Component>(&self) -> Option<RefMutComponents<T>> {
         if let Some(component_store) = self.get_component_store() {
@@ -189,6 +219,14 @@ impl Entities {
         }
     }
 
+    /// Initializes a component store for the given component type if one does not exist already.
+    ///
+    /// This is technically never needed to be called explicitly (because
+    /// [`Entities::add_component`] will initialize a missing component store automatically if
+    /// needed), but is provided as a convenience so that you could, for example, always
+    /// pre-initialize all of your component stores so that subsequent calls to
+    /// [`Entities::components`] and [`Entities::components_mut`] are guaranteed to never return
+    /// `None`.
     pub fn init_components<T: Component>(&mut self) {
         if self.get_component_store::<T>().is_none() {
             self.add_component_store::<T>();
@@ -200,15 +238,36 @@ impl Entities {
 
 // TODO: is there some fancy way to get rid of the impl duplication here ... ?
 
+/// Convenience methods that slightly help the ergonomics of using component stores returned from
+/// [`Entities::components`].
 pub trait ComponentStoreConvenience<T: Component> {
+    /// Returns the "first" component from the component store along with the entity ID the
+    /// component is for. This method should only ever be used with components that you know will
+    /// only ever be attached to one entity (and therefore, the component store for this type of
+    /// component only has a single entry in it). Otherwise, which component it returns is
+    /// undefined.
     fn single(&self) -> Option<(&EntityId, &T)>;
+
+    /// Returns the component for the given entity, if one exists, otherwise returns `None`.
     fn get(&self, k: &EntityId) -> Option<&T>;
+
+    /// Returns true if there is a component for the given entity in this store.
     fn contains_key(&self, k: &EntityId) -> bool;
 }
 
 pub trait ComponentStoreConvenienceMut<T: Component> {
+    /// Returns the "first" component from the component store along with the entity ID the
+    /// component is for as a mutable reference. This method should only ever be used with
+    /// components that you know will only ever be attached to one entity (and therefore, the
+    /// component store for this type of component only has a single entry in it). Otherwise, which
+    /// component it returns is undefined.
     fn single_mut(&mut self) -> Option<(&EntityId, &mut T)>;
+
+    /// Returns the component for the given entity as a mutable reference if one exists, otherwise
+    /// returns `None`.
     fn get_mut(&mut self, k: &EntityId) -> Option<&mut T>;
+
+    /// Returns true if there is a component for the given entity in this store.
     fn contains_key(&mut self, k: &EntityId) -> bool;
 }
 
@@ -293,8 +352,14 @@ impl<'a, T: Component> ComponentStoreConvenienceMut<T> for Option<RefMutComponen
     }
 }
 
+/// Convenience methods that slightly help the ergonomics of using component stores returned from
+/// [`Entities::components`].
 pub trait OptionComponentStore<T: Component> {
+    /// Returns the total number of components in this component store. This is the same as the
+    /// number of entities that have a component of this type.
     fn len(&self) -> usize;
+
+    /// Returns true if this store is empty.
     fn is_empty(&self) -> bool;
 }
 
@@ -336,9 +401,22 @@ impl<'a, T: Component> OptionComponentStore<T> for Option<RefMutComponents<'a, T
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+/// An "update component system" function that is used to update entity component state for a
+/// certain type/set of components. The generic type used is some application-specific context
+/// type that should be passed to all of your "update component system" functions.
 pub type UpdateFn<T> = fn(&mut T);
+
+/// A "render component system" function that is used to execute render logic for entities based
+/// on a certain type/set of components. The generic type used is some application-specific context
+/// type that should be passed to all of your "render component system" functions.
 pub type RenderFn<T> = fn(&mut T);
 
+/// This is a totally optional minor convenience to help you to manage your "component systems"
+/// and ensure they are always called in the same order.
+///
+/// The generic types `U` and `R` refer to application-specific context types that are needed by
+/// all of your "update" and "render" component system functions. Both of these types may be the
+/// same type or different depending on your needs.
 pub struct ComponentSystems<U, R> {
     update_systems: Vec<UpdateFn<U>>,
     render_systems: Vec<RenderFn<R>>,
@@ -352,25 +430,34 @@ impl<U, R> ComponentSystems<U, R> {
         }
     }
 
+    /// Adds an update component system function to the list of functions that will be called in
+    /// order whenever [`ComponentSystems::update`] is called.
     pub fn add_update_system(&mut self, f: UpdateFn<U>) {
         self.update_systems.push(f);
     }
 
+    /// Adds a render component system function to the list of functions that will be called in
+    /// order whenever [`ComponentSystems::render`] is called.
     pub fn add_render_system(&mut self, f: RenderFn<R>) {
         self.render_systems.push(f);
     }
 
+    /// Removes all existing update and render component system functions.
     pub fn reset(&mut self) {
         self.update_systems.clear();
         self.render_systems.clear();
     }
 
+    /// Calls each of the update component system functions in the same order that they were added,
+    /// passing each of them the context argument provided.
     pub fn update(&mut self, context: &mut U) {
         for f in self.update_systems.iter_mut() {
             f(context);
         }
     }
 
+    /// Calls each of the render component system functions in the same order that they were added,
+    /// passing each of them the context argument provided.
     pub fn render(&mut self, context: &mut R) {
         for f in self.render_systems.iter_mut() {
             f(context);

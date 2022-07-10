@@ -1,7 +1,12 @@
 use std::collections::VecDeque;
 
+/// An event listener/handler function that returns true if it handled the event and no other
+/// listeners/handlers should be called next with the same event, or false if the event was not
+/// handled and any subsequent listeners/handlers should be called.
 pub type ListenerFn<EventType, ContextType> = fn(event: &EventType, &mut ContextType) -> bool;
 
+/// An event publisher that code can use to queue up events to be handled by an [`EventListeners`]
+/// instance. The `EventType` here should usually be an application-specific "events" enum.
 pub struct EventPublisher<EventType> {
     queue: VecDeque<EventType>,
 }
@@ -13,16 +18,19 @@ impl<EventType> EventPublisher<EventType> {
         }
     }
 
+    /// Returns the number of events that have been queued.
     #[inline]
     pub fn len(&self) -> usize {
         self.queue.len()
     }
 
+    /// Clears the current event queue. The events will not be processed/handled.
     #[inline]
     pub fn clear(&mut self) {
         self.queue.clear();
     }
 
+    /// Pushes the given event to the back of the queue.
     #[inline]
     pub fn queue(&mut self, event: EventType) {
         self.queue.push_back(event);
@@ -35,6 +43,14 @@ impl<EventType> EventPublisher<EventType> {
     }
 }
 
+/// A manager for application event listeners/handlers that can dispatch events queued up by a
+/// [`EventPublisher`] to each of the event listeners/handlers registered with this manager.
+///
+/// The `EventType` specified here should usually be an application-specific "events" enum and
+/// should be the same as the type used in your application's [`EventPublisher`].
+///
+/// The `ContextType` specified here should be some application-specific context type that you
+/// want available in all of your event listener/handler functions.
 pub struct EventListeners<EventType, ContextType> {
     listeners: Vec<ListenerFn<EventType, ContextType>>,
     dispatch_queue: VecDeque<EventType>,
@@ -48,16 +64,20 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
         }
     }
 
+    /// Returns the number of event listeners/handlers registered with this manager.
     #[inline]
     pub fn len(&self) -> usize {
         self.listeners.len()
     }
 
+    /// Unregisters all event listeners/managers previously registered with this manager.
     #[inline]
     pub fn clear(&mut self) {
         self.listeners.clear();
     }
 
+    /// Adds/Registers the given event listener/handler function with this manager so that
+    /// it will be called during dispatching of events. Returns true if the function was added.
     pub fn add(&mut self, listener: ListenerFn<EventType, ContextType>) -> bool {
         // HACK?: most advice i've seen right now for comparing function pointers suggests doing
         //        this, but i've also come across comments suggesting there are times where this
@@ -70,6 +90,7 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
         }
     }
 
+    /// Removes/Unregisters the specified event listener/handler function from this manager.
     pub fn remove(&mut self, listener: ListenerFn<EventType, ContextType>) -> bool {
         let before_size = self.listeners.len();
         // HACK?: comparing function pointers -- see above "HACK?" comment. same concern here.
@@ -78,11 +99,19 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
         return before_size != self.listeners.len()
     }
 
+    /// Moves the queue from the given [`EventPublisher`] to this manager in preparation for
+    /// dispatching the queued events via [`EventListeners::dispatch_queue`]. After calling this,
+    /// the [`EventPublisher`]'s queue will be empty.
     pub fn take_queue_from(&mut self, publisher: &mut EventPublisher<EventType>) -> usize {
         publisher.take_queue(&mut self.dispatch_queue);
         self.dispatch_queue.len()
     }
 
+    /// Dispatches the previous obtained event queue (via a call to
+    /// [`EventListeners::take_queue_from`]) to all of the registered event listeners/handlers,
+    /// passing each of them the given context argument. Not all of the event listeners/handlers
+    /// will necessarily be called for each event being dispatched depending on which ones handled
+    /// which events.
     pub fn dispatch_queue(&mut self, context: &mut ContextType) {
         while let Some(event) = self.dispatch_queue.pop_front() {
             for listener in &self.listeners {
