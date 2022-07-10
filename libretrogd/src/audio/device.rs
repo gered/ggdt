@@ -112,11 +112,14 @@ impl AudioChannel {
     }
 
     #[inline]
-    pub fn play(&mut self, loops: bool) {
+    pub fn play(&mut self, loops: bool) -> bool {
         if self.is_playable() {
             self.position = 0;
             self.playing = true;
             self.loops = loops;
+            true
+        } else {
+            false
         }
     }
 
