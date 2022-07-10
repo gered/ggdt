@@ -40,6 +40,7 @@ pub trait Font {
     fn character(&self, ch: char) -> &Self::CharacterType;
     fn space_width(&self) -> u8;
     fn line_height(&self) -> u8;
+    fn measure(&self, text: &str, opts: FontRenderOpts) -> (u32, u32);
 }
 
 #[derive(Debug)]
@@ -182,6 +183,37 @@ impl Font for BitmaskFont {
     fn line_height(&self) -> u8 {
         self.line_height
     }
+
+    fn measure(&self, text: &str, _opts: FontRenderOpts) -> (u32, u32) {
+        if text.is_empty() {
+            return (0, 0);
+        }
+        let mut height = 0;
+        let mut width = 0;
+        let mut x = 0;
+        // trimming whitespace off the end because it won't be rendered (since it's whitespace)
+        // and thus, won't contribute to visible rendered output (what we're measuring)
+        for ch in text.trim_end().chars() {
+            match ch {
+                '\n' => {
+                    if x == 0 {
+                        height += self.line_height as u32;
+                    }
+                    width = std::cmp::max(width, x);
+                    x = 0;
+                },
+                '\r' => (),
+                ch => {
+                    if x == 0 {
+                        height += self.line_height as u32;
+                    }
+                    x += self.character(ch).bounds().width;
+                }
+            }
+        }
+        width = std::cmp::max(width, x);
+        (width, height)
+    }
 }
 
 #[cfg(test)]
@@ -196,6 +228,39 @@ pub mod tests {
         for character in font.characters.iter() {
             assert_eq!(CHAR_FIXED_WIDTH as u8, character.bounds.width as u8);
             assert_eq!(CHAR_HEIGHT, character.bytes.len());
+        }
+
+        Ok(())
+    }
+
+    #[test]
+    pub fn measure_text() -> Result<(), FontError> {
+        {
+            let font = BitmaskFont::load_from_file(Path::new("./assets/vga.fnt"))?;
+
+            assert_eq!((40, 8), font.measure("Hello", FontRenderOpts::None));
+            assert_eq!((40, 16), font.measure("Hello\nthere", FontRenderOpts::None));
+            assert_eq!((88, 24), font.measure("longer line\nshort\nthe end", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure("", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure(" ", FontRenderOpts::None));
+            assert_eq!((40, 16), font.measure("\nhello", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure("\n", FontRenderOpts::None));
+            assert_eq!((40, 8), font.measure("hello\n", FontRenderOpts::None));
+            assert_eq!((40, 24), font.measure("hello\n\nthere", FontRenderOpts::None));
+        }
+
+        {
+            let font = BitmaskFont::load_from_file(Path::new("./test-assets/small.fnt"))?;
+
+            assert_eq!((22, 7), font.measure("Hello", FontRenderOpts::None));
+            assert_eq!((24, 14), font.measure("Hello\nthere", FontRenderOpts::None));
+            assert_eq!((50, 21), font.measure("longer line\nshort\nthe end", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure("", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure(" ", FontRenderOpts::None));
+            assert_eq!((21, 14), font.measure("\nhello", FontRenderOpts::None));
+            assert_eq!((0, 0), font.measure("\n", FontRenderOpts::None));
+            assert_eq!((21, 7), font.measure("hello\n", FontRenderOpts::None));
+            assert_eq!((24, 21), font.measure("hello\n\nthere", FontRenderOpts::None));
         }
 
         Ok(())
