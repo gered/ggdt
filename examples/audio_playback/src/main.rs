@@ -152,7 +152,7 @@ fn main() -> Result<()> {
             }
         }
 
-        system.audio_queue.apply(&mut audio_device)?;
+        system.audio_queue.apply_to_device(&mut audio_device)?;
 
         if system.keyboard.is_key_pressed(Scancode::KpMinus) {
             volume -= 0.1;

@@ -161,7 +161,7 @@ impl AudioQueue {
         Ok(())
     }
 
-    pub fn apply(&mut self, device: &mut AudioDevice) -> Result<(), AudioDeviceError> {
+    pub fn apply_to_device(&mut self, device: &mut AudioDevice) -> Result<(), AudioDeviceError> {
         loop {
             if let Some(command) = self.commands.pop_front() {
                 use AudioCommand::*;
@@ -195,5 +195,10 @@ impl AudioQueue {
                 return Ok(())
             }
         }
+    }
+
+    pub fn apply(&mut self, audio: &mut Audio) -> Result<(), AudioDeviceError> {
+        let mut device = audio.lock();
+        self.apply_to_device(&mut device)
     }
 }
