@@ -205,13 +205,13 @@ impl AudioDevice {
         &mut self,
         buffer: &AudioBuffer,
         loops: bool,
-    ) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
+    ) -> Result<Option<usize>, AudioDeviceError> {
         if *buffer.spec() != self.spec {
             Err(AudioDeviceError::AudioSpecMismatch)
         } else {
-            if let Some(channel) = self.stopped_channels_iter_mut().next() {
+            if let Some((index, channel)) = self.stopped_channels_iter_mut().enumerate().next() {
                 channel.play_buffer(buffer, loops);
-                Ok(Some(channel))
+                Ok(Some(index))
             } else {
                 Ok(None)
             }
@@ -238,10 +238,10 @@ impl AudioDevice {
         &mut self,
         generator: Box<dyn AudioGenerator>,
         loops: bool,
-    ) -> Result<Option<&mut AudioChannel>, AudioDeviceError> {
-        if let Some(channel) = self.stopped_channels_iter_mut().next() {
+    ) -> Result<Option<usize>, AudioDeviceError> {
+        if let Some((index, channel)) = self.stopped_channels_iter_mut().enumerate().next() {
             channel.play_generator(generator, loops);
-            Ok(Some(channel))
+            Ok(Some(index))
         } else {
             Ok(None)
         }
