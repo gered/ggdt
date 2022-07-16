@@ -1,7 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use libretrogd::Bitmap;
-use libretrogd::Palette;
+use libretrogd::graphics::*;
 use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
 
 pub fn criterion_benchmark(c: &mut Criterion) {
