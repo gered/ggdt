@@ -11,7 +11,7 @@ pub enum BitmapAtlasError {
     OutOfBounds,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BitmapAtlas {
     bitmap: Bitmap,
     bounds: Rect,

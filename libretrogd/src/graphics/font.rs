@@ -43,7 +43,7 @@ pub trait Font {
     fn measure(&self, text: &str, opts: FontRenderOpts) -> (u32, u32);
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BitmaskCharacter {
     bytes: [u8; CHAR_HEIGHT],
     bounds: Rect,
@@ -83,7 +83,7 @@ impl Character for BitmaskCharacter {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BitmaskFont {
     characters: Box<[BitmaskCharacter]>,
     line_height: u8,

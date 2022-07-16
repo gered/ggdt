@@ -11,7 +11,7 @@ pub enum AudioBufferError {
 }
 
 /// Holds audio sample data that can be played via [`AudioDevice`].
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct AudioBuffer {
     spec: AudioSpec,
     pub data: Vec<u8>,
