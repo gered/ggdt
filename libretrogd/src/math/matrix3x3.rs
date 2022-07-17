@@ -3,7 +3,7 @@ use std::ops::{Mul, MulAssign};
 use crate::math::*;
 
 /// Represents a 3x3 column-major matrix and provides common methods for matrix math.
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Matrix3x3 {
     pub m: [f32; 9],
 }

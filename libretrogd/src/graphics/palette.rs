@@ -224,7 +224,7 @@ pub enum PaletteFormat {
 
 /// Contains a 256 color palette, and provides methods useful for working with palettes. The
 /// colors are all stored individually as 32-bit packed values in the format 0xAARRGGBB.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Palette {
     colors: [u32; NUM_COLORS],
 }
@@ -527,13 +527,6 @@ impl IndexMut<u8> for Palette {
     #[inline]
     fn index_mut(&mut self, index: u8) -> &mut Self::Output {
         &mut self.colors[index as usize]
-    }
-}
-
-impl PartialEq for Palette {
-    #[inline]
-    fn eq(&self, other: &Self) -> bool {
-        self.colors == other.colors
     }
 }
 

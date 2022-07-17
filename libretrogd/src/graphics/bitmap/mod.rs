@@ -40,7 +40,7 @@ pub enum BitmapError {
 /// one row to the next is always exactly equal to the bitmap width. Rendering operations provided
 /// here are done with respect to the bitmaps clipping region, where rendering outside of the
 /// clipping region is simply not performed / stops at the clipping boundary.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Bitmap {
     width: u32,
     height: u32,
