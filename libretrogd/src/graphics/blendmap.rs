@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::graphics::*;
+
 #[derive(Error, Debug)]
 pub enum BlendMapError {
     #[error("Source color {0} is out of range for this BlendMap")]
@@ -44,6 +46,33 @@ impl BlendMap {
             end_color,
             mapping: vec![[0u8; 256]; num_colors].into_boxed_slice(),
         }
+    }
+
+    /// Creates and returns a new [`BlendMap`] with a single source color mapping which maps to
+    /// a table pre-calculated for the given palette based on the color gradient specified. The
+    /// resulting blend map can be used to create simple colored translucency overlay effects. The
+    /// starting color in the gradient is used as the source color mapping in the returned blend
+    /// map.
+    pub fn new_translucency_map(gradient_start: u8, gradient_end: u8, palette: &Palette) -> Self {
+        let (gradient_start, gradient_end) = if gradient_start > gradient_end {
+            (gradient_end, gradient_start)
+        } else {
+            (gradient_start, gradient_end)
+        };
+        let gradient_size = gradient_end - gradient_start + 1;
+        let source_color = gradient_start;
+
+        let mut blend_map = Self::new(source_color, source_color);
+        for idx in 0..=255 {
+            let (r, g, b) = from_rgb32(palette[idx]);
+            let lit = (luminance(r, g, b) * 255.0) as u8;
+            blend_map.set_mapping(
+                source_color,
+                idx as u8,
+                (gradient_size - 1) - (lit / (256 / gradient_size as u32) as u8) + source_color
+            ).unwrap();
+        }
+        blend_map
     }
 
     /// The beginning source color that is mapped in this blend map.
