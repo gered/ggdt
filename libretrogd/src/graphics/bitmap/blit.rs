@@ -176,45 +176,154 @@ pub fn clip_blit(
     true
 }
 
-impl Bitmap {
-    #[inline]
-    fn get_flipped_blit_properties(
-        &self,
-        src: &Bitmap,
-        src_region: &Rect,
-        horizontal_flip: bool,
-        vertical_flip: bool,
-    ) -> (isize, i32, i32, isize) {
-        let x_inc;
-        let src_start_x;
-        let src_start_y;
-        let src_next_row_inc;
+fn get_flipped_blit_properties(
+    src: &Bitmap,
+    src_region: &Rect,
+    horizontal_flip: bool,
+    vertical_flip: bool,
+) -> (isize, i32, i32, isize) {
+    let x_inc;
+    let src_start_x;
+    let src_start_y;
+    let src_next_row_inc;
 
-        if !horizontal_flip && !vertical_flip {
-            x_inc = 1;
-            src_start_x = src_region.x;
-            src_start_y = src_region.y;
-            src_next_row_inc = (src.width - src_region.width) as isize;
-        } else if horizontal_flip && !vertical_flip {
-            x_inc = -1;
-            src_start_x = src_region.right();
-            src_start_y = src_region.y;
-            src_next_row_inc = (src.width + src_region.width) as isize;
-        } else if !horizontal_flip && vertical_flip {
-            x_inc = 1;
-            src_start_x = src_region.x;
-            src_start_y = src_region.bottom();
-            src_next_row_inc = -((src.width + src_region.width) as isize);
-        } else {
-            x_inc = -1;
-            src_start_x = src_region.right();
-            src_start_y = src_region.bottom();
-            src_next_row_inc = -((src.width - src_region.width) as isize);
-        }
-
-        (x_inc, src_start_x, src_start_y, src_next_row_inc)
+    if !horizontal_flip && !vertical_flip {
+        x_inc = 1;
+        src_start_x = src_region.x;
+        src_start_y = src_region.y;
+        src_next_row_inc = (src.width - src_region.width) as isize;
+    } else if horizontal_flip && !vertical_flip {
+        x_inc = -1;
+        src_start_x = src_region.right();
+        src_start_y = src_region.y;
+        src_next_row_inc = (src.width + src_region.width) as isize;
+    } else if !horizontal_flip && vertical_flip {
+        x_inc = 1;
+        src_start_x = src_region.x;
+        src_start_y = src_region.bottom();
+        src_next_row_inc = -((src.width + src_region.width) as isize);
+    } else {
+        x_inc = -1;
+        src_start_x = src_region.right();
+        src_start_y = src_region.bottom();
+        src_next_row_inc = -((src.width - src_region.width) as isize);
     }
 
+    (x_inc, src_start_x, src_start_y, src_next_row_inc)
+}
+
+unsafe fn per_pixel_blit(
+    dest: &mut Bitmap,
+    src: &Bitmap,
+    src_region: &Rect,
+    dest_x: i32,
+    dest_y: i32,
+    pixel_fn: impl Fn(*const u8, *mut u8),
+) {
+    let src_next_row_inc = (src.width - src_region.width) as usize;
+    let dest_next_row_inc = (dest.width - src_region.width) as usize;
+    let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
+    let mut dest_pixels = dest.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+    for _ in 0..src_region.height {
+        for _ in 0..src_region.width {
+            pixel_fn(src_pixels, dest_pixels);
+            src_pixels = src_pixels.add(1);
+            dest_pixels = dest_pixels.add(1);
+        }
+
+        src_pixels = src_pixels.add(src_next_row_inc);
+        dest_pixels = dest_pixels.add(dest_next_row_inc);
+    }
+}
+
+unsafe fn per_pixel_flipped_blit(
+    dest: &mut Bitmap,
+    src: &Bitmap,
+    src_region: &Rect,
+    dest_x: i32,
+    dest_y: i32,
+    horizontal_flip: bool,
+    vertical_flip: bool,
+    pixel_fn: impl Fn(*const u8, *mut u8),
+) {
+    let dest_next_row_inc = (dest.width - src_region.width) as usize;
+    let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
+        get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
+
+    let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
+    let mut dest_pixels = dest.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
+
+    for _ in 0..src_region.height {
+        for _ in 0..src_region.width {
+            pixel_fn(src_pixels, dest_pixels);
+            src_pixels = src_pixels.offset(x_inc);
+            dest_pixels = dest_pixels.add(1);
+        }
+
+        src_pixels = src_pixels.offset(src_next_row_inc);
+        dest_pixels = dest_pixels.add(dest_next_row_inc);
+    }
+}
+
+unsafe fn per_pixel_rotozoom_blit(
+    dest: &mut Bitmap,
+    src: &Bitmap,
+    src_region: &Rect,
+    dest_x: i32,
+    dest_y: i32,
+    angle: f32,
+    scale_x: f32,
+    scale_y: f32,
+    pixel_fn: impl Fn(u8, &mut Bitmap, i32, i32),
+) {
+    // TODO: this isn't the best rotozoom algorithm i guess. it has some floating point issues
+    //       that result in missing pixels/rows still in a few places. also the double pixel
+    //       write exists to mask that issue (even worse without it).
+    //       need to re-do this with a better rotozoom algorithm!
+
+    let new_width = src_region.width as f32 * scale_x;
+    let new_height = src_region.height as f32 * scale_y;
+    if new_width as i32 <= 0 || new_height as i32 <= 0 {
+        return;
+    }
+    let half_new_width = new_width * 0.5;
+    let half_new_height = new_height * 0.5;
+
+    let angle_cos = angle.cos();
+    let angle_sin = angle.sin();
+
+    let src_delta_x = src_region.width as f32 / new_width;
+    let src_delta_y = src_region.height as f32 / new_height;
+
+    let mut src_x = 0.0;
+    let mut src_y = 0.0;
+
+    let dest_center_x = dest_x as f32 + half_new_width;
+    let dest_center_y = dest_y as f32 + half_new_height;
+
+    for point_y in 0..new_height as i32 {
+        let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
+
+        for point_x in 0..new_width as i32 {
+            let pixel = src_pixels[src_x as usize];
+            let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
+                - (angle_sin * (point_y as f32 - half_new_height))
+                + dest_center_x) as i32;
+            let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
+                + (angle_sin * (point_x as f32 - half_new_width))
+                + dest_center_y) as i32;
+
+            pixel_fn(pixel, dest, draw_x, draw_y);
+            src_x += src_delta_x;
+        }
+
+        src_x = 0.0;
+        src_y += src_delta_y;
+    }
+}
+
+impl Bitmap {
     pub unsafe fn solid_blit(&mut self, src: &Bitmap, src_region: &Rect, dest_x: i32, dest_y: i32) {
         let src_row_length = src_region.width as usize;
         let src_pitch = src.width as usize;
@@ -238,23 +347,12 @@ impl Bitmap {
         horizontal_flip: bool,
         vertical_flip: bool,
     ) {
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
-            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
-
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
                 *dest_pixels = *src_pixels;
-                src_pixels = src_pixels.offset(x_inc);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.offset(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn solid_palette_offset_blit(
@@ -265,21 +363,12 @@ impl Bitmap {
         dest_y: i32,
         offset: u8,
     ) {
-        let src_next_row_inc = (src.width - src_region.width) as usize;
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
                 *dest_pixels = (*src_pixels).wrapping_add(offset);
-                src_pixels = src_pixels.add(1);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.add(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn solid_flipped_palette_offset_blit(
@@ -292,23 +381,12 @@ impl Bitmap {
         vertical_flip: bool,
         offset: u8,
     ) {
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
-            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
-
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
                 *dest_pixels = (*src_pixels).wrapping_add(offset);
-                src_pixels = src_pixels.offset(x_inc);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.offset(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_blit(
@@ -319,25 +397,14 @@ impl Bitmap {
         dest_y: i32,
         transparent_color: u8,
     ) {
-        let src_next_row_inc = (src.width - src_region.width) as usize;
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
-                    *dest_pixels = pixel;
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    *dest_pixels = *src_pixels;
                 }
-
-                src_pixels = src_pixels.add(1);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.add(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_flipped_blit(
@@ -350,27 +417,14 @@ impl Bitmap {
         horizontal_flip: bool,
         vertical_flip: bool,
     ) {
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
-            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
-
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
-                    *dest_pixels = pixel;
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    *dest_pixels = *src_pixels;
                 }
-
-                src_pixels = src_pixels.offset(x_inc);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.offset(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_palette_offset_blit(
@@ -382,25 +436,14 @@ impl Bitmap {
         transparent_color: u8,
         offset: u8,
     ) {
-        let src_next_row_inc = (src.width - src_region.width) as usize;
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
-                    *dest_pixels = pixel.wrapping_add(offset);
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    *dest_pixels = (*src_pixels).wrapping_add(offset);
                 }
-
-                src_pixels = src_pixels.add(1);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.add(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_flipped_palette_offset_blit(
@@ -414,27 +457,14 @@ impl Bitmap {
         vertical_flip: bool,
         offset: u8,
     ) {
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
-            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
-
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
-                    *dest_pixels = pixel.wrapping_add(offset);
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    *dest_pixels = (*src_pixels).wrapping_add(offset);
                 }
-
-                src_pixels = src_pixels.offset(x_inc);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.offset(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_single_color_blit(
@@ -446,25 +476,14 @@ impl Bitmap {
         transparent_color: u8,
         draw_color: u8,
     ) {
-        let src_next_row_inc = (src.width - src_region.width) as usize;
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
                     *dest_pixels = draw_color;
                 }
-
-                src_pixels = src_pixels.add(1);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.add(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn transparent_flipped_single_color_blit(
@@ -478,27 +497,14 @@ impl Bitmap {
         vertical_flip: bool,
         draw_color: u8,
     ) {
-        let dest_next_row_inc = (self.width - src_region.width) as usize;
-        let (x_inc, src_start_x, src_start_y, src_next_row_inc) =
-            self.get_flipped_blit_properties(src, src_region, horizontal_flip, vertical_flip);
-
-        let mut src_pixels = src.pixels_at_ptr_unchecked(src_start_x, src_start_y);
-        let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
-
-        for _ in 0..src_region.height {
-            for _ in 0..src_region.width {
-                let pixel = *src_pixels;
-                if pixel != transparent_color {
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
                     *dest_pixels = draw_color;
                 }
-
-                src_pixels = src_pixels.offset(x_inc);
-                dest_pixels = dest_pixels.add(1);
             }
-
-            src_pixels = src_pixels.offset(src_next_row_inc);
-            dest_pixels = dest_pixels.add(dest_next_row_inc);
-        }
+        );
     }
 
     pub unsafe fn rotozoom_blit(
@@ -512,56 +518,17 @@ impl Bitmap {
         scale_y: f32,
         transparent_color: Option<u8>,
     ) {
-        // TODO: this isn't the best rotozoom algorithm i guess. it has some floating point issues
-        //       that result in missing pixels/rows still in a few places. also the double pixel
-        //       write exists to mask that issue (even worse without it).
-        //       need to re-do this with a better rotozoom algorithm!
-
-        let new_width = src_region.width as f32 * scale_x;
-        let new_height = src_region.height as f32 * scale_y;
-        if new_width as i32 <= 0 || new_height as i32 <= 0 {
-            return;
-        }
-        let half_new_width = new_width * 0.5;
-        let half_new_height = new_height * 0.5;
-
-        let angle_cos = angle.cos();
-        let angle_sin = angle.sin();
-
-        let src_delta_x = src_region.width as f32 / new_width;
-        let src_delta_y = src_region.height as f32 / new_height;
-
-        let mut src_x = 0.0;
-        let mut src_y = 0.0;
-
-        let dest_center_x = dest_x as f32 + half_new_width;
-        let dest_center_y = dest_y as f32 + half_new_height;
-
-        for point_y in 0..new_height as i32 {
-            let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
-
-            for point_x in 0..new_width as i32 {
-                let pixel = src_pixels[src_x as usize];
-                if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
-                        - (angle_sin * (point_y as f32 - half_new_height))
-                        + dest_center_x) as i32;
-                    let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
-                        + (angle_sin * (point_x as f32 - half_new_width))
-                        + dest_center_y) as i32;
-
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                if transparent_color.is_none() || transparent_color != Some(src_pixel) {
                     // write the same pixel twice to mask some floating point issues (?) which would
                     // manifest as "gap" pixels on the destination. ugh!
-                    self.set_pixel(draw_x, draw_y, pixel);
-                    self.set_pixel(draw_x + 1, draw_y, pixel);
+                    dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
+                    dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
                 }
-
-                src_x += src_delta_x;
             }
-
-            src_x = 0.0;
-            src_y += src_delta_y;
-        }
+        );
     }
 
     pub unsafe fn rotozoom_palette_offset_blit(
@@ -576,59 +543,18 @@ impl Bitmap {
         transparent_color: Option<u8>,
         offset: u8,
     ) {
-        // TODO: this isn't the best rotozoom algorithm i guess. it has some floating point issues
-        //       that result in missing pixels/rows still in a few places. also the double pixel
-        //       write exists to mask that issue (even worse without it).
-        //       need to re-do this with a better rotozoom algorithm!
-
-        let new_width = src_region.width as f32 * scale_x;
-        let new_height = src_region.height as f32 * scale_y;
-        if new_width as i32 <= 0 || new_height as i32 <= 0 {
-            return;
-        }
-
-        let half_new_width = new_width * 0.5;
-        let half_new_height = new_height * 0.5;
-
-        let angle_cos = angle.cos();
-        let angle_sin = angle.sin();
-
-        let src_delta_x = src_region.width as f32 / new_width;
-        let src_delta_y = src_region.height as f32 / new_height;
-
-        let mut src_x = 0.0;
-        let mut src_y = 0.0;
-
-        let dest_center_x = dest_x as f32 + half_new_width;
-        let dest_center_y = dest_y as f32 + half_new_height;
-
-        for point_y in 0..new_height as i32 {
-            let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
-
-            for point_x in 0..new_width as i32 {
-                let pixel = src_pixels[src_x as usize];
-                if transparent_color.is_none() || transparent_color != Some(pixel) {
-                    let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
-                        - (angle_sin * (point_y as f32 - half_new_height))
-                        + dest_center_x) as i32;
-                    let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
-                        + (angle_sin * (point_x as f32 - half_new_width))
-                        + dest_center_y) as i32;
-
-                    let pixel = pixel.wrapping_add(offset);
-
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                if transparent_color.is_none() || transparent_color != Some(src_pixel) {
+                    let src_pixel = src_pixel.wrapping_add(offset);
                     // write the same pixel twice to mask some floating point issues (?) which would
                     // manifest as "gap" pixels on the destination. ugh!
-                    self.set_pixel(draw_x, draw_y, pixel);
-                    self.set_pixel(draw_x + 1, draw_y, pixel);
+                    dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
+                    dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
                 }
-
-                src_x += src_delta_x;
             }
-
-            src_x = 0.0;
-            src_y += src_delta_y;
-        }
+        );
     }
 
     pub fn blit_region(
