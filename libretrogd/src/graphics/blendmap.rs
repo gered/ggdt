@@ -23,7 +23,7 @@ pub type BlendMapping = [u8; 256];
 ///
 /// A blend map will not necessarily have mappings for all possible 256 source colors. But for each
 /// source color, it will have 256 destination to blended color mappings.
-#[derive(Clone)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct BlendMap {
     start_color: u8,
     end_color: u8,
