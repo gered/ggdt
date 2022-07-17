@@ -516,12 +516,33 @@ impl Bitmap {
         angle: f32,
         scale_x: f32,
         scale_y: f32,
-        transparent_color: Option<u8>,
     ) {
         per_pixel_rotozoom_blit(
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
-                if transparent_color.is_none() || transparent_color != Some(src_pixel) {
+                // write the same pixel twice to mask some floating point issues (?) which would
+                // manifest as "gap" pixels on the destination. ugh!
+                dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
+                dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
+            }
+        );
+    }
+
+    pub unsafe fn rotozoom_transparent_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+    ) {
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                if transparent_color != src_pixel {
                     // write the same pixel twice to mask some floating point issues (?) which would
                     // manifest as "gap" pixels on the destination. ugh!
                     dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
@@ -540,13 +561,36 @@ impl Bitmap {
         angle: f32,
         scale_x: f32,
         scale_y: f32,
-        transparent_color: Option<u8>,
         offset: u8,
     ) {
         per_pixel_rotozoom_blit(
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
-                if transparent_color.is_none() || transparent_color != Some(src_pixel) {
+                let src_pixel = src_pixel.wrapping_add(offset);
+                // write the same pixel twice to mask some floating point issues (?) which would
+                // manifest as "gap" pixels on the destination. ugh!
+                dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
+                dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
+            }
+        );
+    }
+
+    pub unsafe fn rotozoom_transparent_palette_offset_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+        offset: u8,
+    ) {
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                if transparent_color != src_pixel {
                     let src_pixel = src_pixel.wrapping_add(offset);
                     // write the same pixel twice to mask some floating point issues (?) which would
                     // manifest as "gap" pixels on the destination. ugh!
@@ -658,16 +702,16 @@ impl Bitmap {
                 self.transparent_flipped_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, draw_color)
             },
             RotoZoom { angle, scale_x, scale_y } => {
-                self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None)
+                self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y)
             },
             RotoZoomOffset { angle, scale_x, scale_y, offset } => {
-                self.rotozoom_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, None, offset)
+                self.rotozoom_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, offset)
             },
             RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
-                self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color))
+                self.rotozoom_transparent_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color)
             },
             RotoZoomTransparentOffset { angle, scale_x, scale_y, transparent_color, offset } => {
-                self.rotozoom_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, Some(transparent_color), offset)
+                self.rotozoom_transparent_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, offset)
             },
         }
     }
