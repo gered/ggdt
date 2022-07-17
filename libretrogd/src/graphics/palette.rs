@@ -120,6 +120,41 @@ pub fn lerp_rgb32(a: u32, b: u32, t: f32) -> u32 {
     )
 }
 
+const LUMINANCE_RED: f32 = 0.212655;
+const LUMINANCE_GREEN: f32 = 0.715158;
+const LUMINANCE_BLUE: f32 = 0.072187;
+
+fn srgb_to_linearized(color_channel: u8) -> f32 {
+    let intensity = color_channel as f32 / 255.0;
+    if intensity <= 0.04045 {
+        intensity / 12.92
+    } else {
+        ((intensity + 0.055) / (1.055)).powf(2.4)
+    }
+}
+
+/// Calculates the given sRGB color's luminance, returned as a value between 0.0 and 1.0.
+pub fn luminance(r: u8, g: u8, b: u8) -> f32 {
+    (LUMINANCE_RED * srgb_to_linearized(r)) +
+        (LUMINANCE_GREEN * srgb_to_linearized(g)) +
+        (LUMINANCE_BLUE * srgb_to_linearized(b))
+}
+
+fn brightness(mut luminance: f32) -> f32 {
+    if luminance <= 0.0031308 {
+        luminance *= 12.92;
+    } else {
+        luminance = 1.055 * luminance.powf(1.0 / 2.4) - 0.055;
+    }
+    luminance
+}
+
+/// Calculates the approximate "brightness" / grey-scale value for the given sRGB color, returned
+/// as a value between 0 and 255.
+pub fn greyscale(r: u8, b: u8, g: u8) -> u8 {
+    (brightness(luminance(r, g, b)) * 255.0) as u8
+}
+
 // vga bios (0-63) format
 fn read_256color_6bit_palette<T: ReadBytesExt>(
     reader: &mut T,
