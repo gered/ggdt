@@ -176,6 +176,7 @@ pub fn clip_blit(
     true
 }
 
+#[inline]
 fn get_flipped_blit_properties(
     src: &Bitmap,
     src_region: &Rect,
@@ -212,6 +213,7 @@ fn get_flipped_blit_properties(
     (x_inc, src_start_x, src_start_y, src_next_row_inc)
 }
 
+#[inline]
 unsafe fn per_pixel_blit(
     dest: &mut Bitmap,
     src: &Bitmap,
@@ -237,6 +239,7 @@ unsafe fn per_pixel_blit(
     }
 }
 
+#[inline]
 unsafe fn per_pixel_flipped_blit(
     dest: &mut Bitmap,
     src: &Bitmap,
@@ -266,6 +269,7 @@ unsafe fn per_pixel_flipped_blit(
     }
 }
 
+#[inline]
 unsafe fn per_pixel_rotozoom_blit(
     dest: &mut Bitmap,
     src: &Bitmap,
