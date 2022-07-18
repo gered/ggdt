@@ -702,13 +702,13 @@ fn render_system_sprites(context: &mut Core) {
                 let position = positions.get(entity).unwrap();
                 context.sprite_render_list.push((*entity, position.0, blit_method));
             }
-            context.sprite_render_list.sort_unstable_by(|&a, &b| (a.1.y as i32).cmp(&(b.1.y as i32)));
+            context.sprite_render_list.sort_unstable_by(|a, b| (a.1.y as i32).cmp(&(b.1.y as i32)));
 
             // now render them in the correct order ...
             for (entity, position, blit_method) in context.sprite_render_list.iter() {
                 let sprite = sprites.get(entity).unwrap();
                 context.system.video.blit_atlas(
-                    *blit_method,
+                    blit_method.clone(),
                     &sprite.atlas,
                     sprite.index,
                     position.x as i32 - camera.x,
