@@ -1,7 +1,9 @@
+use std::rc::Rc;
+
 use crate::graphics::*;
 use crate::math::*;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum BlitMethod {
     /// Solid blit, no transparency or other per-pixel adjustments.
     Solid,
@@ -84,6 +86,37 @@ pub enum BlitMethod {
         scale_y: f32,
         transparent_color: u8,
         offset: u8,
+    },
+    SolidBlended {
+        blend_map: Rc<BlendMap>,
+    },
+    SolidFlippedBlended {
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        blend_map: Rc<BlendMap>,
+    },
+    TransparentBlended {
+        transparent_color: u8,
+        blend_map: Rc<BlendMap>,
+    },
+    TransparentFlippedBlended {
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        blend_map: Rc<BlendMap>,
+    },
+    RotoZoomBlended {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        blend_map: Rc<BlendMap>,
+    },
+    RotoZoomTransparentBlended {
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+        blend_map: Rc<BlendMap>,
     },
 }
 
@@ -342,6 +375,26 @@ impl Bitmap {
         }
     }
 
+    pub unsafe fn solid_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
+                if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
+                    *dest_pixels = blended_pixel;
+                } else {
+                    *dest_pixels = *src_pixels;
+                }
+            }
+        );
+    }
+
     pub unsafe fn solid_flipped_blit(
         &mut self,
         src: &Bitmap,
@@ -355,6 +408,28 @@ impl Bitmap {
             self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
             |src_pixels, dest_pixels| {
                 *dest_pixels = *src_pixels;
+            }
+        );
+    }
+
+    pub unsafe fn solid_flipped_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
+                if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
+                    *dest_pixels = blended_pixel;
+                } else {
+                    *dest_pixels = *src_pixels;
+                }
             }
         );
     }
@@ -411,6 +486,29 @@ impl Bitmap {
         );
     }
 
+    pub unsafe fn transparent_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_blit(
+            self, src, src_region, dest_x, dest_y,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
+                        *dest_pixels = blended_pixel;
+                    } else {
+                        *dest_pixels = *src_pixels;
+                    }
+                }
+            }
+        );
+    }
+
     pub unsafe fn transparent_flipped_blit(
         &mut self,
         src: &Bitmap,
@@ -426,6 +524,31 @@ impl Bitmap {
             |src_pixels, dest_pixels| {
                 if *src_pixels != transparent_color {
                     *dest_pixels = *src_pixels;
+                }
+            }
+        );
+    }
+
+    pub unsafe fn transparent_flipped_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        transparent_color: u8,
+        horizontal_flip: bool,
+        vertical_flip: bool,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_flipped_blit(
+            self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+            |src_pixels, dest_pixels| {
+                if *src_pixels != transparent_color {
+                    if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
+                        *dest_pixels = blended_pixel;
+                    } else {
+                        *dest_pixels = *src_pixels;
+                    }
                 }
             }
         );
@@ -532,6 +655,44 @@ impl Bitmap {
         );
     }
 
+    pub unsafe fn rotozoom_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                // write the same pixel twice to mask some floating point issues (?) which would
+                // manifest as "gap" pixels on the destination. ugh!
+
+                if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
+                    let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
+                        blended_pixel
+                    } else {
+                        src_pixel
+                    };
+                    dest_bitmap.set_pixel(draw_x, draw_y, draw_pixel);
+                }
+
+                if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x + 1, draw_y) {
+                    let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
+                        blended_pixel
+                    } else {
+                        src_pixel
+                    };
+                    dest_bitmap.set_pixel(draw_x + 1, draw_y, draw_pixel);
+                }
+            }
+        );
+    }
+
     pub unsafe fn rotozoom_transparent_blit(
         &mut self,
         src: &Bitmap,
@@ -551,6 +712,47 @@ impl Bitmap {
                     // manifest as "gap" pixels on the destination. ugh!
                     dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
                     dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
+                }
+            }
+        );
+    }
+
+    pub unsafe fn rotozoom_transparent_blended_blit(
+        &mut self,
+        src: &Bitmap,
+        src_region: &Rect,
+        dest_x: i32,
+        dest_y: i32,
+        angle: f32,
+        scale_x: f32,
+        scale_y: f32,
+        transparent_color: u8,
+        blend_map: Rc<BlendMap>,
+    ) {
+        per_pixel_rotozoom_blit(
+            self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+            |src_pixel, dest_bitmap, draw_x, draw_y| {
+                if transparent_color != src_pixel {
+                    // write the same pixel twice to mask some floating point issues (?) which would
+                    // manifest as "gap" pixels on the destination. ugh!
+
+                    if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
+                        let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
+                            blended_pixel
+                        } else {
+                            src_pixel
+                        };
+                        dest_bitmap.set_pixel(draw_x, draw_y, draw_pixel);
+                    }
+
+                    if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x + 1, draw_y) {
+                        let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
+                            blended_pixel
+                        } else {
+                            src_pixel
+                        };
+                        dest_bitmap.set_pixel(draw_x + 1, draw_y, draw_pixel);
+                    }
                 }
             }
         );
@@ -717,6 +919,24 @@ impl Bitmap {
             RotoZoomTransparentOffset { angle, scale_x, scale_y, transparent_color, offset } => {
                 self.rotozoom_transparent_palette_offset_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, offset)
             },
+            SolidBlended { blend_map } => {
+                self.solid_blended_blit(src, src_region, dest_x, dest_y, blend_map)
+            },
+            SolidFlippedBlended { horizontal_flip, vertical_flip, blend_map } => {
+                self.solid_flipped_blended_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, blend_map)
+            },
+            TransparentBlended { transparent_color, blend_map } => {
+                self.transparent_blended_blit(src, src_region, dest_x, dest_y, transparent_color, blend_map)
+            },
+            TransparentFlippedBlended { transparent_color, horizontal_flip, vertical_flip, blend_map } => {
+                self.transparent_flipped_blended_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, blend_map)
+            },
+            RotoZoomBlended { angle, scale_x, scale_y, blend_map } => {
+                self.rotozoom_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, blend_map)
+            },
+            RotoZoomTransparentBlended { angle, scale_x, scale_y, transparent_color, blend_map } => {
+                self.rotozoom_transparent_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, blend_map)
+            }
         }
     }
 
