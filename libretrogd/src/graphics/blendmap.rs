@@ -50,10 +50,10 @@ impl BlendMap {
 
     /// Creates and returns a new [`BlendMap`] with a single source color mapping which maps to
     /// a table pre-calculated for the given palette based on the color gradient specified. The
-    /// resulting blend map can be used to create simple colored translucency overlay effects. The
-    /// starting color in the gradient is used as the source color mapping in the returned blend
-    /// map.
-    pub fn new_translucency_map(gradient_start: u8, gradient_end: u8, palette: &Palette) -> Self {
+    /// resulting blend map can be used to create simple "colorization" overlay effects, which look
+    /// like a simple translucency effect. The starting color in the gradient is used as the source
+    /// color mapping in the returned blend map.
+    pub fn new_colorized_map(gradient_start: u8, gradient_end: u8, palette: &Palette) -> Self {
         let (gradient_start, gradient_end) = if gradient_start > gradient_end {
             (gradient_end, gradient_start)
         } else {
