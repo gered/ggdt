@@ -483,16 +483,20 @@ impl Palette {
         for (index, color) in self.colors.iter().enumerate() {
             let (this_r, this_g, this_b) = from_rgb32(*color);
 
-            // this comparison method is using the sRGB Euclidean formula described here:
-            // https://en.wikipedia.org/wiki/Color_difference
+            if r == this_r && g == this_g && b == this_b {
+                return index as u8;
+            } else {
+                // this comparison method is using the sRGB Euclidean formula described here:
+                // https://en.wikipedia.org/wiki/Color_difference
 
-            let distance = abs_diff(this_r, r) as u32
-                + abs_diff(this_g, g) as u32
-                + abs_diff(this_b, b) as u32;
+                let distance = abs_diff(this_r, r) as u32
+                    + abs_diff(this_g, g) as u32
+                    + abs_diff(this_b, b) as u32;
 
-            if distance < closest_distance {
-                closest = index as u8;
-                closest_distance = distance;
+                if distance < closest_distance {
+                    closest = index as u8;
+                    closest_distance = distance;
+                }
             }
         }
 
