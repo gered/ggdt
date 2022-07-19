@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 use crate::graphics::*;
+use crate::math::*;
 
 #[derive(Error, Debug)]
 pub enum BlendMapError {
@@ -71,6 +72,34 @@ impl BlendMap {
                 idx as u8,
                 (gradient_size - 1) - (lit / (256 / gradient_size as u32) as u8) + source_color
             ).unwrap();
+        }
+        blend_map
+    }
+
+    /// Creates and returns a new [`BlendMap`] which can be used to blend all 256 colors together
+    /// with every other color, weighting the blending based on the ratios given where 0.0 will
+    /// result in that component being totally transparent and 1.0, totally opaque.
+    ///
+    /// This method is SLOW! It is computing 65536 different blend colors by searching the given
+    /// palette for the closest RGB match between two colors.
+    ///
+    /// Because simple palette searches are being used to build the blending table, results will
+    /// vary palette to palette. There will not always be a perfect blend color available.
+    pub fn new_translucency_map(blend_r: f32, blend_g: f32, blend_b: f32, palette: &Palette) -> Self {
+        let mut blend_map = BlendMap::new(0, 255);
+        for source in 0..=255 {
+            let (source_r, source_g, source_b) = from_rgb32(palette[source]);
+            let mapping = blend_map.get_mapping_mut(source).unwrap();
+            for dest in 0..=255 {
+                let (dest_r, dest_g, dest_b) = from_rgb32(palette[dest]);
+
+                let find_r = lerp(dest_r as f32, source_r as f32, blend_r) as u8;
+                let find_g = lerp(dest_g as f32, source_g as f32, blend_g) as u8;
+                let find_b = lerp(dest_b as f32, source_b as f32, blend_b) as u8;
+
+                let result_c = palette.find_color(find_r, find_g, find_b);
+                mapping[dest as usize] = result_c;
+            }
         }
         blend_map
     }
