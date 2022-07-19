@@ -76,6 +76,41 @@ impl BlendMap {
         blend_map
     }
 
+    /// Creates and returns a new [`BlendMap`] which can be used to blend source colors together
+    /// with the destination using a colorization effect based on a function providing a custom
+    /// calculation combining the source and destination color luminance values to return a weight
+    /// into the gradient range given.
+    pub fn new_colored_luminance_map(
+        gradient_start: u8,
+        gradient_end: u8,
+        palette: &Palette,
+        f: impl Fn(f32, f32) -> f32
+    ) -> BlendMap {
+        let (gradient_start, gradient_end) = if gradient_start > gradient_end {
+            (gradient_end, gradient_start)
+        } else {
+            (gradient_start, gradient_end)
+        };
+        let gradient_size = gradient_end - gradient_start + 1;
+
+        let mut blend_map = BlendMap::new(0, 255);
+        for source_color in 0..=255 {
+            let (r, g, b) = from_rgb32(palette[source_color]);
+            let source_luminance = luminance(r, g, b);
+            for dest_color in 0..=255 {
+                let (r, g, b) = from_rgb32(palette[dest_color]);
+                let destination_luminance = luminance(r, g, b);
+                let weight = (f(source_luminance, destination_luminance) * 255.0) as u8;
+                blend_map.set_mapping(
+                    source_color,
+                    dest_color,
+                    (gradient_size - 1).wrapping_sub(weight / (256 / gradient_size as u32) as u8) + gradient_start
+                ).unwrap();
+            }
+        }
+        blend_map
+    }
+
     /// Creates and returns a new [`BlendMap`] which can be used to blend all 256 colors together
     /// with every other color, weighting the blending based on the ratios given where 0.0 will
     /// result in that component being totally transparent and 1.0, totally opaque.
