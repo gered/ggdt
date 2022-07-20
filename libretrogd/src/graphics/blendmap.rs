@@ -253,7 +253,7 @@ impl BlendMap {
 
         let start_color = reader.read_u8()?;
         let end_color = reader.read_u8()?;
-        let num_maps = (end_color as usize - start_color as usize + 1);
+        let num_maps = end_color as usize - start_color as usize + 1;
 
         let mut maps = Vec::with_capacity(num_maps);
         for _ in 0..num_maps {
