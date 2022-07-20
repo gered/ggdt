@@ -833,8 +833,10 @@ impl Bitmap {
 
             // set axis flip arguments
             SolidFlipped { horizontal_flip, vertical_flip, ..  } |
+            SolidFlippedBlended { horizontal_flip, vertical_flip, ..  } |
             SolidFlippedOffset { horizontal_flip, vertical_flip, .. } |
             TransparentFlipped { horizontal_flip, vertical_flip, .. } |
+            TransparentFlippedBlended { horizontal_flip, vertical_flip, .. } |
             TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } |
             TransparentFlippedOffset { horizontal_flip, vertical_flip, .. } => {
                 if !clip_blit(
