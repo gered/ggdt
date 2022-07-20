@@ -1,12 +1,24 @@
+use std::fs::File;
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
+
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::*;
 use crate::math::*;
+use crate::utils::bytes::ReadFixedLengthByteArray;
 
 #[derive(Error, Debug)]
 pub enum BlendMapError {
     #[error("Source color {0} is out of range for this BlendMap")]
     InvalidSourceColor(u8),
+
+    #[error("Bad or unsupported BlendMap file: {0}")]
+    BadFile(String),
+
+    #[error("BlendMap I/O error")]
+    IOError(#[from] std::io::Error),
 }
 
 /// A lookup table used by [`BlendMap`]s. This table stores destination color to blend color
@@ -226,11 +238,57 @@ impl BlendMap {
             None
         }
     }
+
+    pub fn load_from_file(path: &Path) -> Result<Self, BlendMapError> {
+        let f = File::open(path)?;
+        let mut reader = BufReader::new(f);
+        Self::load_from_bytes(&mut reader)
+    }
+
+    pub fn load_from_bytes<T: ReadBytesExt>(reader: &mut T) -> Result<Self, BlendMapError> {
+        let ident: [u8; 4] = reader.read_bytes()?;
+        if ident != *b"BMap" {
+            return Err(BlendMapError::BadFile(String::from("Unrecognized header")));
+        }
+
+        let start_color = reader.read_u8()?;
+        let end_color = reader.read_u8()?;
+        let num_maps = (end_color - start_color + 1) as usize;
+
+        let mut maps = Vec::with_capacity(num_maps);
+        for _ in 0..num_maps {
+            let map: BlendMapping = reader.read_bytes()?;
+            maps.push(map);
+        }
+
+        Ok(BlendMap {
+            start_color,
+            end_color,
+            mapping: maps.into_boxed_slice()
+        })
+    }
+
+    pub fn to_file(&self, path: &Path) -> Result<(), BlendMapError> {
+        let f = File::create(path)?;
+        let mut writer = BufWriter::new(f);
+        self.to_bytes(&mut writer)
+    }
+
+    pub fn to_bytes<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), BlendMapError> {
+        writer.write_all(b"BMap")?;
+        writer.write_u8(self.start_color)?;
+        writer.write_u8(self.end_color)?;
+        for map in self.mapping.iter() {
+            writer.write_all(map)?;
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use claim::*;
+    use tempfile::TempDir;
 
     use super::*;
 
@@ -323,6 +381,25 @@ mod tests {
             mapping[0..16]
         );
 
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_and_save() -> Result<(), BlendMapError> {
+        let tmp_dir = TempDir::new()?;
+
+        let mut blend_map = BlendMap::new(2, 3);
+        for i in 0..=255 {
+            blend_map.set_mapping(2, i, i)?;
+            blend_map.set_mapping(3, i, 255 - i)?;
+        }
+
+        let save_path = tmp_dir.path().join("test_blend_map.blendmap");
+        blend_map.to_file(&save_path)?;
+
+        let loaded_blend_map = BlendMap::load_from_file(&save_path)?;
+        assert!(blend_map == loaded_blend_map, "loaded BlendMap is not the same as the original");
 
         Ok(())
     }
