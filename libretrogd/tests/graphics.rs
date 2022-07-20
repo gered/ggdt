@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::rc::Rc;
 
 use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use libretrogd::graphics::*;
@@ -7,6 +8,18 @@ fn setup() -> (Bitmap, Palette) {
     let palette = Palette::new_vga_palette().unwrap();
     let screen = Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
     (screen, palette)
+}
+
+fn setup_for_blending() -> (Bitmap, Palette, BlendMap) {
+    let (texture, palette) = Bitmap::load_file(Path::new("test-assets/texture.lbm")).unwrap();
+    let blend_map = BlendMap::load_from_file(Path::new("test-assets/test.blendmap")).unwrap();
+    let mut screen = Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
+    for y in 0..(SCREEN_HEIGHT as f32 / texture.height() as f32).ceil() as i32 {
+        for x in 0..(SCREEN_WIDTH as f32 / texture.width() as f32).ceil() as i32 {
+            screen.blit(BlitMethod::Solid, &texture, x * texture.width() as i32, y * texture.height() as i32);
+        }
+    }
+    (screen, palette, blend_map)
 }
 
 fn verify_visual(screen: &Bitmap, palette: &Palette, source: &Path) -> bool {
@@ -113,6 +126,32 @@ fn pixel_drawing() {
 }
 
 #[test]
+fn blended_pixel_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    for i in 0..10 {
+        screen.set_blended_pixel(0+i, 0+i, 1, &blend_map);
+        screen.set_blended_pixel(319-i, 0+i, 2, &blend_map);
+        screen.set_blended_pixel(0+i, 239-i, 3, &blend_map);
+        screen.set_blended_pixel(319-i, 239-i, 4, &blend_map);
+    }
+
+    //////
+
+    for i in 0..10 {
+        screen.set_blended_pixel(5-i, 100, 15, &blend_map);
+        screen.set_blended_pixel(i+314, 100, 15, &blend_map);
+        screen.set_blended_pixel(160, 5-i, 15, &blend_map);
+        screen.set_blended_pixel(160, i+234, 15, &blend_map);
+    }
+
+    let path = Path::new("tests/ref/blended_pixel_drawing.pcx");
+    screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+
+#[test]
 fn horiz_line_drawing() {
     let (mut screen, palette) = setup();
 
@@ -133,6 +172,26 @@ fn horiz_line_drawing() {
 }
 
 #[test]
+fn blended_horiz_line_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    screen.blended_horiz_line(10, 100, 20, 1, &blend_map);
+    screen.blended_horiz_line(10, 100, 30, 2, &blend_map);
+
+    //////
+
+    screen.blended_horiz_line(-50, 50, 6, 3, &blend_map);
+    screen.blended_horiz_line(300, 340, 130, 5, &blend_map);
+
+    screen.blended_horiz_line(100, 200, -10, 6, &blend_map);
+    screen.blended_horiz_line(20, 80, 250, 7, &blend_map);
+
+    let path = Path::new("tests/ref/blended_horiz_line_drawing.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn vert_line_drawing() {
     let (mut screen, palette) = setup();
 
@@ -148,6 +207,26 @@ fn vert_line_drawing() {
     screen.vert_line(400, 100, 300, 7);
 
     let path = Path::new("tests/ref/vert_line_drawing.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_vert_line_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    screen.blended_vert_line(50, 10, 200, 1, &blend_map);
+    screen.blended_vert_line(60, 10, 200, 2, &blend_map);
+
+    //////
+
+    screen.blended_vert_line(20, -32, 32, 3, &blend_map);
+    screen.blended_vert_line(270, 245, 165, 5, &blend_map);
+
+    screen.blended_vert_line(-17, 10, 20, 6, &blend_map);
+    screen.blended_vert_line(400, 100, 300, 7, &blend_map);
+
+    let path = Path::new("tests/ref/blended_vert_line_drawing.pcx");
     //screen.to_pcx_file(path, &palette).unwrap();
     assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -190,6 +269,43 @@ fn line_drawing() {
 }
 
 #[test]
+fn blended_line_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    screen.blended_line(10, 10, 20, 20, 1, &blend_map);
+    screen.blended_line(10, 100, 20, 150, 2, &blend_map);
+    screen.blended_line(60, 150, 50, 100, 3, &blend_map);
+
+    //////
+
+    screen.blended_line(50, 10, 100, 10, 5, &blend_map);
+    screen.blended_line(100, 50, 20, 50, 6, &blend_map);
+    screen.blended_line(290, 10, 290, 100, 7, &blend_map);
+    screen.blended_line(310, 100, 310, 10, 8, &blend_map);
+
+    //////
+
+    screen.blended_line(50, 200, -50, 200, 5, &blend_map);
+    screen.blended_line(300, 210, 340, 210, 6, &blend_map);
+    screen.blended_line(120, -30, 120, 30, 7, &blend_map);
+    screen.blended_line(130, 200, 130, 270, 8, &blend_map);
+
+    screen.blended_line(250, 260, 190, 200, 9, &blend_map);
+    screen.blended_line(180, 30, 240, -30, 10, &blend_map);
+    screen.blended_line(-20, 140, 20, 180, 11, &blend_map);
+    screen.blended_line(300, 130, 340, 170, 12, &blend_map);
+
+    screen.blended_line(10, -30, 100, -30, 1, &blend_map);
+    screen.blended_line(70, 250, 170, 250, 2, &blend_map);
+    screen.blended_line(-100, 120, -100, 239, 3, &blend_map);
+    screen.blended_line(320, 99, 320, 199, 5, &blend_map);
+
+    let path = Path::new("tests/ref/blended_line_drawing.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn rect_drawing() {
     let (mut screen, palette) = setup();
 
@@ -218,6 +334,34 @@ fn rect_drawing() {
 }
 
 #[test]
+fn blended_rect_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    screen.blended_rect(10, 10, 90, 90, 1, &blend_map);
+    screen.blended_rect(10, 110, 90, 190, 2, &blend_map);
+    screen.blended_rect(190, 90, 110, 10, 3, &blend_map);
+
+    //////
+
+    screen.blended_rect(-8, 10, 7, 25, 5, &blend_map);
+    screen.blended_rect(20, -8, 35, 7, 6, &blend_map);
+    screen.blended_rect(313, 170, 328, 185, 7, &blend_map);
+    screen.blended_rect(285, 233, 300, 248, 8, &blend_map);
+
+    screen.blended_rect(-16, 30, -1, 46, 9, &blend_map);
+    screen.blended_rect(40, -16, 55, -1, 10, &blend_map);
+    screen.blended_rect(320, 150, 335, 165, 11, &blend_map);
+    screen.blended_rect(265, 240, 280, 255, 12, &blend_map);
+
+    screen.blended_rect(300, 20, 340, -20, 13, &blend_map);
+    screen.blended_rect(20, 220, -20, 260, 14, &blend_map);
+
+    let path = Path::new("tests/ref/blended_rect_drawing.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn filled_rect_drawing() {
     let (mut screen, palette) = setup();
 
@@ -241,6 +385,34 @@ fn filled_rect_drawing() {
     screen.filled_rect(20, 220, -20, 260, 14);
 
     let path = Path::new("tests/ref/filled_rect_drawing.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_filled_rect_drawing() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+
+    screen.blended_filled_rect(10, 10, 90, 90, 1, &blend_map);
+    screen.blended_filled_rect(10, 110, 90, 190, 2, &blend_map);
+    screen.blended_filled_rect(190, 90, 110, 10, 3, &blend_map);
+
+    //////
+
+    screen.blended_filled_rect(-8, 10, 7, 25, 5, &blend_map);
+    screen.blended_filled_rect(20, -8, 35, 7, 6, &blend_map);
+    screen.blended_filled_rect(313, 170, 328, 185, 7, &blend_map);
+    screen.blended_filled_rect(285, 233, 300, 248, 8, &blend_map);
+
+    screen.blended_filled_rect(-16, 30, -1, 46, 9, &blend_map);
+    screen.blended_filled_rect(40, -16, 55, -1, 10, &blend_map);
+    screen.blended_filled_rect(320, 150, 335, 165, 11, &blend_map);
+    screen.blended_filled_rect(265, 240, 280, 255, 12, &blend_map);
+
+    screen.blended_filled_rect(300, 20, 340, -20, 13, &blend_map);
+    screen.blended_filled_rect(20, 220, -20, 260, 14, &blend_map);
+
+    let path = Path::new("tests/ref/blended_filled_rect_drawing.pcx");
     //screen.to_pcx_file(path, &palette).unwrap();
     assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -424,6 +596,71 @@ fn solid_blits() {
 }
 
 #[test]
+fn blended_solid_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp16 = generate_bitmap(16, 16);
+    let bmp12 = generate_bitmap(12, 12);
+    let bmp21 = generate_bitmap(21, 21);
+    let bmp3 = generate_bitmap(3, 3);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, x+16, y+48);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp12, x+80, y+48);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp21, x+144, y+48);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp3, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp12, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp21, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp3, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -3, 46);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -4, 76);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -8, 106);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -12, 136);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -13, 166);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -14, 196);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, -16, 226);
+
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 46, -3);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 76, -4);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 106, -8);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 136, -12);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 166, -13);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 196, -14);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 226, -16);
+
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 307, 46);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 308, 76);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 312, 106);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 316, 136);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 317, 166);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 318, 196);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 320, 226);
+
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 46, 227);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 76, 228);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 106, 232);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 136, 236);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 166, 237);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 196, 238);
+    screen.blit(BlitMethod::SolidBlended { blend_map: blend_map.clone() }, &bmp16, 226, 240);
+
+    let path = Path::new("tests/ref/blended_solid_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn solid_flipped_blits() {
     let (mut screen, palette) = setup();
     screen.clear(247);
@@ -481,6 +718,68 @@ fn solid_flipped_blits() {
     screen.blit(BlitMethod::SolidFlipped { horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
     let path = Path::new("tests/ref/solid_flipped_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_solid_flipped_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp = generate_bitmap(16, 16);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -3, 46);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -4, 76);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -8, 106);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -12, 136);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -13, 166);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -14, 196);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -16, 226);
+
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, -3);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, -4);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, -8);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, -12);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, -13);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, -14);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, -16);
+
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 307, 46);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 308, 76);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 312, 106);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 316, 136);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 317, 166);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 318, 196);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 320, 226);
+
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, 227);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, 228);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, 232);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, 236);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, 237);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
+    screen.blit(BlitMethod::SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
+
+    let path = Path::new("tests/ref/blended_solid_flipped_blits.pcx");
     //screen.to_pcx_file(path, &palette).unwrap();
     assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -675,6 +974,71 @@ fn transparent_blits() {
 }
 
 #[test]
+fn blended_transparent_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp16 = generate_bitmap(16, 16);
+    let bmp12 = generate_bitmap(12, 12);
+    let bmp21 = generate_bitmap(21, 21);
+    let bmp3 = generate_bitmap(3, 3);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, x+16, y+48);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp12, x+80, y+48);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp21, x+144, y+48);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp3, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp12, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp21, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp3, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -3, 46);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -4, 76);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -8, 106);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -12, 136);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -13, 166);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -14, 196);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -16, 226);
+
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 46, -3);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 76, -4);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 106, -8);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 136, -12);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 166, -13);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 196, -14);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 226, -16);
+
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 307, 46);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 308, 76);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 312, 106);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 316, 136);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 317, 166);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 318, 196);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 320, 226);
+
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 46, 227);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 76, 228);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 106, 232);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 136, 236);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 166, 237);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 196, 238);
+    screen.blit(BlitMethod::TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 226, 240);
+
+    let path = Path::new("tests/ref/blended_transparent_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn transparent_flipped_blits() {
     let (mut screen, palette) = setup();
     screen.clear(247);
@@ -732,6 +1096,68 @@ fn transparent_flipped_blits() {
     screen.blit(BlitMethod::TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
     let path = Path::new("tests/ref/transparent_flipped_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_transparent_flipped_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp = generate_bitmap(16, 16);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -3, 46);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -4, 76);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -8, 106);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -12, 136);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -13, 166);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -14, 196);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -16, 226);
+
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, -3);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, -4);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, -8);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, -12);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, -13);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, -14);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, -16);
+
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 307, 46);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 308, 76);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 312, 106);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 316, 136);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 317, 166);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 318, 196);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 320, 226);
+
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, 227);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, 228);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, 232);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, 236);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, 237);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
+    screen.blit(BlitMethod::TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
+
+    let path = Path::new("tests/ref/blended_transparent_flipped_blits.pcx");
     //screen.to_pcx_file(path, &palette).unwrap();
     assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1047,6 +1473,68 @@ fn rotozoom_blits() {
 }
 
 #[test]
+fn blended_rotozoom_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp = generate_bitmap(16, 16);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomBlended { angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomBlended { angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomBlended { angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -3, 46);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -4, 76);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -8, 106);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -12, 136);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -13, 166);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -14, 196);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -16, 226);
+
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, -3);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, -4);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, -8);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, -12);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, -13);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, -14);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, -16);
+
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 307, 46);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 308, 76);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 312, 106);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 316, 136);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 317, 166);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 318, 196);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 320, 226);
+
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, 227);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, 228);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, 232);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, 236);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, 237);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
+    screen.blit(BlitMethod::RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
+
+    let path = Path::new("tests/ref/blended_rotozoom_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn rotozoom_offset_blits() {
     let (mut screen, palette) = setup();
     screen.clear(247);
@@ -1166,6 +1654,68 @@ fn rotozoom_transparent_blits() {
     screen.blit(BlitMethod::RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
 
     let path = Path::new("tests/ref/rotozoom_transparent_blits.pcx");
+    //screen.to_pcx_file(path, &palette).unwrap();
+    assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_rotozoom_transparent_blits() {
+    let (mut screen, palette, blend_map) = setup_for_blending();
+    let blend_map = Rc::new(blend_map);
+
+    let bmp = generate_bitmap(16, 16);
+
+    let x = 40;
+    let y = 20;
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+
+    let x = 40;
+    let y = 110;
+    unsafe {
+        screen.blit_unchecked(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+16, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x+80, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x+144, y+48);
+        screen.blit_unchecked(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x+208, y+48);
+    }
+
+    //////
+
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -3, 46);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -4, 76);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -8, 106);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -12, 136);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -13, 166);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -14, 196);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -16, 226);
+
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, -3);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, -4);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, -8);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, -12);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, -13);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, -14);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, -16);
+
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 307, 46);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 308, 76);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 312, 106);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 316, 136);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 317, 166);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 318, 196);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 320, 226);
+
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, 227);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, 228);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, 232);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, 236);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, 237);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
+    screen.blit(BlitMethod::RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
+
+    let path = Path::new("tests/ref/blended_rotozoom_transparent_blits.pcx");
     //screen.to_pcx_file(path, &palette).unwrap();
     assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
