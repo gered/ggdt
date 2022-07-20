@@ -827,8 +827,10 @@ impl Bitmap {
             // rotozoom blits internally clip per-pixel right now ... and regardless, the normal
             // clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
             RotoZoom { .. } => {}
+            RotoZoomBlended { .. } => {}
             RotoZoomOffset { .. } => {}
             RotoZoomTransparent { .. } => {}
+            RotoZoomTransparentBlended { .. } => {}
             RotoZoomTransparentOffset { .. } => {}
 
             // set axis flip arguments
