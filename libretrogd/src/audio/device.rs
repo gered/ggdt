@@ -29,6 +29,22 @@ pub struct AudioChannel {
     pub position: usize,
 }
 
+impl std::fmt::Debug for AudioChannel {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AudioChannel")
+            .field("playing", &self.playing)
+            .field("loops", &self.loops)
+            .field("data.len()", &self.data.len())
+            .field("generator", match self.generator {
+                Some(..) => &"Some(..)",
+                None => &"None",
+            })
+            .field("volume", &self.volume)
+            .field("position", &self.position)
+            .finish_non_exhaustive()
+    }
+}
+
 impl AudioChannel {
     pub fn new() -> Self {
         AudioChannel {
@@ -171,6 +187,7 @@ pub enum AudioDeviceError {
 /// Represents the audio device and performs mixing of all of the [`AudioChannel`]s that are
 /// currently playing. You should not be creating this manually, but obtaining it as needed via
 /// [`Audio::lock`].
+#[derive(Debug)]
 pub struct AudioDevice {
     spec: AudioSpec,
     channels: Vec<AudioChannel>,

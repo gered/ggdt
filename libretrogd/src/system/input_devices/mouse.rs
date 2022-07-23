@@ -39,6 +39,7 @@ const DEFAULT_MOUSE_CURSOR: [u8; DEFAULT_MOUSE_CURSOR_WIDTH * DEFAULT_MOUSE_CURS
 /// this house-keeping by simply calling [`System`]'s `do_events` method once per frame.
 ///
 /// [`System`]: crate::System
+#[derive(Debug)]
 pub struct Mouse {
     x: i32,
     y: i32,

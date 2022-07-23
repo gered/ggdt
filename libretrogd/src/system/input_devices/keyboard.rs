@@ -12,6 +12,7 @@ const MAX_KEYS: usize = 256;
 /// this house-keeping by simply calling [`System`]'s `do_events` method once per frame.
 ///
 /// [`System`]: crate::System
+#[derive(Debug)]
 pub struct Keyboard {
     keyboard: [ButtonState; MAX_KEYS], // Box<[ButtonState]>,
 }

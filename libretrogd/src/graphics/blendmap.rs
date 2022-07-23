@@ -1,3 +1,4 @@
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
@@ -41,6 +42,15 @@ pub struct BlendMap {
     start_color: u8,
     end_color: u8,
     mapping: Box<[BlendMapping]>,
+}
+
+impl std::fmt::Debug for BlendMap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BlendMap")
+            .field("start_color", &self.start_color)
+            .field("end_color", &self.end_color)
+            .finish_non_exhaustive()
+    }
 }
 
 impl BlendMap {

@@ -1,3 +1,5 @@
+use std::fmt::Formatter;
+
 use byte_slice_cast::AsByteSlice;
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::audio::AudioSpecDesired;
@@ -331,6 +333,23 @@ pub struct System {
     /// The current mouse state. To ensure it is updated each frame, you should call
     /// [`System::do_events`] or [`System::do_events_with`] each frame.
     pub mouse: Mouse,
+}
+
+impl std::fmt::Debug for System {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("System")
+            .field("audio", &self.audio)
+            .field("audio_queue", &self.audio_queue)
+            .field("video", &self.video)
+            .field("palette", &self.palette)
+            .field("font", &self.font)
+            .field("keyboard", &self.keyboard)
+            .field("mouse", &self.mouse)
+            .field("target_framerate", &self.target_framerate)
+            .field("target_framerate_delta", &self.target_framerate_delta)
+            .field("next_tick", &self.next_tick)
+            .finish_non_exhaustive()
+    }
 }
 
 impl System {

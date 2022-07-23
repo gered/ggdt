@@ -1,3 +1,4 @@
+use std::fmt::Formatter;
 use std::path::Path;
 use std::slice;
 
@@ -40,12 +41,22 @@ pub enum BitmapError {
 /// one row to the next is always exactly equal to the bitmap width. Rendering operations provided
 /// here are done with respect to the bitmaps clipping region, where rendering outside of the
 /// clipping region is simply not performed / stops at the clipping boundary.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct Bitmap {
     width: u32,
     height: u32,
     pixels: Box<[u8]>,
     clip_region: Rect,
+}
+
+impl std::fmt::Debug for Bitmap {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Bitmap")
+            .field("width", &self.width)
+            .field("height", &self.height)
+            .field("clip_region", &self.clip_region)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Bitmap {

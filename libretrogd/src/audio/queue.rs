@@ -35,11 +35,59 @@ pub enum AudioCommand {
     },
 }
 
+impl std::fmt::Debug for AudioCommand {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use AudioCommand::*;
+        match self {
+            StopChannel(n) => write!(f, "StopChannel({})", n),
+            StopAllChannels => write!(f, "StopAllChannels"),
+            PlayBuffer { buffer, loops } => {
+                f.debug_struct("PlayBuffer")
+                    .field("buffer", buffer)
+                    .field("loops", loops)
+                    .finish()
+            },
+            PlayRcBuffer { buffer, loops } => {
+                f.debug_struct("PlayRcBuffer")
+                    .field("buffer", buffer)
+                    .field("loops", loops)
+                    .finish()
+            },
+            PlayBufferOnChannel { channel, buffer, loops } => {
+                f.debug_struct("PlayBufferOnChannel")
+                    .field("channel", channel)
+                    .field("buffer", buffer)
+                    .field("loops", loops)
+                    .finish()
+            },
+            PlayRcBufferOnChannel { channel, buffer, loops } => {
+                f.debug_struct("PlayRcBufferOnChannel")
+                    .field("channel", channel)
+                    .field("buffer", buffer)
+                    .field("loops", loops)
+                    .finish()
+            },
+            PlayGenerator { loops, .. } => {
+                f.debug_struct("PlayGenerator")
+                    .field("loops", loops)
+                    .finish_non_exhaustive()
+            },
+            PlayGeneratorOnChannel { channel, loops, .. } => {
+                f.debug_struct("PlayGeneratorOnChannel")
+                    .field("channel", channel)
+                    .field("loops", loops)
+                    .finish_non_exhaustive()
+            },
+        }
+    }
+}
+
 /// A convenience abstraction that can be used to queue up commands to be issued to an
 /// [`AudioDevice`]. This can be more useful to utilize in applications versus needing to directly
 /// lock the [`AudioDevice`] and then determine what your application needs to do and issue those
 /// commands that time. [`AudioQueue`] lets you play/stop audio in more of a "fire-and-forget"
 /// manner.
+#[derive(Debug)]
 pub struct AudioQueue {
     spec: AudioSpec,
     commands: VecDeque<AudioCommand>,

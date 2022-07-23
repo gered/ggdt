@@ -1,3 +1,5 @@
+use std::fmt::Formatter;
+
 use sdl2::audio::{AudioFormat, AudioFormatNum, AudioSpecDesired};
 use sdl2::AudioSubsystem;
 use thiserror::Error;
@@ -94,6 +96,14 @@ pub enum AudioError {
 pub struct Audio {
     spec: AudioSpec,
     sdl_audio_device: sdl2::audio::AudioDevice<AudioDevice>,
+}
+
+impl std::fmt::Debug for Audio {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Audio")
+            .field("spec", &self.spec)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Audio {

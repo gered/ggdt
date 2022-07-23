@@ -1,6 +1,7 @@
-use std::any::{TypeId};
+use std::any::TypeId;
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::{HashMap, HashSet};
+use std::fmt::Formatter;
 
 use crate::utils::AsAny;
 
@@ -66,6 +67,16 @@ pub struct Entities {
     entities: HashSet<EntityId>,
     component_stores: HashMap<TypeId, Box<dyn GenericComponentStore>>,
     next_id: EntityId,
+}
+
+impl std::fmt::Debug for Entities {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Entities")
+            .field("entities.len()", &self.entities.len())
+            .field("component_stores.keys()", &self.component_stores.keys())
+            .field("next_id", &self.next_id)
+            .finish_non_exhaustive()
+    }
 }
 
 impl Entities {
@@ -420,6 +431,15 @@ pub type RenderFn<T> = fn(&mut T);
 pub struct ComponentSystems<U, R> {
     update_systems: Vec<UpdateFn<U>>,
     render_systems: Vec<RenderFn<R>>,
+}
+
+impl<U, R> std::fmt::Debug for ComponentSystems<U, R> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ComponentSystems")
+            .field("update_systems.len()", &self.update_systems.len())
+            .field("render_systems.len()", &self.render_systems.len())
+            .finish_non_exhaustive()
+    }
 }
 
 impl<U, R> ComponentSystems<U, R> {

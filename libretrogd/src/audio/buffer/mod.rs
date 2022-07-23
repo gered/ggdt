@@ -11,10 +11,19 @@ pub enum AudioBufferError {
 }
 
 /// Holds audio sample data that can be played via [`AudioDevice`].
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct AudioBuffer {
     spec: AudioSpec,
     pub data: Vec<u8>,
+}
+
+impl std::fmt::Debug for AudioBuffer {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("AudioBuffer")
+            .field("spec", &self.spec)
+            .field("data.len()", &self.data.len())
+            .finish_non_exhaustive()
+    }
 }
 
 impl AudioBuffer {

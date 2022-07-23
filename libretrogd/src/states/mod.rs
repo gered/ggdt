@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use std::fmt::Formatter;
 use std::ops::DerefMut;
 
 use thiserror::Error;
@@ -34,6 +35,17 @@ pub enum StateChange<ContextType> {
     Pop(u32),
 }
 
+impl<ContextType> std::fmt::Debug for StateChange<ContextType> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        use StateChange::*;
+        match *self {
+            Push(..) => write!(f, "Push"),
+            Swap(..) => write!(f, "Swap"),
+            Pop(n) => write!(f, "Pop({})", n),
+        }
+    }
+}
+
 pub trait GameState<ContextType> {
     fn update(&mut self, state: State, context: &mut ContextType) -> Option<StateChange<ContextType>>;
     fn render(&mut self, state: State, context: &mut ContextType);
@@ -56,6 +68,15 @@ struct StateContainer<ContextType> {
     current_state: State,
     pending_state_change: Option<State>,
     state: Box<dyn GameState<ContextType>>,
+}
+
+impl<ContextType> std::fmt::Debug for StateContainer<ContextType> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("StateContainer")
+            .field("current_state", &self.current_state)
+            .field("pending_state_change", &self.pending_state_change)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<ContextType> StateContainer<ContextType> {
@@ -161,6 +182,20 @@ pub struct States<ContextType> {
     command: Option<StateChange<ContextType>>,
     pending_state: Option<Box<dyn GameState<ContextType>>>,
     pop_count: Option<u32>,
+}
+
+impl<ContextType> std::fmt::Debug for States<ContextType> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("States")
+            .field("states", &self.states)
+            .field("command", &self.command)
+            .field("pending_state", match self.pending_state {
+                Some(..) => &"Some(..)",
+                None => &"None",
+            })
+            .field("pop_count", &self.pop_count)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<ContextType> States<ContextType> {

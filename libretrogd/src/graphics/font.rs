@@ -1,3 +1,4 @@
+use std::fmt::Formatter;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
@@ -83,11 +84,21 @@ impl Character for BitmaskCharacter {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Clone, Eq, PartialEq)]
 pub struct BitmaskFont {
     characters: Box<[BitmaskCharacter]>,
     line_height: u8,
     space_width: u8,
+}
+
+impl std::fmt::Debug for BitmaskFont {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("BitmaskFont")
+            .field("line_height", &self.line_height)
+            .field("space_width", &self.space_width)
+            .field("characters.len()", &self.characters.len())
+            .finish()
+    }
 }
 
 impl BitmaskFont {
