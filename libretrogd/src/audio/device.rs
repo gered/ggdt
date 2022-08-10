@@ -63,7 +63,7 @@ impl AudioChannel {
         if let Some(generator) = &mut self.generator {
             generator.gen_sample(position)
         } else {
-            self.data.get(self.position).copied()
+            self.data.get(position).copied()
         }
     }
 
