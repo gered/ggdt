@@ -303,6 +303,16 @@ unsafe fn per_pixel_flipped_blit(
 }
 
 #[inline]
+fn rotate_xy(x: f32, y: f32, angle: f32, origin_x: f32, origin_y: f32) -> (f32, f32) {
+    let sin = angle.sin();
+    let cos = angle.cos();
+    (
+        origin_x + ((x - origin_x) * cos) - ((y - origin_y) * sin),
+        origin_y + ((x - origin_x) * sin) + ((y - origin_y) * cos)
+    )
+}
+
+#[inline]
 unsafe fn per_pixel_rotozoom_blit(
     dest: &mut Bitmap,
     src: &Bitmap,
@@ -314,49 +324,72 @@ unsafe fn per_pixel_rotozoom_blit(
     scale_y: f32,
     pixel_fn: impl Fn(u8, &mut Bitmap, i32, i32),
 ) {
-    // TODO: this isn't the best rotozoom algorithm i guess. it has some floating point issues
-    //       that result in missing pixels/rows still in a few places. also the double pixel
-    //       write exists to mask that issue (even worse without it).
-    //       need to re-do this with a better rotozoom algorithm!
+    let dest_width = (src_region.width as f32 * scale_x) as i32;
+    let dest_height = (src_region.height as f32 * scale_y) as i32;
 
-    let new_width = src_region.width as f32 * scale_x;
-    let new_height = src_region.height as f32 * scale_y;
-    if new_width as i32 <= 0 || new_height as i32 <= 0 {
-        return;
-    }
-    let half_new_width = new_width * 0.5;
-    let half_new_height = new_height * 0.5;
+    let half_src_width = (src_region.width / 2) as f32;
+    let half_src_height = (src_region.height / 2) as f32;
+    let half_dest_width = (dest_width / 2) as f32;
+    let half_dest_height = (dest_height / 2) as f32;
 
-    let angle_cos = angle.cos();
-    let angle_sin = angle.sin();
+    // calculate the destination bitmap axis-aligned bounding box of the region we're drawing to
+    // based on the source bitmap bounds when rotated and scaled. this is to prevent potentially
+    // cutting off the corners of the drawn bitmap depending on the exact rotation angle, since
+    // dest_width and dest_height can only really be used (by themselves) to calculate bounding box
+    // extents for 90-degree angle rotations. this feels kinda ugly to me, but not sure what other
+    // clever way to calculate this that there might be (if any).
 
-    let src_delta_x = src_region.width as f32 / new_width;
-    let src_delta_y = src_region.height as f32 / new_height;
+    let left = 0.0;
+    let top = 0.0;
+    let right = (dest_width - 1) as f32;
+    let bottom = (dest_height - 1) as f32;
 
-    let mut src_x = 0.0;
-    let mut src_y = 0.0;
+    let (top_left_x, top_left_y) = rotate_xy(left, top, angle, half_dest_width, half_dest_height);
+    let (top_right_x, top_right_y) = rotate_xy(right, top, angle, half_dest_width, half_dest_height);
+    let (bottom_left_x, bottom_left_y) = rotate_xy(left, bottom, angle, half_dest_width, half_dest_height);
+    let (bottom_right_x, bottom_right_y) = rotate_xy(right, bottom, angle, half_dest_width, half_dest_height);
 
-    let dest_center_x = dest_x as f32 + half_new_width;
-    let dest_center_y = dest_y as f32 + half_new_height;
+    let x1 = top_left_x.min(bottom_left_x).min(top_right_x).min(bottom_right_x) as i32;
+    let x2 = top_left_x.max(bottom_left_x).max(top_right_x).max(bottom_right_x) as i32;
+    let y1 = top_left_y.min(bottom_left_y).min(top_right_y).min(bottom_right_y) as i32;
+    let y2 = top_left_y.max(bottom_left_y).max(top_right_y).max(bottom_right_y) as i32;
 
-    for point_y in 0..new_height as i32 {
-        let src_pixels = src.pixels_at_unchecked(src_region.x, src_region.y + src_y as i32);
+    // now we're ready to draw. we'll be iterating through each pixel on the area we calculated
+    // just above -- that is (x1,y1)-(x2,y2) -- on the DESTINATION bitmap and for each of these
+    // x/y coordinates we'll sample the source bitmap after applying a reverse rotation/scale to get
+    // the equivalent source bitmap x/y pixel coordinate to be drawn. this is to ensure we don't
+    // end up with any "gap" pixels which would likely result if we instead simply iterated through
+    // the source bitmap pixels and only drew the resulting pixels.
 
-        for point_x in 0..new_width as i32 {
-            let pixel = src_pixels[src_x as usize];
-            let draw_x = ((angle_cos * (point_x as f32 - half_new_width))
-                - (angle_sin * (point_y as f32 - half_new_height))
-                + dest_center_x) as i32;
-            let draw_y = ((angle_cos * (point_y as f32 - half_new_height))
-                + (angle_sin * (point_x as f32 - half_new_width))
-                + dest_center_y) as i32;
+    let sin = -angle.sin();
+    let cos = angle.cos();
 
-            pixel_fn(pixel, dest, draw_x, draw_y);
-            src_x += src_delta_x;
+    let scale_x = 1.0 / scale_x;
+    let scale_y = 1.0 / scale_y;
+
+    for y in y1..=y2 {
+        for x in x1..=x2 {
+            // map the destination bitmap x/y coordinate we're currently at to it's source bitmap
+            // x/y coordinate by applying a reverse rotation/scale.
+            // note that for these transformations, we're doing a "weird" thing by utilizing the
+            // destination bitmap's center point as the origin _except_ for the final post-transform
+            // offset where we instead use the source bitmap's center point to re-translate the
+            // coordinates back. this is necessary because of the (potential) scale differences!
+            let src_x = ((x as f32 - half_dest_width) * cos * scale_x) - ((y as f32 - half_dest_height) * sin * scale_x) + half_src_width;
+            let src_y = ((x as f32 - half_dest_width) * sin * scale_y) + ((y as f32 - half_dest_height) * cos * scale_y) + half_src_height;
+
+            // ensure the source x,y is in bounds, as it very well might not be depending on exactly
+            // where we are inside the destination area currently. also, we're not interested in
+            // wrapping of course, since we just want to draw a single instance of this source
+            // bitmap.
+            if src_x >= 0.0 && (src_x as i32) < (src_region.width as i32) && src_y >= 0.0 && (src_y as i32) < (src_region.height as i32) {
+                let pixel = src.get_pixel_unchecked(src_x as i32 + src_region.x, src_y as i32 + src_region.y);
+
+                let draw_x = x + dest_x as i32;
+                let draw_y = y + dest_y as i32;
+                pixel_fn(pixel, dest, draw_x, draw_y);
+            }
         }
-
-        src_x = 0.0;
-        src_y += src_delta_y;
     }
 }
 
@@ -647,10 +680,8 @@ impl Bitmap {
         per_pixel_rotozoom_blit(
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
-                // write the same pixel twice to mask some floating point issues (?) which would
-                // manifest as "gap" pixels on the destination. ugh!
                 dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
-                dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
+                //dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
             }
         );
     }
@@ -669,9 +700,6 @@ impl Bitmap {
         per_pixel_rotozoom_blit(
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
-                // write the same pixel twice to mask some floating point issues (?) which would
-                // manifest as "gap" pixels on the destination. ugh!
-
                 if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
                     let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
                         blended_pixel
@@ -679,15 +707,6 @@ impl Bitmap {
                         src_pixel
                     };
                     dest_bitmap.set_pixel(draw_x, draw_y, draw_pixel);
-                }
-
-                if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x + 1, draw_y) {
-                    let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
-                        blended_pixel
-                    } else {
-                        src_pixel
-                    };
-                    dest_bitmap.set_pixel(draw_x + 1, draw_y, draw_pixel);
                 }
             }
         );
@@ -708,10 +727,7 @@ impl Bitmap {
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
                 if transparent_color != src_pixel {
-                    // write the same pixel twice to mask some floating point issues (?) which would
-                    // manifest as "gap" pixels on the destination. ugh!
                     dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
-                    dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
                 }
             }
         );
@@ -733,9 +749,6 @@ impl Bitmap {
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
                 if transparent_color != src_pixel {
-                    // write the same pixel twice to mask some floating point issues (?) which would
-                    // manifest as "gap" pixels on the destination. ugh!
-
                     if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
                         let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
                             blended_pixel
@@ -743,15 +756,6 @@ impl Bitmap {
                             src_pixel
                         };
                         dest_bitmap.set_pixel(draw_x, draw_y, draw_pixel);
-                    }
-
-                    if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x + 1, draw_y) {
-                        let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
-                            blended_pixel
-                        } else {
-                            src_pixel
-                        };
-                        dest_bitmap.set_pixel(draw_x + 1, draw_y, draw_pixel);
                     }
                 }
             }
@@ -773,10 +777,7 @@ impl Bitmap {
             self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
             |src_pixel, dest_bitmap, draw_x, draw_y| {
                 let src_pixel = src_pixel.wrapping_add(offset);
-                // write the same pixel twice to mask some floating point issues (?) which would
-                // manifest as "gap" pixels on the destination. ugh!
                 dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
-                dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
             }
         );
     }
@@ -798,10 +799,7 @@ impl Bitmap {
             |src_pixel, dest_bitmap, draw_x, draw_y| {
                 if transparent_color != src_pixel {
                     let src_pixel = src_pixel.wrapping_add(offset);
-                    // write the same pixel twice to mask some floating point issues (?) which would
-                    // manifest as "gap" pixels on the destination. ugh!
                     dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
-                    dest_bitmap.set_pixel(draw_x + 1, draw_y, src_pixel);
                 }
             }
         );
