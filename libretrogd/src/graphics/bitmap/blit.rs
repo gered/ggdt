@@ -303,16 +303,6 @@ unsafe fn per_pixel_flipped_blit(
 }
 
 #[inline]
-fn rotate_xy(x: f32, y: f32, angle: f32, origin_x: f32, origin_y: f32) -> (f32, f32) {
-    let sin = angle.sin();
-    let cos = angle.cos();
-    (
-        origin_x + ((x - origin_x) * cos) - ((y - origin_y) * sin),
-        origin_y + ((x - origin_x) * sin) + ((y - origin_y) * cos)
-    )
-}
-
-#[inline]
 unsafe fn per_pixel_rotozoom_blit(
     dest: &mut Bitmap,
     src: &Bitmap,
@@ -324,13 +314,13 @@ unsafe fn per_pixel_rotozoom_blit(
     scale_y: f32,
     pixel_fn: impl Fn(u8, &mut Bitmap, i32, i32),
 ) {
-    let dest_width = (src_region.width as f32 * scale_x) as i32;
-    let dest_height = (src_region.height as f32 * scale_y) as i32;
+    let dest_width = src_region.width as f32 * scale_x;
+    let dest_height = src_region.height as f32 * scale_y;
 
-    let half_src_width = (src_region.width / 2) as f32;
-    let half_src_height = (src_region.height / 2) as f32;
-    let half_dest_width = (dest_width / 2) as f32;
-    let half_dest_height = (dest_height / 2) as f32;
+    let half_src_width = src_region.width as f32 * 0.5;
+    let half_src_height = src_region.height as f32 * 0.5;
+    let half_dest_width = dest_width * 0.5;
+    let half_dest_height = dest_height * 0.5;
 
     // calculate the destination bitmap axis-aligned bounding box of the region we're drawing to
     // based on the source bitmap bounds when rotated and scaled. this is to prevent potentially
@@ -339,20 +329,26 @@ unsafe fn per_pixel_rotozoom_blit(
     // extents for 90-degree angle rotations. this feels kinda ugly to me, but not sure what other
     // clever way to calculate this that there might be (if any).
 
-    let left = 0.0;
-    let top = 0.0;
-    let right = (dest_width - 1) as f32;
-    let bottom = (dest_height - 1) as f32;
+    let sin = angle.sin();
+    let cos = angle.cos();
 
-    let (top_left_x, top_left_y) = rotate_xy(left, top, angle, half_dest_width, half_dest_height);
-    let (top_right_x, top_right_y) = rotate_xy(right, top, angle, half_dest_width, half_dest_height);
-    let (bottom_left_x, bottom_left_y) = rotate_xy(left, bottom, angle, half_dest_width, half_dest_height);
-    let (bottom_right_x, bottom_right_y) = rotate_xy(right, bottom, angle, half_dest_width, half_dest_height);
+    let left = -half_dest_width * cos - half_dest_height * sin;
+    let top = -half_dest_width * sin + half_dest_height * cos;
+    let right = half_dest_width * cos - half_dest_height * sin;
+    let bottom = half_dest_width * sin + half_dest_height * cos;
 
-    let x1 = top_left_x.min(bottom_left_x).min(top_right_x).min(bottom_right_x) as i32;
-    let x2 = top_left_x.max(bottom_left_x).max(top_right_x).max(bottom_right_x) as i32;
-    let y1 = top_left_y.min(bottom_left_y).min(top_right_y).min(bottom_right_y) as i32;
-    let y2 = top_left_y.max(bottom_left_y).max(top_right_y).max(bottom_right_y) as i32;
+    let (top_left_x, top_left_y) = (left + half_dest_width, top + half_dest_height);
+    let (top_right_x, top_right_y) = (right + half_dest_width, bottom + half_dest_height);
+    let (bottom_left_x, bottom_left_y) = (-left + half_dest_width, -top + half_dest_height);
+    let (bottom_right_x, bottom_right_y) = (-right + half_dest_width, -bottom + half_dest_height);
+
+    // HACK: -/+ 1's because this seems to fix some destination area accidental clipping for _some_
+    //       rotation angles ... ? i guess some other math is probably wrong somewhere or some
+    //       floating point rounding fun perhaps?
+    let x1 = top_left_x.min(bottom_left_x).min(top_right_x).min(bottom_right_x) as i32 - 1;
+    let x2 = top_left_x.max(bottom_left_x).max(top_right_x).max(bottom_right_x) as i32 + 1;
+    let y1 = top_left_y.min(bottom_left_y).min(top_right_y).min(bottom_right_y) as i32 - 1;
+    let y2 = top_left_y.max(bottom_left_y).max(top_right_y).max(bottom_right_y) as i32 + 1;
 
     // now we're ready to draw. we'll be iterating through each pixel on the area we calculated
     // just above -- that is (x1,y1)-(x2,y2) -- on the DESTINATION bitmap and for each of these
@@ -385,8 +381,8 @@ unsafe fn per_pixel_rotozoom_blit(
             if src_x >= 0.0 && (src_x as i32) < (src_region.width as i32) && src_y >= 0.0 && (src_y as i32) < (src_region.height as i32) {
                 let pixel = src.get_pixel_unchecked(src_x as i32 + src_region.x, src_y as i32 + src_region.y);
 
-                let draw_x = x + dest_x as i32;
-                let draw_y = y + dest_y as i32;
+                let draw_x = x + dest_x;
+                let draw_y = y + dest_y;
                 pixel_fn(pixel, dest, draw_x, draw_y);
             }
         }
