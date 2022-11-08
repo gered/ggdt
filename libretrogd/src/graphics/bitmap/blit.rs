@@ -345,10 +345,12 @@ unsafe fn per_pixel_rotozoom_blit(
     // HACK: -/+ 1's because this seems to fix some destination area accidental clipping for _some_
     //       rotation angles ... ? i guess some other math is probably wrong somewhere or some
     //       floating point rounding fun perhaps?
-    let x1 = top_left_x.min(bottom_left_x).min(top_right_x).min(bottom_right_x) as i32 - 1;
-    let x2 = top_left_x.max(bottom_left_x).max(top_right_x).max(bottom_right_x) as i32 + 1;
-    let y1 = top_left_y.min(bottom_left_y).min(top_right_y).min(bottom_right_y) as i32 - 1;
-    let y2 = top_left_y.max(bottom_left_y).max(top_right_y).max(bottom_right_y) as i32 + 1;
+    let dest_region = Rect::from_coords(
+        top_left_x.min(bottom_left_x).min(top_right_x).min(bottom_right_x) as i32 - 1,
+        top_left_y.min(bottom_left_y).min(top_right_y).min(bottom_right_y) as i32 - 1,
+        top_left_x.max(bottom_left_x).max(top_right_x).max(bottom_right_x) as i32 + 1,
+        top_left_y.max(bottom_left_y).max(top_right_y).max(bottom_right_y) as i32 + 1
+    );
 
     // now we're ready to draw. we'll be iterating through each pixel on the area we calculated
     // just above -- that is (x1,y1)-(x2,y2) -- on the DESTINATION bitmap and for each of these
@@ -363,8 +365,8 @@ unsafe fn per_pixel_rotozoom_blit(
     let scale_x = 1.0 / scale_x;
     let scale_y = 1.0 / scale_y;
 
-    for y in y1..=y2 {
-        for x in x1..=x2 {
+    for y in dest_region.y..=dest_region.bottom() {
+        for x in dest_region.x..=dest_region.right() {
             // map the destination bitmap x/y coordinate we're currently at to it's source bitmap
             // x/y coordinate by applying a reverse rotation/scale.
             // note that for these transformations, we're doing a "weird" thing by utilizing the
