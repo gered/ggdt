@@ -156,25 +156,34 @@ pub fn greyscale(r: u8, b: u8, g: u8) -> u8 {
 }
 
 // vga bios (0-63) format
-fn read_256color_6bit_palette<T: ReadBytesExt>(
+fn read_palette_6bit<T: ReadBytesExt>(
     reader: &mut T,
+    num_colors: usize,
 ) -> Result<[u32; NUM_COLORS], PaletteError> {
+    if num_colors > NUM_COLORS {
+        return Err(PaletteError::OutOfRange(num_colors))
+    }
     let mut colors = [0u32; NUM_COLORS];
-    for color in colors.iter_mut() {
+    for i in 0..num_colors {
         let r = reader.read_u8()?;
         let g = reader.read_u8()?;
         let b = reader.read_u8()?;
-        *color = to_rgb32(r * 4, g * 4, b * 4);
+        let color = to_rgb32(r * 4, g * 4, b * 4);
+        colors[i as usize] = color;
     }
     Ok(colors)
 }
 
-fn write_256color_6bit_palette<T: WriteBytesExt>(
+fn write_palette_6bit<T: WriteBytesExt>(
     writer: &mut T,
     colors: &[u32; NUM_COLORS],
+    num_colors: usize,
 ) -> Result<(), PaletteError> {
-    for color in colors.iter() {
-        let (r, g, b) = from_rgb32(*color);
+    if num_colors > NUM_COLORS {
+        return Err(PaletteError::OutOfRange(num_colors))
+    }
+    for i in 0..num_colors {
+        let (r, g, b) = from_rgb32(colors[i as usize]);
         writer.write_u8(r / 4)?;
         writer.write_u8(g / 4)?;
         writer.write_u8(b / 4)?;
@@ -183,25 +192,34 @@ fn write_256color_6bit_palette<T: WriteBytesExt>(
 }
 
 // normal (0-255) format
-fn read_256color_8bit_palette<T: ReadBytesExt>(
+fn read_palette_8bit<T: ReadBytesExt>(
     reader: &mut T,
+    num_colors: usize,
 ) -> Result<[u32; NUM_COLORS], PaletteError> {
+    if num_colors > NUM_COLORS {
+        return Err(PaletteError::OutOfRange(num_colors))
+    }
     let mut colors = [0u32; NUM_COLORS];
-    for color in colors.iter_mut() {
+    for i in 0..num_colors {
         let r = reader.read_u8()?;
         let g = reader.read_u8()?;
         let b = reader.read_u8()?;
-        *color = to_rgb32(r, g, b);
+        let color = to_rgb32(r, g, b);
+        colors[i as usize] = color;
     }
     Ok(colors)
 }
 
-fn write_256color_8bit_palette<T: WriteBytesExt>(
+fn write_palette_8bit<T: WriteBytesExt>(
     writer: &mut T,
     colors: &[u32; NUM_COLORS],
+    num_colors: usize,
 ) -> Result<(), PaletteError> {
-    for color in colors.iter() {
-        let (r, g, b) = from_rgb32(*color);
+    if num_colors > NUM_COLORS {
+        return Err(PaletteError::OutOfRange(num_colors))
+    }
+    for i in 0..num_colors {
+        let (r, g, b) = from_rgb32(colors[i as usize]);
         writer.write_u8(r)?;
         writer.write_u8(g)?;
         writer.write_u8(b)?;
@@ -213,6 +231,9 @@ fn write_256color_8bit_palette<T: WriteBytesExt>(
 pub enum PaletteError {
     #[error("Palette I/O error")]
     IOError(#[from] std::io::Error),
+
+    #[error("Size or index is out of the supported range for palettes: {0}")]
+    OutOfRange(usize),
 }
 
 pub enum PaletteFormat {
@@ -274,8 +295,52 @@ impl Palette {
         format: PaletteFormat,
     ) -> Result<Palette, PaletteError> {
         let colors = match format {
-            PaletteFormat::Vga => read_256color_6bit_palette(reader)?,
-            PaletteFormat::Normal => read_256color_8bit_palette(reader)?,
+            PaletteFormat::Vga => read_palette_6bit(reader, NUM_COLORS)?,
+            PaletteFormat::Normal => read_palette_8bit(reader, NUM_COLORS)?,
+        };
+        Ok(Palette { colors })
+    }
+
+    /// Loads and returns a Palette from a palette file on disk, where the palette only contains
+    /// the number of colors specified, less than or equal to 256 otherwise an error is returned.
+    /// The remaining color entries will all be 0,0,0 (black) in the returned palette.
+    ///
+    /// # Arguments
+    ///
+    /// * `path`: the path of the palette file to be loaded
+    /// * `format`: the format that the palette data is expected to be in
+    /// * `num_colors`: the expected number of colors in the palette to be loaded (<= 256)
+    pub fn load_num_colors_from_file(
+        path: &Path,
+        format: PaletteFormat,
+        num_colors: usize,
+    ) -> Result<Palette, PaletteError> {
+        let f = File::open(path)?;
+        let mut reader = BufReader::new(f);
+        Self::load_num_colors_from_bytes(&mut reader, format, num_colors)
+    }
+
+    /// Loads and returns a Palette from a reader. The data being loaded is expected to be the same
+    /// as if the palette was being loaded from a file on disk. The palette being read should only
+    /// contain the number of colors specified, less than or equal to 256 otherwise an error is
+    /// returned. The remaining color entries will all be 0,0,0 (black) in the returned palette.
+    ///
+    /// # Arguments
+    ///
+    /// * `reader`: the reader to load the palette from
+    /// * `format`: the format that the palette data is expected to be in
+    /// * `num_colors`: the expected number of colors in the palette to be loaded (<= 256)
+    pub fn load_num_colors_from_bytes<T: ReadBytesExt>(
+        reader: &mut T,
+        format: PaletteFormat,
+        num_colors: usize,
+    ) -> Result<Palette, PaletteError> {
+        if num_colors > NUM_COLORS {
+            return Err(PaletteError::OutOfRange(num_colors))
+        }
+        let colors = match format {
+            PaletteFormat::Vga => read_palette_6bit(reader, num_colors)?,
+            PaletteFormat::Normal => read_palette_8bit(reader, num_colors)?,
         };
         Ok(Palette { colors })
     }
@@ -304,8 +369,57 @@ impl Palette {
         format: PaletteFormat,
     ) -> Result<(), PaletteError> {
         match format {
-            PaletteFormat::Vga => write_256color_6bit_palette(writer, &self.colors),
-            PaletteFormat::Normal => write_256color_8bit_palette(writer, &self.colors),
+            PaletteFormat::Vga => write_palette_6bit(writer, &self.colors, NUM_COLORS),
+            PaletteFormat::Normal => write_palette_8bit(writer, &self.colors, NUM_COLORS),
+        }
+    }
+
+    /// Writes the palette to a file on disk. If the file already exists, it will be overwritten.
+    /// Will only write out the specified number of colors to the palette file being written,
+    /// starting from the first color in the palette always. If the color count specified is
+    /// greater than 256 an error is returned.
+    ///
+    /// # Arguments
+    ///
+    /// * `path`: the path of the file to save the palette to
+    /// * `format`: the format to write the palette data in
+    /// * `num_colors`: the number of colors from this palette to write out to the file (<= 256)
+    pub fn num_colors_to_file(
+        &self,
+        path: &Path,
+        format: PaletteFormat,
+        num_colors: usize,
+    ) -> Result<(), PaletteError> {
+        if num_colors > NUM_COLORS {
+            return Err(PaletteError::OutOfRange(num_colors))
+        }
+        let f = File::create(path)?;
+        let mut writer = BufWriter::new(f);
+        self.num_colors_to_bytes(&mut writer, format, num_colors)
+    }
+
+    /// Writes the palette to a writer, in the same format as if it was writing to a file on disk.
+    /// Will only write out the specified number of colors to the writer, starting from the first
+    /// color in the palette always. If the color count specified is greater than 256 an error is
+    /// returned.
+    ///
+    /// # Arguments
+    ///
+    /// * `writer`: the writer to write palette data to
+    /// * `format`: the format to write the palette data in
+    /// * `num_colors`: the number of colors from this palette to write out (<= 256)
+    pub fn num_colors_to_bytes<T: WriteBytesExt>(
+        &self,
+        writer: &mut T,
+        format: PaletteFormat,
+        num_colors: usize,
+    ) -> Result<(), PaletteError> {
+        if num_colors > NUM_COLORS {
+            return Err(PaletteError::OutOfRange(num_colors))
+        }
+        match format {
+            PaletteFormat::Vga => write_palette_6bit(writer, &self.colors, num_colors),
+            PaletteFormat::Normal => write_palette_8bit(writer, &self.colors, num_colors),
         }
     }
 
@@ -570,7 +684,7 @@ mod tests {
         assert_eq!(0, palette[1]);
     }
 
-    fn assert_vga_palette(palette: &Palette) {
+    fn assert_ega_colors(palette: &Palette) {
         assert_eq!(0xff000000, palette[0]);
         assert_eq!(0xff0000a8, palette[1]);
         assert_eq!(0xff00a800, palette[2]);
@@ -593,17 +707,17 @@ mod tests {
     fn load_and_save() -> Result<(), PaletteError> {
         let tmp_dir = TempDir::new()?;
 
-        // vga format
+        // vga rgb format (6-bit)
 
         let palette = Palette::load_from_file(Path::new("./assets/vga.pal"), PaletteFormat::Vga)?;
-        assert_vga_palette(&palette);
+        assert_ega_colors(&palette);
 
         let save_path = tmp_dir.path().join("test_save_vga_format.pal");
         palette.to_file(&save_path, PaletteFormat::Vga)?;
         let reloaded_palette = Palette::load_from_file(&save_path, PaletteFormat::Vga)?;
         assert_eq!(palette, reloaded_palette);
 
-        // normal format
+        // normal rgb format (8-bit)
 
         let palette =
             Palette::load_from_file(Path::new("./test-assets/dp2.pal"), PaletteFormat::Normal)?;
@@ -611,6 +725,32 @@ mod tests {
         let save_path = tmp_dir.path().join("test_save_normal_format.pal");
         palette.to_file(&save_path, PaletteFormat::Normal)?;
         let reloaded_palette = Palette::load_from_file(&save_path, PaletteFormat::Normal)?;
+        assert_eq!(palette, reloaded_palette);
+
+        Ok(())
+    }
+
+    #[test]
+    fn load_and_save_arbitrary_color_count() -> Result<(), PaletteError> {
+        let tmp_dir = TempDir::new()?;
+
+        // vga rgb format (6-bit)
+
+        let palette = Palette::load_num_colors_from_file(Path::new("./test-assets/ega_6bit.pal"), PaletteFormat::Vga, 16)?;
+        assert_ega_colors(&palette);
+
+        let save_path = tmp_dir.path().join("test_save_vga_format_16_colors.pal");
+        palette.num_colors_to_file(&save_path, PaletteFormat::Vga, 16)?;
+        let reloaded_palette = Palette::load_num_colors_from_file(&save_path, PaletteFormat::Vga, 16)?;
+        assert_eq!(palette, reloaded_palette);
+
+        // normal rgb format (8-bit)
+
+        let palette = Palette::load_num_colors_from_file(Path::new("./test-assets/ega_8bit.pal"), PaletteFormat::Normal, 16)?;
+
+        let save_path = tmp_dir.path().join("test_save_normal_format_16_colors.pal");
+        palette.to_file(&save_path, PaletteFormat::Normal)?;
+        let reloaded_palette = Palette::load_num_colors_from_file(&save_path, PaletteFormat::Normal, 16)?;
         assert_eq!(palette, reloaded_palette);
 
         Ok(())
