@@ -284,8 +284,9 @@ pub mod tests {
 
     use super::*;
 
-    pub static TEST_BMP_PIXELS_RAW: &[u8] =
-        include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+    pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+    pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+    pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
     #[test]
     pub fn load_and_save() -> Result<(), PcxError> {
@@ -312,10 +313,36 @@ pub mod tests {
     }
 
     #[test]
-    pub fn load_larger_image() -> Result<(), PcxError> {
-        let (bmp, _palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test_image.pcx"))?;
+    pub fn load_and_save_larger_image() -> Result<(), PcxError> {
+        let tmp_dir = TempDir::new()?;
+
+        // first image
+
+        let (bmp, palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test_image.pcx"))?;
         assert_eq!(320, bmp.width());
         assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        let save_path = tmp_dir.path().join("test_save.pcx");
+        bmp.to_pcx_file(&save_path, &palette)?;
+        let (reloaded_bmp, _) = Bitmap::load_pcx_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        // second image
+
+        let (bmp, palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test_image2.pcx"))?;
+        assert_eq!(320, bmp.width());
+        assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+
+        let save_path = tmp_dir.path().join("test_save_2.pcx");
+        bmp.to_pcx_file(&save_path, &palette)?;
+        let (reloaded_bmp, _) = Bitmap::load_pcx_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
         Ok(())
     }
