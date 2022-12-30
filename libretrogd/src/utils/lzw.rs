@@ -383,6 +383,8 @@ impl LzwBytesReader {
     }
 }
 
+/// Encodes data read from the `src` using LZW (GIF-variant) compression, writing the encoded
+/// data out to `dest`. The LZW minimum code bit size is specified via `min_code_size`.
 pub fn lzw_encode<S, D>(
     src: &mut S,
     dest: &mut D,
@@ -411,7 +413,9 @@ where
     let mut max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
     let mut next_code = initial_table_size as LzwCode + 2;
 
-    // begin the output code stream
+    // begin the output code stream. always write the min_code_size first as a normal byte. then
+    // write out the clear_code, being sure to encode it using our normal dynamic bit sizing
+    dest.write_u8(min_code_size as u8)?;
     let mut writer = LzwBytesWriter::new(current_bit_size)?;
     writer.write_code(dest, clear_code)?;
 
@@ -507,15 +511,18 @@ where
     Ok(())
 }
 
+/// Decodes data read from the `src` using LZW (GIF-variant) decompression, writing the decoded
+/// data out to `dest`.
 pub fn lzw_decode<S, D>(
     src: &mut S,
     dest: &mut D,
-    min_code_size: usize
 ) -> Result<(), LzwError>
 where
     S: ReadBytesExt,
     D: WriteBytesExt
 {
+    let min_code_size = src.read_u8()? as usize;
+
     if !is_valid_gif_min_code_size_bits(min_code_size) {
         return Err(LzwError::UnsupportedCodeSizeBits(min_code_size));
     }
@@ -650,17 +657,17 @@ mod tests {
     static LZW_TEST_DATA: &[LzwTestData] = &[
         LzwTestData {
             min_code_size: 2,
-            packed: &[0x16, 0x8c, 0x2d, 0x99, 0x87, 0x2a, 0x1c, 0xdc, 0x33, 0xa0, 0x02, 0x75, 0xec, 0x95, 0xfa, 0xa8, 0xde, 0x60, 0x8c, 0x04, 0x91, 0x4c, 0x01, 0x00],
+            packed: &[0x02, 0x16, 0x8c, 0x2d, 0x99, 0x87, 0x2a, 0x1c, 0xdc, 0x33, 0xa0, 0x02, 0x75, 0xec, 0x95, 0xfa, 0xa8, 0xde, 0x60, 0x8c, 0x04, 0x91, 0x4c, 0x01, 0x00],
             unpacked: &[1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1],
         },
         LzwTestData {
             min_code_size: 4,
-            packed: &[0x21, 0x70, 0x49, 0x79, 0x6a, 0x9d, 0xcb, 0x39, 0x7b, 0xa6, 0xd6, 0x96, 0xa4, 0x3d, 0x0f, 0xd8, 0x8d, 0x64, 0xb9, 0x1d, 0x28, 0xa9, 0x2d, 0x15, 0xfa, 0xc2, 0xf1, 0x37, 0x71, 0x33, 0xc5, 0x61, 0x4b, 0x04, 0x00],
+            packed: &[0x04, 0x21, 0x70, 0x49, 0x79, 0x6a, 0x9d, 0xcb, 0x39, 0x7b, 0xa6, 0xd6, 0x96, 0xa4, 0x3d, 0x0f, 0xd8, 0x8d, 0x64, 0xb9, 0x1d, 0x28, 0xa9, 0x2d, 0x15, 0xfa, 0xc2, 0xf1, 0x37, 0x71, 0x33, 0xc5, 0x61, 0x4b, 0x04, 0x00],
             unpacked: &[11, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 14, 14, 7, 7, 7, 7, 11, 11, 11, 14, 14, 14, 14, 7, 7, 7, 11, 11, 14, 14, 15, 15, 14, 14, 7, 7, 11, 14, 14, 15, 15, 15, 15, 14, 14, 7, 7, 14, 14, 15, 15, 15, 15, 14, 14, 11, 7, 7, 14, 14, 15, 15, 14, 14, 11, 11, 7, 7, 7, 14, 14, 14, 14, 11, 11, 11, 7, 7, 7, 7, 14, 14, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 11],
         },
         LzwTestData {
             min_code_size: 8,
-            packed: &[0x0b, 0x00, 0x51, 0xfc, 0x1b, 0x28, 0x70, 0xa0, 0xc1, 0x83, 0x01, 0x01, 0x00],
+            packed: &[0x08, 0x0b, 0x00, 0x51, 0xfc, 0x1b, 0x28, 0x70, 0xa0, 0xc1, 0x83, 0x01, 0x01, 0x00],
             unpacked: &[0x28, 0xff, 0xff, 0xff, 0x28, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],
         }
     ];
@@ -679,10 +686,10 @@ mod tests {
 
     #[test]
     fn lzw_decompresses() -> Result<(), LzwError> {
-        for LzwTestData { packed, unpacked, min_code_size } in LZW_TEST_DATA {
+        for LzwTestData { packed, unpacked, min_code_size: _ } in LZW_TEST_DATA {
             let mut src = Cursor::new(*packed);
             let mut dest = vec![0u8; 0];
-            lzw_decode(&mut src, &mut dest, *min_code_size)?;
+            lzw_decode(&mut src, &mut dest)?;
             assert_eq!(dest, *unpacked);
         }
 

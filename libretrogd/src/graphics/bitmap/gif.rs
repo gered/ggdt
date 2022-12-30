@@ -366,10 +366,9 @@ fn load_image_section<T: ReadBytesExt>(
         palette = None; // we expect to find a local color table later
     }
 
-    let lzw_minimum_code_size = reader.read_u8()?;
     let mut bitmap = Bitmap::new(gif_header.screen_width as u32, gif_header.screen_height as u32).unwrap();
     let mut writer = bitmap.pixels_mut();
-    lzw_decode(reader, &mut writer, lzw_minimum_code_size as usize)?;
+    lzw_decode(reader, &mut writer)?;
 
     Ok((bitmap, palette))
 }
@@ -388,8 +387,9 @@ fn save_image_section<T: WriteBytesExt>(
     };
     image_descriptor.write(writer)?;
 
+    // todo: allow this to changed based on the input palette, if/when we allow gifs to be
+    //       saved with smaller than 256 colour palettes
     let lzw_minimum_code_size = 8;
-    writer.write_u8(lzw_minimum_code_size)?;
 
     let mut reader = bitmap.pixels();
     lzw_encode(&mut reader, writer, lzw_minimum_code_size as usize)?;
