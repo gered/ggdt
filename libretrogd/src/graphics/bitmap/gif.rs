@@ -559,6 +559,7 @@ pub mod tests {
 
     pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
     pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+    pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
     #[test]
     fn load_and_save() -> Result<(), GifError> {
@@ -591,6 +592,8 @@ pub mod tests {
 
         let tmp_dir = TempDir::new()?;
 
+        // first image
+
         let (bmp, palette) = Bitmap::load_gif_file(Path::new("./test-assets/test_image.gif"))?;
         assert_eq!(320, bmp.width());
         assert_eq!(200, bmp.height());
@@ -602,6 +605,20 @@ pub mod tests {
         assert_eq!(320, reloaded_bmp.width());
         assert_eq!(200, reloaded_bmp.height());
         assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        // second image
+
+        let (bmp, palette) = Bitmap::load_gif_file(Path::new("./test-assets/test_image2.gif"))?;
+        assert_eq!(320, bmp.width());
+        assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+
+        let save_path = tmp_dir.path().join("test_save_2.gif");
+        bmp.to_gif_file(&save_path, &palette, GifSettings::Default)?;
+        let (reloaded_bmp, _) = Bitmap::load_gif_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
         Ok(())
     }
