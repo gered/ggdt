@@ -33,6 +33,7 @@ const GIF_MAX_SUB_CHUNK_SIZE: usize = 255;
 const GIF_MAX_CODE_SIZE_BITS: usize = 8;
 const MIN_BITS: usize = 2;
 const MAX_BITS: usize = 12;
+const MAX_CODE_VALUE: LzwCode = (1 as LzwCode).wrapping_shl(MAX_BITS as u32) - 1;
 
 fn is_valid_min_code_size_bits(min_code_size_bits: usize) -> bool {
     min_code_size_bits >= MIN_BITS && min_code_size_bits <= MAX_BITS
@@ -446,21 +447,11 @@ where
             // we have a match, so lets just keep collecting bytes in our buffer ...
             buffer.push_value(byte as u16);
         } else {
-            let mut was_bit_size_increased = false;
-            let mut is_reset_needed = false;
-
             // no match in the table, so we need to create a new code in the table for this
             // string of bytes (buffer + byte) and also emit the code for _just_ the buffer string
+
             let new_code = next_code;
             next_code += 1;
-            if new_code > max_code_value_for_bit_size {
-                current_bit_size += 1;
-                if current_bit_size >= MAX_BITS {
-                    is_reset_needed = true;
-                }
-                max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
-                was_bit_size_increased = true;
-            }
 
             table.insert(buffer_plus_byte, new_code);
 
@@ -470,11 +461,18 @@ where
                 return Err(LzwError::EncodingError(format!("Expected to find code in table for buffer {:?} but none was found", buffer)));
             }
 
-            if was_bit_size_increased {
+            // bump up to the next bit size once we've seen enough codes to necessitate it ...
+            // note that this just means codes that exist in the table, not _necessarily_ codes
+            // which have actually been written out yet ...
+            if new_code > max_code_value_for_bit_size {
+                current_bit_size += 1;
+                max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
                 writer.increase_bit_size()?;
             }
 
-            if is_reset_needed {
+            // reset the table and code bit sizes once we've seen enough codes to fill all our
+            // allowed bits. again, this is just based on codes that exist in the table!
+            if new_code == MAX_CODE_VALUE {
                 // we reached the maximum code bit size, time to re-initialize the code table
                 table = HashMap::with_capacity(initial_table_size + 2);
                 for i in 0..initial_table_size {
