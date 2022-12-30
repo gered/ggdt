@@ -363,7 +363,7 @@ fn load_image_section<T: ReadBytesExt>(
             num_colors,
         )?);
     } else {
-        palette = None; // we expect to find a local color table later
+        palette = None; // we expect that there was a global color table previously
     }
 
     let mut bitmap = Bitmap::new(gif_header.screen_width as u32, gif_header.screen_height as u32).unwrap();
