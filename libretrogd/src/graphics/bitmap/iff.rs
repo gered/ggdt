@@ -564,8 +564,9 @@ mod tests {
 
     use super::*;
 
-    pub static TEST_BMP_PIXELS_RAW: &[u8] =
-        include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+    pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+    pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+    pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
     #[test]
     pub fn load_and_save() -> Result<(), IffError> {
@@ -610,10 +611,64 @@ mod tests {
     }
 
     #[test]
-    pub fn load_larger_image() -> Result<(), IffError> {
-        let (bmp, _palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_image.lbm"))?;
+    pub fn load_and_save_larger_image() -> Result<(), IffError> {
+        let tmp_dir = TempDir::new()?;
+
+        // first image, PBM format
+
+        let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_pbm_image.lbm"))?;
         assert_eq!(320, bmp.width());
         assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        let save_path = tmp_dir.path().join("test_save_pbm_image.lbm");
+        bmp.to_iff_file(&save_path, &palette, IffFormat::Pbm)?;
+        let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        // second image, PBM format
+
+        let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_pbm_image2.lbm"))?;
+        assert_eq!(320, bmp.width());
+        assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+
+        let save_path = tmp_dir.path().join("test_save_pbm_image2.lbm");
+        bmp.to_iff_file(&save_path, &palette, IffFormat::Pbm)?;
+        let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+
+        // first image, ILBM format
+
+        let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image.lbm"))?;
+        assert_eq!(320, bmp.width());
+        assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        let save_path = tmp_dir.path().join("test_save_ilbm_image.lbm");
+        bmp.to_iff_file(&save_path, &palette, IffFormat::Ilbm)?;
+        let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+
+        // second image, ILBM format
+
+        let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image2.lbm"))?;
+        assert_eq!(320, bmp.width());
+        assert_eq!(200, bmp.height());
+        assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+
+        let save_path = tmp_dir.path().join("test_save_ilbm_image2.lbm");
+        bmp.to_iff_file(&save_path, &palette, IffFormat::Ilbm)?;
+        let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+        assert_eq!(320, reloaded_bmp.width());
+        assert_eq!(200, reloaded_bmp.height());
+        assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
         Ok(())
     }
