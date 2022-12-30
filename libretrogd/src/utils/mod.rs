@@ -6,6 +6,7 @@ use rand::Rng;
 
 pub mod bytes;
 pub mod io;
+pub mod lzw;
 pub mod packbits;
 
 pub fn rnd_value<N: SampleUniform + PartialOrd>(low: N, high: N) -> N {

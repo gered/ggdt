@@ -8,11 +8,13 @@ use crate::graphics::*;
 use crate::math::*;
 
 pub use self::blit::*;
+pub use self::gif::*;
 pub use self::iff::*;
 pub use self::pcx::*;
 pub use self::primitives::*;
 
 pub mod blit;
+pub mod gif;
 pub mod iff;
 pub mod pcx;
 pub mod primitives;
@@ -33,6 +35,9 @@ pub enum BitmapError {
 
     #[error("Bitmap PCX file error")]
     PcxError(#[from] pcx::PcxError),
+
+    #[error("Bitmap GIF file error")]
+    GifError(#[from] gif::GifError),
 }
 
 /// Container for 256 color 2D pixel/image data that can be rendered to the screen. Pixel data
@@ -110,6 +115,7 @@ impl Bitmap {
             let extension = extension.to_ascii_lowercase();
             match extension.to_str() {
                 Some("pcx") => Ok(Self::load_pcx_file(path)?),
+                Some("gif") => Ok(Self::load_gif_file(path)?),
                 Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => {
                     Ok(Self::load_iff_file(path)?)
                 }
