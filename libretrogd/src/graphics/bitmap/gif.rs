@@ -6,7 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::*;
-use crate::utils::lzw::{lzw_decode, lzw_encode, LzwError};
+use crate::utils::lzwgif::*;
 
 const BITS_FOR_256_COLORS: u32 = 7;   // formula is `2 ^ (bits + 1) = num_colors`
 
