@@ -1,3 +1,22 @@
+//! GIF-variant implementation of LZW (Lempel-Ziv-Welch) compression and decompression.
+//!
+//! The GIF-specific changes/limitations from other LZW implementations are:
+//!
+//! * LZW-encoded data is packed into a series of one or more sub-chunks of data which are blocks
+//!   of at most 256 bytes in size, with the first byte of each chunk indicating the size of that
+//!   chunk (limited to 255 maximum, because it's only one byte). The sequence of sub-chunks is
+//!   terminated with a zero byte.
+//! * Variable/dynamic code bit sizes are used. The minimum bit size supported is 2, while the
+//!   maximum bit size is 12, after which the code table will be reset before encoding/decoding
+//!   resumes.
+//! * The input "minimum_code_size" parameter for both encoding and decoding must be a bit size
+//!   between 2 and 8.
+//! * Internally the code table is always initialized with 256 entries for each byte value, and
+//!   then two extra special code values are added which are used by the GIF encoding process,
+//!   a "clear code" and an "end of information" code.
+//! * The LZW-encoded stream always starts with a "clear code" and ends with an "end of information"
+//!   code. The "clear code" may also appear at other times within the stream.
+
 use std::collections::HashMap;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
