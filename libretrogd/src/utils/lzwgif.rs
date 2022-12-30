@@ -11,9 +11,9 @@
 //!   resumes.
 //! * The input "minimum_code_size" parameter for both encoding and decoding must be a bit size
 //!   between 2 and 8.
-//! * Internally the code table is always initialized with 256 entries for each byte value, and
-//!   then two extra special code values are added which are used by the GIF encoding process,
-//!   a "clear code" and an "end of information" code.
+//! * Internally the code table is always initialized with all entries needed for the minimum bit
+//!   size specified, plus two extra special code values are added which are used by the GIF
+//!   encoding process, a "clear code" and an "end of information" code.
 //! * The LZW-encoded stream always starts with a "clear code" and ends with an "end of information"
 //!   code. The "clear code" may also appear at other times within the stream.
 
