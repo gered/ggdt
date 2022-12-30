@@ -17,6 +17,8 @@
 //! * The LZW-encoded stream always starts with a "clear code" and ends with an "end of information"
 //!   code. The "clear code" may also appear at other times within the stream.
 
+// TODO: LZW encode/decode algorithm optimizations. specifically, moving away from use of HashMaps
+
 use std::collections::HashMap;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
