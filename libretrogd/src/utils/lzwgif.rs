@@ -64,43 +64,6 @@ fn is_valid_gif_min_code_size_bits(min_code_size_bits: usize) -> bool {
     min_code_size_bits >= MIN_BITS && min_code_size_bits <= GIF_MAX_CODE_SIZE_BITS
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-struct LzwDataBuffer {
-    prefix: Vec<u16>,
-    value: u16,
-}
-
-impl LzwDataBuffer {
-    pub fn new(value: u16) -> Self {
-        LzwDataBuffer {
-            prefix: Vec::new(),
-            value,
-        }
-    }
-
-    pub fn push_value(&mut self, value: u16) {
-        self.prefix.push(self.value);
-        self.value = value;
-    }
-
-    pub fn first(&self) -> u16 {
-        if let Some(value) = self.prefix.first() {
-            *value
-        } else {
-            self.value
-        }
-    }
-
-    pub fn write_all<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), LzwError> {
-        // todo: this feels icky to me?
-        for value in self.prefix.iter() {
-            writer.write_u8(*value as u8)?;
-        }
-        writer.write_u8(self.value as u8)?;
-        Ok(())
-    }
-}
-
 fn get_bitmask_for_bits(bits: usize) -> u32 {
     let mut bitmask = 0;
     for i in 0..bits {
@@ -420,16 +383,18 @@ where
     }
 
     // initialize the table, special codes, bit size info, etc
+    // note that we do not add clear_code or end_of_info_code to the table since they aren't really
+    // needed in the table (they are never looked up in it). this also saves us the trouble of
+    // needing the table to be able to hold buffers containing u16's instead of just u8's.
+    // this does mean that the size of the table is always 2 less than the number of created codes.
 
     let initial_table_size = get_table_size_for_bits(min_code_size);
     let clear_code = initial_table_size as LzwCode;
     let end_of_info_code = initial_table_size as LzwCode + 1;
-    let mut table = HashMap::<LzwDataBuffer, LzwCode>::with_capacity(initial_table_size + 2);
+    let mut table = HashMap::<Vec<u8>, LzwCode>::with_capacity(initial_table_size + 2);
     for i in 0..initial_table_size {
-        table.insert(LzwDataBuffer::new(i as u16), i as LzwCode);
+        table.insert(vec![i as u8], i as LzwCode);
     }
-    table.insert(LzwDataBuffer::new(clear_code), clear_code);
-    table.insert(LzwDataBuffer::new(end_of_info_code), end_of_info_code);
     let mut current_bit_size = min_code_size + 1;
     let mut max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
     let mut next_code = initial_table_size as LzwCode + 2;
@@ -453,7 +418,7 @@ where
         Err(error) => return Err(LzwError::IOError(error))
     };
 
-    let mut buffer = LzwDataBuffer::new(byte as u16);
+    let mut buffer = vec![byte];
 
     loop {
         // grab the next byte
@@ -466,11 +431,11 @@ where
         // check if the table currently contains a string composed of the current buffer plus
         // the byte we just read (
         let mut buffer_plus_byte = buffer.clone();
-        buffer_plus_byte.push_value(byte as u16);
+        buffer_plus_byte.push(byte);
 
         if table.contains_key(&buffer_plus_byte) {
             // we have a match, so lets just keep collecting bytes in our buffer ...
-            buffer.push_value(byte as u16);
+            buffer.push(byte);
         } else {
             // no match in the table, so we need to create a new code in the table for this
             // string of bytes (buffer + byte) and also emit the code for _just_ the buffer string
@@ -501,10 +466,8 @@ where
                 // we reached the maximum code bit size, time to re-initialize the code table
                 table = HashMap::with_capacity(initial_table_size + 2);
                 for i in 0..initial_table_size {
-                    table.insert(LzwDataBuffer::new(i as u16), i as LzwCode);
+                    table.insert(vec![i as u8], i as LzwCode);
                 }
-                table.insert(LzwDataBuffer::new(clear_code), clear_code);
-                table.insert(LzwDataBuffer::new(end_of_info_code), end_of_info_code);
                 current_bit_size = min_code_size + 1;
                 max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
                 next_code = initial_table_size as LzwCode + 2;
@@ -514,7 +477,7 @@ where
                 writer.reset_bit_size();
             }
 
-            buffer = LzwDataBuffer::new(byte as u16);
+            buffer = vec![byte];
         }
     }
 
@@ -577,12 +540,15 @@ where
         // initialize the table and some extra bits of info here so that whenever we read in a
         // clear code from the input stream, we can just loop back here to handle it
 
-        let mut table = HashMap::<LzwCode, LzwDataBuffer>::with_capacity(initial_table_size + 2);
+        // note that we do not add clear_code or end_of_info_code to the table since they aren't really
+        // needed in the table (they are never looked up in it). this also saves us the trouble of
+        // needing the table to be able to hold buffers containing u16's instead of just u8's.
+        // this does mean that the size of the table is always 2 less than the number of created codes.
+
+        let mut table = HashMap::<LzwCode, Vec<u8>>::with_capacity(initial_table_size + 2);
         for i in 0..initial_table_size {
-            table.insert(i as LzwCode, LzwDataBuffer::new(i as u16));
+            table.insert(i as LzwCode, vec![i as u8]);
         }
-        table.insert(clear_code, LzwDataBuffer::new(clear_code));
-        table.insert(end_of_info_code, LzwDataBuffer::new(end_of_info_code));
         let mut max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
         let mut next_code = initial_table_size as LzwCode + 2;
 
@@ -597,7 +563,7 @@ where
 
         // simply write out the table string associated with the first code
         if let Some(string) = table.get(&code) {
-            string.write_all(dest)?;
+            dest.write_all(string)?;
         } else {
             return Err(LzwError::EncodingError(format!("No table entry for code {}", code)));
         }
@@ -633,20 +599,20 @@ where
 
             if let Some(string) = table.get(&code) {
                 // write out the matching table string for the code just read
-                string.write_all(dest)?;
+                dest.write_all(string)?;
 
                 // update the table accordingly
-                let k = string.first();
+                let k = string.first().unwrap();
                 let mut new_string = prev_code_string.clone();
-                new_string.push_value(k);
+                new_string.push(*k);
                 table.insert(new_code, new_string);
             } else {
                 // code is not yet present in the table.
                 // add prev_code string + the code we just read to the table and also write it out
-                let k = prev_code_string.first();
+                let k = prev_code_string.first().unwrap();
                 let mut new_string = prev_code_string.clone();
-                new_string.push_value(k);
-                new_string.write_all(dest)?;
+                new_string.push(*k);
+                dest.write_all(&new_string)?;
                 table.insert(new_code, new_string);
             }
 
