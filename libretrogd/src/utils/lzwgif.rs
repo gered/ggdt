@@ -334,6 +334,9 @@ impl LzwBytesReader {
         if self.reached_end {
             return Ok(None);
         }
+        // if we reached the end of the current sub-chunk, read the length of the next sub-chunk.
+        // if that length is zero, then we're done reading all the sub-chunks in the series (as
+        // there should always be a terminator zero byte at the end of the sequence).
         if self.sub_chunk_remaining_bytes == 0 {
             self.sub_chunk_remaining_bytes = reader.read_u8()?;
             if self.sub_chunk_remaining_bytes == 0 {
