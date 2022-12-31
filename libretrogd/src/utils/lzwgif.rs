@@ -56,8 +56,8 @@ const MIN_BITS: usize = 2;
 const MAX_BITS: usize = 12;
 const MAX_CODE_VALUE: LzwCode = (1 as LzwCode).wrapping_shl(MAX_BITS as u32) - 1;
 
-fn is_valid_min_code_size_bits(min_code_size_bits: usize) -> bool {
-    min_code_size_bits >= MIN_BITS && min_code_size_bits <= MAX_BITS
+fn is_valid_code_size_bits(code_size_bits: usize) -> bool {
+    code_size_bits >= MIN_BITS && code_size_bits <= MAX_BITS
 }
 
 fn is_valid_gif_min_code_size_bits(min_code_size_bits: usize) -> bool {
@@ -91,7 +91,7 @@ struct LzwBytePacker {
 
 impl LzwBytePacker {
     pub fn new(initial_bit_size: usize) -> Result<Self, LzwBytePackingError> {
-        if !is_valid_min_code_size_bits(initial_bit_size) {
+        if !is_valid_code_size_bits(initial_bit_size) {
             return Err(LzwBytePackingError::UnsupportedCodeSizeBits(initial_bit_size));
         }
 
@@ -169,15 +169,13 @@ struct LzwBytesWriter {
 }
 
 impl LzwBytesWriter {
-    pub fn new(min_code_size_bits: usize) -> Result<Self, LzwError> {
-        if !is_valid_min_code_size_bits(min_code_size_bits) {
-            return Err(LzwError::UnsupportedCodeSizeBits(min_code_size_bits));
+    pub fn new(code_size_bits: usize) -> Result<Self, LzwError> {
+        if !is_valid_code_size_bits(code_size_bits) {
+            return Err(LzwError::UnsupportedCodeSizeBits(code_size_bits));
         }
 
-        let packer = LzwBytePacker::new(min_code_size_bits)?;
-
         Ok(LzwBytesWriter {
-            packer,
+            packer: LzwBytePacker::new(code_size_bits)?,
             buffer: Vec::with_capacity(GIF_MAX_SUB_CHUNK_SIZE),
         })
     }
@@ -243,7 +241,7 @@ struct LzwByteUnpacker {
 
 impl LzwByteUnpacker {
     pub fn new(initial_bit_size: usize) -> Result<Self, LzwBytePackingError> {
-        if !is_valid_min_code_size_bits(initial_bit_size) {
+        if !is_valid_code_size_bits(initial_bit_size) {
             return Err(LzwBytePackingError::UnsupportedCodeSizeBits(initial_bit_size));
         }
 
@@ -307,15 +305,13 @@ struct LzwBytesReader {
 }
 
 impl LzwBytesReader {
-    pub fn new(min_code_size_bits: usize) -> Result<Self, LzwError> {
-        if !is_valid_min_code_size_bits(min_code_size_bits) {
-            return Err(LzwError::UnsupportedCodeSizeBits(min_code_size_bits));
+    pub fn new(code_size_bits: usize) -> Result<Self, LzwError> {
+        if !is_valid_code_size_bits(code_size_bits) {
+            return Err(LzwError::UnsupportedCodeSizeBits(code_size_bits));
         }
 
-        let unpacker = LzwByteUnpacker::new(min_code_size_bits)?;
-
         Ok(LzwBytesReader {
-            unpacker,
+            unpacker: LzwByteUnpacker::new(code_size_bits)?,
             sub_chunk_remaining_bytes: 0,
             reached_end: false,
         })
