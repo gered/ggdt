@@ -95,127 +95,118 @@ fn new_ball_entity(entities: &mut Entities) {
 }
 
 fn update_system_movement(context: &mut Context) {
-    if let Some(mut positions) = context.entities.components_mut::<Position>() {
-        let velocities = context.entities.components::<Velocity>();
+    let mut positions = context.entities.components_mut::<Position>().unwrap();
+    let velocities = context.entities.components::<Velocity>();
 
-        for (entity, position) in positions.iter_mut() {
-            if let Some(velocity) = velocities.get(&entity) {
-                position.0 += velocity.0 * context.delta;
-            }
+    for (entity, position) in positions.iter_mut() {
+        if let Some(velocity) = velocities.get(&entity) {
+            position.0 += velocity.0 * context.delta;
         }
     }
 }
 
 fn update_system_collision(context: &mut Context) {
-    if let Some(bounceable) = context.entities.components::<BouncesAgainstEdge>() {
-        let mut positions = context.entities.components_mut::<Position>();
-        let mut velocities = context.entities.components_mut::<Velocity>();
+    let bounceables = context.entities.components::<BouncesAgainstEdge>().unwrap();
+    let mut positions = context.entities.components_mut::<Position>();
+    let mut velocities = context.entities.components_mut::<Velocity>();
 
-        for (entity, _) in bounceable.iter() {
-            let mut position = positions.get_mut(&entity).unwrap();
-            let mut velocity = velocities.get_mut(&entity).unwrap();
+    for (entity, _) in bounceables.iter() {
+        let mut position = positions.get_mut(&entity).unwrap();
+        let mut velocity = velocities.get_mut(&entity).unwrap();
 
-            let mut bounced = false;
-            if position.0.x as i32 <= SCREEN_LEFT as i32 || position.0.x as i32 + BALL_SIZE >= SCREEN_RIGHT as i32 {
-                position.0.x -= velocity.0.x * context.delta;
-                velocity.0.x = -velocity.0.x;
-                bounced = true;
-            }
-            if position.0.y as i32 <= SCREEN_TOP as i32 || position.0.y as i32 + BALL_SIZE >= SCREEN_BOTTOM as i32 {
-                position.0.y -= velocity.0.y * context.delta;
-                velocity.0.y = -velocity.0.y;
-                bounced = true;
-            }
-            if bounced {
-                context.event_publisher.queue(Event::CollideAgainstEdge(*entity));
-            }
+        let mut bounced = false;
+        if position.0.x as i32 <= SCREEN_LEFT as i32 || position.0.x as i32 + BALL_SIZE >= SCREEN_RIGHT as i32 {
+            position.0.x -= velocity.0.x * context.delta;
+            velocity.0.x = -velocity.0.x;
+            bounced = true;
+        }
+        if position.0.y as i32 <= SCREEN_TOP as i32 || position.0.y as i32 + BALL_SIZE >= SCREEN_BOTTOM as i32 {
+            position.0.y -= velocity.0.y * context.delta;
+            velocity.0.y = -velocity.0.y;
+            bounced = true;
+        }
+        if bounced {
+            context.event_publisher.queue(Event::CollideAgainstEdge(*entity));
         }
     }
 }
 
 fn update_system_lifetime(context: &mut Context) {
-    if let Some(mut lifetimes) = context.entities.components_mut::<LifeLeft>() {
-        for (entity, lifetime) in lifetimes.iter_mut() {
-            lifetime.life -= context.delta;
-            if lifetime.life < 0.0 {
-                context.event_publisher.queue(Event::Kill(*entity));
-            }
+    let mut lifetimes = context.entities.components_mut::<LifeLeft>().unwrap();
+    for (entity, lifetime) in lifetimes.iter_mut() {
+        lifetime.life -= context.delta;
+        if lifetime.life < 0.0 {
+            context.event_publisher.queue(Event::Kill(*entity));
         }
     }
 }
 
 fn update_system_leave_particle_trail(context: &mut Context) {
-    if let Some(mut leaves_trails) = context.entities.components_mut::<LeavesTrail>() {
+    let mut leaves_trails = context.entities.components_mut::<LeavesTrail>().unwrap();
+    let positions = context.entities.components::<Position>();
 
-        let positions = context.entities.components::<Position>();
+    for (entity, leaves_trail) in leaves_trails.iter_mut() {
+        leaves_trail.timer -= context.delta;
 
-        for (entity, leaves_trail) in leaves_trails.iter_mut() {
-            leaves_trail.timer -= context.delta;
-
-            if leaves_trail.timer <= 0.0 {
-                leaves_trail.timer = BALL_TRAIL_PARTICLE_INTERVAL;
-                let position = positions.get(&entity).unwrap();
-                let mut trail_position = position.0;
-                trail_position.x += (BALL_SIZE / 2) as f32;
-                trail_position.y += (BALL_SIZE / 2) as f32;
-                context.event_publisher.queue(Event::LeaveTrail(trail_position));
-            }
+        if leaves_trail.timer <= 0.0 {
+            leaves_trail.timer = BALL_TRAIL_PARTICLE_INTERVAL;
+            let position = positions.get(&entity).unwrap();
+            let mut trail_position = position.0;
+            trail_position.x += (BALL_SIZE / 2) as f32;
+            trail_position.y += (BALL_SIZE / 2) as f32;
+            context.event_publisher.queue(Event::LeaveTrail(trail_position));
         }
     }
 }
 
 fn render_system_sprites(context: &mut Context) {
-    if let Some(sprite_indices) = context.entities.components::<SpriteIndex>() {
+    let sprite_indices = context.entities.components::<SpriteIndex>().unwrap();
+    let positions = context.entities.components::<Position>();
 
-        let positions = context.entities.components::<Position>();
-
-        for (entity, sprite_index) in sprite_indices.iter() {
-            let position = positions.get(&entity).unwrap();
-            context.system.video.blit(
-                BlitMethod::Transparent(0),
-                &context.sprites[sprite_index.0],
-                position.0.x as i32,
-                position.0.y as i32
-            );
-        }
+    for (entity, sprite_index) in sprite_indices.iter() {
+        let position = positions.get(&entity).unwrap();
+        context.system.video.blit(
+            BlitMethod::Transparent(0),
+            &context.sprites[sprite_index.0],
+            position.0.x as i32,
+            position.0.y as i32
+        );
     }
 }
 
 fn render_system_particles(context: &mut Context) {
-    if let Some(particles) = context.entities.components::<Particle>() {
+    let particles = context.entities.components::<Particle>().unwrap();
+    let positions = context.entities.components::<Position>();
+    let colors = context.entities.components::<Color>();
+    let colors_by_lifetime = context.entities.components::<ColorByLifeTime>();
+    let lifetimes = context.entities.components::<LifeLeft>();
 
-        let positions = context.entities.components::<Position>();
-        let colors = context.entities.components::<Color>();
-        let colors_by_lifetime = context.entities.components::<ColorByLifeTime>();
-        let lifetimes = context.entities.components::<LifeLeft>();
+    for (entity, _) in particles.iter() {
+        let position = positions.get(&entity).unwrap();
 
-        for (entity, _) in particles.iter() {
-            let position = positions.get(&entity).unwrap();
-
-            let pixel_color;
-            if let Some(color) = colors.get(&entity) {
-                pixel_color = Some(color.0);
-            } else if let Some(color_by_lifetime) = colors_by_lifetime.get(&entity) {
-                let lifetime = lifetimes.get(&entity).unwrap();
-                let percent_life = lifetime.life / lifetime.initial;
-                pixel_color = Some(if percent_life >= 0.8 {
-                    color_by_lifetime.0
-                } else if percent_life >= 0.6 {
-                    color_by_lifetime.1
-                } else if percent_life >= 0.4 {
-                    color_by_lifetime.2
-                } else if percent_life >= 0.2 {
-                    color_by_lifetime.3
-                } else {
-                    color_by_lifetime.4
-                });
+        let pixel_color;
+        if let Some(color) = colors.get(&entity) {
+            pixel_color = Some(color.0);
+        } else if let Some(color_by_lifetime) = colors_by_lifetime.get(&entity) {
+            let lifetime = lifetimes.get(&entity).unwrap();
+            let percent_life = lifetime.life / lifetime.initial;
+            pixel_color = Some(if percent_life >= 0.8 {
+                color_by_lifetime.0
+            } else if percent_life >= 0.6 {
+                color_by_lifetime.1
+            } else if percent_life >= 0.4 {
+                color_by_lifetime.2
+            } else if percent_life >= 0.2 {
+                color_by_lifetime.3
             } else {
-                pixel_color = None;
-            }
+                color_by_lifetime.4
+            });
+        } else {
+            pixel_color = None;
+        }
 
-            if let Some(color) = pixel_color {
-                context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color);
-            }
+        if let Some(color) = pixel_color {
+            context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color);
         }
     }
 }
@@ -241,6 +232,16 @@ fn event_handler(event: &Event, context: &mut Context) -> bool {
 }
 
 pub fn init_entities(entities: &mut Entities) {
+    entities.init_components::<Position>();
+    entities.init_components::<Velocity>();
+    entities.init_components::<SpriteIndex>();
+    entities.init_components::<BouncesAgainstEdge>();
+    entities.init_components::<Particle>();
+    entities.init_components::<Color>();
+    entities.init_components::<LifeLeft>();
+    entities.init_components::<LeavesTrail>();
+    entities.init_components::<ColorByLifeTime>();
+
     entities.remove_all_entities();
     for _ in 0..NUM_BALLS {
         new_ball_entity(entities);

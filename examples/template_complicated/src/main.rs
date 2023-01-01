@@ -50,34 +50,31 @@ pub struct Color(u8);
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub fn update_system_movement(context: &mut Core) {
-    if let Some(mut positions) = context.entities.components_mut::<Position>() {
-        let velocities = context.entities.components::<Velocity>().unwrap();
+    let mut positions = context.entities.components_mut::<Position>().unwrap();
+    let velocities = context.entities.components::<Velocity>().unwrap();
 
-        for (entity, position) in positions.iter_mut() {
-            let velocity = velocities.get(entity).unwrap();
-            position.0 += velocity.0 * context.delta;
-        }
+    for (entity, position) in positions.iter_mut() {
+        let velocity = velocities.get(entity).unwrap();
+        position.0 += velocity.0 * context.delta;
     }
 }
 
 pub fn update_system_remove_offscreen(context: &mut Core) {
-    if let Some(positions) = context.entities.components::<Position>() {
-        for (entity, position) in positions.iter() {
-            if !context.system.video.is_xy_visible(position.0.x as i32, position.0.y as i32) {
-                context.event_publisher.queue(Event::Remove(*entity));
-            }
+    let positions = context.entities.components::<Position>().unwrap();
+    for (entity, position) in positions.iter() {
+        if !context.system.video.is_xy_visible(position.0.x as i32, position.0.y as i32) {
+            context.event_publisher.queue(Event::Remove(*entity));
         }
     }
 }
 
 pub fn render_system_pixels(context: &mut Core) {
-    if let Some(positions) = context.entities.components::<Position>() {
-        let colors = context.entities.components::<Color>().unwrap();
+    let positions = context.entities.components::<Position>().unwrap();
+    let colors = context.entities.components::<Color>().unwrap();
 
-        for (entity, position) in positions.iter() {
-            let color = colors.get(entity).unwrap();
-            context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color.0);
-        }
+    for (entity, position) in positions.iter() {
+        let color = colors.get(entity).unwrap();
+        context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color.0);
     }
 }
 
@@ -87,6 +84,10 @@ pub struct DemoState;
 
 impl DemoState {
     fn init(&mut self, context: &mut Game) {
+        context.core.entities.init_components::<Position>();
+        context.core.entities.init_components::<Velocity>();
+        context.core.entities.init_components::<Color>();
+
         context.component_systems.reset();
         context.component_systems.add_update_system(update_system_movement);
         context.component_systems.add_update_system(update_system_remove_offscreen);

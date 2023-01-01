@@ -267,56 +267,53 @@ pub fn pickup(context: &mut Core, picked_up_by: EntityId, picked_up: EntityId) {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn update_system_movement(context: &mut Core) {
-    if let Some(mut positions) = context.entities.components_mut::<Position>() {
-        let velocities = context.entities.components::<Velocity>();
-        let forces = context.entities.components::<Forces>();
-        let bounds = context.entities.components::<Bounds>();
-        let ignores_collision = context.entities.components::<IgnoresCollision>();
+    let mut positions = context.entities.components_mut::<Position>().unwrap();
+    let velocities = context.entities.components::<Velocity>();
+    let forces = context.entities.components::<Forces>();
+    let bounds = context.entities.components::<Bounds>();
+    let ignores_collision = context.entities.components::<IgnoresCollision>();
 
-        for (entity, position) in positions.iter_mut() {
-            if ignores_collision.contains_key(entity) {
-                if let Some(velocity) = velocities.get(entity) {
-                    position.0 += velocity.0 * context.delta;
-                }
-            } else {
-                let velocity = velocities.get(entity);
-                let force = forces.get(entity);
+    for (entity, position) in positions.iter_mut() {
+        if ignores_collision.contains_key(entity) {
+            if let Some(velocity) = velocities.get(entity) {
+                position.0 += velocity.0 * context.delta;
+            }
+        } else {
+            let velocity = velocities.get(entity);
+            let force = forces.get(entity);
 
-                if velocity.is_some() || force.is_some() {
-                    move_entity_with_collision(
-                        position,
-                        bounds.get(entity).unwrap(),
-                        velocity,
-                        force,
-                        &context.tilemap,
-                        context.delta,
-                    );
-                }
+            if velocity.is_some() || force.is_some() {
+                move_entity_with_collision(
+                    position,
+                    bounds.get(entity).unwrap(),
+                    velocity,
+                    force,
+                    &context.tilemap,
+                    context.delta,
+                );
             }
         }
     }
 }
 
 fn update_system_friction(context: &mut Core) {
-    if let Some(mut velocities) = context.entities.components_mut::<Velocity>() {
-        let ignores_friction = context.entities.components::<IgnoresFriction>();
+    let mut velocities = context.entities.components_mut::<Velocity>().unwrap();
+    let ignores_friction = context.entities.components::<IgnoresFriction>();
 
-        for (entity, velocity) in velocities.iter_mut() {
-            if !ignores_friction.contains_key(entity) {
-                velocity.0 *= FRICTION;
-                if velocity.0.almost_zero(0.001) {
-                    velocity.0 = Vector2::ZERO;
-                }
+    for (entity, velocity) in velocities.iter_mut() {
+        if !ignores_friction.contains_key(entity) {
+            velocity.0 *= FRICTION;
+            if velocity.0.almost_zero(0.001) {
+                velocity.0 = Vector2::ZERO;
             }
         }
     }
 }
 
 fn update_system_force_decay(context: &mut Core) {
-    if let Some(mut forces) = context.entities.components_mut::<Forces>() {
-        for (_, force) in forces.iter_mut() {
-            force.decay();
-        }
+    let mut forces = context.entities.components_mut::<Forces>().unwrap();
+    for (_, force) in forces.iter_mut() {
+        force.decay();
     }
 }
 
@@ -355,138 +352,132 @@ fn update_system_pushing(context: &mut Core) {
 }
 
 fn update_system_lifetime(context: &mut Core) {
-    if let Some(mut lifetimes) = context.entities.components_mut::<LifeTime>() {
-        for (entity, lifetime) in lifetimes.iter_mut() {
-            lifetime.0 -= context.delta;
-            if lifetime.0 < 0.0 {
-                context.event_publisher.queue(Event::Remove(*entity));
-            }
+    let mut lifetimes = context.entities.components_mut::<LifeTime>().unwrap();
+    for (entity, lifetime) in lifetimes.iter_mut() {
+        lifetime.0 -= context.delta;
+        if lifetime.0 < 0.0 {
+            context.event_publisher.queue(Event::Remove(*entity));
         }
     }
 }
 
 fn update_system_animation(context: &mut Core) {
-    if let Some(mut animations) = context.entities.components_mut::<AnimationInstance>() {
-        let kill_when_animation_finishes = context.entities.components::<KillWhenAnimationFinishes>();
+    let mut animations = context.entities.components_mut::<AnimationInstance>().unwrap();
+    let kill_when_animation_finishes = context.entities.components::<KillWhenAnimationFinishes>();
 
-        for (entity, animation) in animations.iter_mut() {
-            if animation.complete {
-                continue;
-            }
+    for (entity, animation) in animations.iter_mut() {
+        if animation.complete {
+            continue;
+        }
 
-            animation.frame_timer += context.delta;
+        animation.frame_timer += context.delta;
 
-            let delay = if let Some(delay_override) = animation.delay_override {
-                delay_override
-            } else {
-                animation.def.delay
-            };
+        let delay = if let Some(delay_override) = animation.delay_override {
+            delay_override
+        } else {
+            animation.def.delay
+        };
 
-            if animation.frame_timer >= delay {
-                // move to the next frame in the current sequence
-                animation.frame_timer = 0.0;
-                if animation.frame_index == (animation.def.frames.len() - 1) {
-                    // we're at the last frame in the current sequence
-                    if !animation.def.loops {
-                        animation.complete = true;
+        if animation.frame_timer >= delay {
+            // move to the next frame in the current sequence
+            animation.frame_timer = 0.0;
+            if animation.frame_index == (animation.def.frames.len() - 1) {
+                // we're at the last frame in the current sequence
+                if !animation.def.loops {
+                    animation.complete = true;
 
-                        context.event_publisher.queue(Event::AnimationFinished(*entity));
-                        if kill_when_animation_finishes.contains_key(entity) {
-                            context.event_publisher.queue(Event::Remove(*entity));
-                        }
-                    } else {
-                        animation.frame_index = 0;
+                    context.event_publisher.queue(Event::AnimationFinished(*entity));
+                    if kill_when_animation_finishes.contains_key(entity) {
+                        context.event_publisher.queue(Event::Remove(*entity));
                     }
                 } else {
-                    animation.frame_index += 1;
+                    animation.frame_index = 0;
                 }
+            } else {
+                animation.frame_index += 1;
             }
         }
     }
 }
 
 fn update_system_set_sprite_index_from_animation(context: &mut Core) {
-    if let Some(animations) = context.entities.components::<AnimationInstance>() {
-        let mut sprites = context.entities.components_mut::<Sprite>();
-        let facing_directions = context.entities.components::<FacingDirection>();
+    let animations = context.entities.components::<AnimationInstance>().unwrap();
+    let mut sprites = context.entities.components_mut::<Sprite>();
+    let facing_directions = context.entities.components::<FacingDirection>();
 
-        for (entity, animation) in animations.iter() {
-            if let Some(sprite) = sprites.get_mut(entity) {
-                // base animation sprite-sheet index for the current animation state
-                let mut index = animation.def.frames[animation.frame_index];
+    for (entity, animation) in animations.iter() {
+        if let Some(sprite) = sprites.get_mut(entity) {
+            // base animation sprite-sheet index for the current animation state
+            let mut index = animation.def.frames[animation.frame_index];
 
-                // add multi-direction offset if applicable
-                let multi_direction_offset = animation.def.multi_direction_offset;
-                let facing_direction = facing_directions.get(entity);
-                if multi_direction_offset.is_some() && facing_direction.is_some() {
-                    index += multi_direction_offset.unwrap() * facing_direction.unwrap().0 as usize;
-                }
-
-                sprite.index = index;
+            // add multi-direction offset if applicable
+            let multi_direction_offset = animation.def.multi_direction_offset;
+            let facing_direction = facing_directions.get(entity);
+            if multi_direction_offset.is_some() && facing_direction.is_some() {
+                index += multi_direction_offset.unwrap() * facing_direction.unwrap().0 as usize;
             }
+
+            sprite.index = index;
         }
     }
 }
 
 fn update_system_set_sprite_index_by_direction(context: &mut Core) {
-    if let Some(sprite_index_by_directions) = context.entities.components::<SpriteIndexByDirection>() {
-        let mut sprites = context.entities.components_mut::<Sprite>();
-        let facing_directions = context.entities.components::<FacingDirection>();
+    let sprite_index_by_directions = context.entities.components::<SpriteIndexByDirection>().unwrap();
+    let mut sprites = context.entities.components_mut::<Sprite>();
+    let facing_directions = context.entities.components::<FacingDirection>();
 
-        for (entity, sprite_index_by_direction) in sprite_index_by_directions.iter() {
-            if let Some(sprite) = sprites.get_mut(entity) {
-                if let Some(facing_direction) = facing_directions.get(entity) {
-                    sprite.index = sprite_index_by_direction.base_index + facing_direction.0 as usize;
-                }
+    for (entity, sprite_index_by_direction) in sprite_index_by_directions.iter() {
+        if let Some(sprite) = sprites.get_mut(entity) {
+            if let Some(facing_direction) = facing_directions.get(entity) {
+                sprite.index = sprite_index_by_direction.base_index + facing_direction.0 as usize;
             }
         }
     }
 }
 
 fn update_system_walking_time(context: &mut Core) {
-    if let Some(mut walking_times) = context.entities.components_mut::<WalkingTime>() {
-        let activities = context.entities.components::<Activity>();
+    let mut walking_times = context.entities.components_mut::<WalkingTime>().unwrap();
+    let activities = context.entities.components::<Activity>();
 
-        for (entity, walking_time) in walking_times.iter_mut() {
-            if let Some(activity) = activities.get(entity) {
-                // dead entities can't walk!
-                if activity.0 == EntityActivity::Dead {
-                    continue;
-                }
-            }
-            if walking_time.0 > 0.0 {
-                walking_time.0 -= context.delta;
-                context.event_publisher.queue(Event::MoveForward(*entity));
+    for (entity, walking_time) in walking_times.iter_mut() {
+        if let Some(activity) = activities.get(entity) {
+            // dead entities can't walk!
+            if activity.0 == EntityActivity::Dead {
+                continue;
             }
         }
-
-        // remove walking time components whose timers have elapsed
-        walking_times.retain(|_, comp| comp.0 > 0.0);
+        if walking_time.0 > 0.0 {
+            walking_time.0 -= context.delta;
+            context.event_publisher.queue(Event::MoveForward(*entity));
+        }
     }
+
+    // remove walking time components whose timers have elapsed
+    walking_times.retain(|_, comp| comp.0 > 0.0);
 }
 
 fn update_system_randomly_walk_around(context: &mut Core) {
-    if let Some(mut randomly_walk_arounds) = context.entities.components_mut::<RandomlyWalksAround>() {
-        let activities = context.entities.components::<Activity>();
-        let mut walking_times = context.entities.components_mut::<WalkingTime>().unwrap();
+    let mut randomly_walk_arounds = context.entities.components_mut::<RandomlyWalksAround>().unwrap();
+    let activities = context.entities.components::<Activity>();
+    let mut walking_times = context.entities.components_mut::<WalkingTime>().unwrap();
 
-        for (entity, randomly_walk_around) in randomly_walk_arounds.iter_mut() {
-            if let Some(activity) = activities.get(entity) {
-                if activity.0 == EntityActivity::Idle {
-                    if randomly_walk_around.cooldown_timer > 0.0 {
-                        randomly_walk_around.cooldown_timer -= context.delta;
-                        if randomly_walk_around.cooldown_timer < 0.0 {
-                            randomly_walk_around.cooldown_timer = 0.0;
-                        }
-                    } else if randomly_walk_around.should_start_walking() {
-                        randomly_walk_around.cooldown_timer = rnd_value(randomly_walk_around.min_cooldown, randomly_walk_around.max_cooldown);
-
-                        let direction = Direction::new_random();
-                        let walk_time = rnd_value(randomly_walk_around.min_walk_time, randomly_walk_around.max_walk_time);
-
-                        walking_times.insert(*entity, WalkingTime(walk_time));
-                        context.event_publisher.queue(Event::TurnAndMove(*entity, direction));
+    for (entity, randomly_walk_around) in randomly_walk_arounds.iter_mut() {
+        if let Some(activity) = activities.get(entity) {
+            if activity.0 == EntityActivity::Idle {
+                if randomly_walk_around.cooldown_timer > 0.0 {
+                    randomly_walk_around.cooldown_timer -= context.delta;
+                    if randomly_walk_around.cooldown_timer < 0.0 {
+                        randomly_walk_around.cooldown_timer = 0.0;
                     }
+                } else if randomly_walk_around.should_start_walking() {
+                    randomly_walk_around.cooldown_timer = rnd_value(randomly_walk_around.min_cooldown, randomly_walk_around.max_cooldown);
+
+                    let direction = Direction::new_random();
+                    let walk_time = rnd_value(randomly_walk_around.min_walk_time, randomly_walk_around.max_walk_time);
+
+                    walking_times.insert(*entity, WalkingTime(walk_time));
+                    context.event_publisher.queue(Event::TurnAndMove(*entity, direction));
                 }
             }
         }
@@ -494,26 +485,25 @@ fn update_system_randomly_walk_around(context: &mut Core) {
 }
 
 fn update_system_current_entity_activity(context: &mut Core) {
-    if let Some(activities) = context.entities.components::<Activity>() {
-        let velocities = context.entities.components::<Velocity>();
+    let activities = context.entities.components::<Activity>().unwrap();
+    let velocities = context.entities.components::<Velocity>();
 
-        for (entity, activity) in activities.iter() {
-            // try to detect current entity activity based on it's own movement speed
-            // (intentionally NOT checking force velocity!)
-            if let Some(velocity) = velocities.get(entity) {
-                match activity.0 {
-                    EntityActivity::Idle => {
-                        if velocity.0.length_squared() > 0.0 {
-                            context.event_publisher.queue(Event::SetActivity(*entity, EntityActivity::Walking));
-                        }
+    for (entity, activity) in activities.iter() {
+        // try to detect current entity activity based on it's own movement speed
+        // (intentionally NOT checking force velocity!)
+        if let Some(velocity) = velocities.get(entity) {
+            match activity.0 {
+                EntityActivity::Idle => {
+                    if velocity.0.length_squared() > 0.0 {
+                        context.event_publisher.queue(Event::SetActivity(*entity, EntityActivity::Walking));
                     }
-                    EntityActivity::Walking => {
-                        if velocity.0.almost_zero(0.001) {
-                            context.event_publisher.queue(Event::SetActivity(*entity, EntityActivity::Idle));
-                        }
-                    }
-                    _ => {}
                 }
+                EntityActivity::Walking => {
+                    if velocity.0.almost_zero(0.001) {
+                        context.event_publisher.queue(Event::SetActivity(*entity, EntityActivity::Idle));
+                    }
+                }
+                _ => {}
             }
         }
     }
@@ -557,56 +547,54 @@ fn update_system_camera_follows_player(context: &mut Core) {
 }
 
 fn update_system_turn_attached_entities(context: &mut Core) {
-    if let Some(attachments) = context.entities.components::<Attachment>() {
-        let mut facing_directions = context.entities.components_mut::<FacingDirection>();
+    let attachments = context.entities.components::<Attachment>().unwrap();
+    let mut facing_directions = context.entities.components_mut::<FacingDirection>();
 
-        for (parent_entity, attachment) in attachments.iter() {
-            // the parent may not have a facing direction. and if so, we don't need to change the
-            // attachment (child)
-            let parent_facing_direction = if let Some(facing_direction) = facing_directions.get(&parent_entity) {
-                facing_direction.0
-            } else {
-                continue;
-            };
+    for (parent_entity, attachment) in attachments.iter() {
+        // the parent may not have a facing direction. and if so, we don't need to change the
+        // attachment (child)
+        let parent_facing_direction = if let Some(facing_direction) = facing_directions.get(&parent_entity) {
+            facing_direction.0
+        } else {
+            continue;
+        };
 
-            // change the direction of the attachment (child) to match the parent ... if the
-            // attachment even has a direction itself ...
-            if let Some(mut facing_direction) = facing_directions.get_mut(&attachment.0) {
-                facing_direction.0 = parent_facing_direction;
-            }
+        // change the direction of the attachment (child) to match the parent ... if the
+        // attachment even has a direction itself ...
+        if let Some(mut facing_direction) = facing_directions.get_mut(&attachment.0) {
+            facing_direction.0 = parent_facing_direction;
         }
     }
 }
 
 fn update_system_position_attached_entities(context: &mut Core) {
-    if let Some(attachments) = context.entities.components::<Attachment>() {
-        let mut positions = context.entities.components_mut::<Position>();
-        let facing_directions = context.entities.components::<FacingDirection>();
-        let offsets = context.entities.components::<AttachmentOffset>();
-        let offset_by_directions = context.entities.components::<AttachmentOffsetByDirection>();
+    let attachments = context.entities.components::<Attachment>().unwrap();
+    let mut positions = context.entities.components_mut::<Position>();
+    let facing_directions = context.entities.components::<FacingDirection>();
+    let offsets = context.entities.components::<AttachmentOffset>();
+    let offset_by_directions = context.entities.components::<AttachmentOffsetByDirection>();
 
-        for (parent_entity, attachment) in attachments.iter() {
-            // get the parent position used as the base for the attached (child) entity. if the
-            // parent doesn't have one (probably it is dead?), then skip this attachment
-            let parent_position;
-            if let Some(position) = positions.get(&parent_entity) {
-                parent_position = position.0;
-            } else {
-                continue;
-            }
+    for (parent_entity, attachment) in attachments.iter() {
+        // get the parent position used as the base for the attached (child) entity. if the
+        // parent doesn't have one (probably it is dead?), then skip this attachment
+        let parent_position;
+        if let Some(position) = positions.get(&parent_entity) {
+            parent_position = position.0;
+        } else {
+            continue;
+        }
 
-            let attached_entity = attachment.0;
-            if let Some(mut attachment_position) = positions.get_mut(&attached_entity) {
-                // start off the attachment by placing it directly at the parent
-                attachment_position.0 = parent_position;
+        let attached_entity = attachment.0;
+        if let Some(mut attachment_position) = positions.get_mut(&attached_entity) {
+            // start off the attachment by placing it directly at the parent
+            attachment_position.0 = parent_position;
 
-                // then add whatever position offset it needs
-                if let Some(offset) = offsets.get(&attached_entity) {
-                    attachment_position.0 += offset.0;
-                } else if let Some(offset_by_direction) = offset_by_directions.get(&attached_entity) {
-                    if let Some(facing_direction) = facing_directions.get(&attached_entity) {
-                        attachment_position.0 += offset_by_direction.offsets[facing_direction.0 as usize];
-                    }
+            // then add whatever position offset it needs
+            if let Some(offset) = offsets.get(&attached_entity) {
+                attachment_position.0 += offset.0;
+            } else if let Some(offset_by_direction) = offset_by_directions.get(&attached_entity) {
+                if let Some(facing_direction) = facing_directions.get(&attached_entity) {
+                    attachment_position.0 += offset_by_direction.offsets[facing_direction.0 as usize];
                 }
             }
         }
@@ -614,52 +602,49 @@ fn update_system_position_attached_entities(context: &mut Core) {
 }
 
 fn update_system_timed_flicker(context: &mut Core) {
-    if let Some(mut timed_flicker) = context.entities.components_mut::<TimedFlicker>() {
-        for (_, flicker) in timed_flicker.iter_mut() {
-            flicker.update(context.delta);
-        }
-
-        timed_flicker.retain(|_, flicker| flicker.timer > 0.0);
+    let mut timed_flickers = context.entities.components_mut::<TimedFlicker>().unwrap();
+    for (_, flicker) in timed_flickers.iter_mut() {
+        flicker.update(context.delta);
     }
+    timed_flickers.retain(|_, flicker| flicker.timer > 0.0);
 }
 
 fn update_system_pickups(context: &mut Core) {
-    if let Some(mut pickupables) = context.entities.components_mut::<Pickupable>() {
-        let pickupers = context.entities.components::<Pickuper>().unwrap();
-        let positions = context.entities.components::<Position>();
-        let bounds = context.entities.components::<Bounds>();
+    let mut pickupables = context.entities.components_mut::<Pickupable>().unwrap();
+    let pickupers = context.entities.components::<Pickuper>().unwrap();
+    let positions = context.entities.components::<Position>();
+    let bounds = context.entities.components::<Bounds>();
 
-        // don't really think this pre_timer thing is necessary anymore ... ?
-        for (_, pickupable) in pickupables.iter_mut() {
-            if pickupable.pre_timer > 0.0 {
-                pickupable.pre_timer -= context.delta;
-            }
+    // don't really think this pre_timer thing is necessary anymore ... ?
+    for (_, pickupable) in pickupables.iter_mut() {
+        if pickupable.pre_timer > 0.0 {
+            pickupable.pre_timer -= context.delta;
         }
+    }
 
-        // TODO: this is slow
+    // TODO: this is slow
 
-        for (pickuper_entity, _) in pickupers.iter() {
-            let pickuper_position = positions.get(pickuper_entity).unwrap();
-            let pickuper_bounds = bounds.get(pickuper_entity).unwrap();
-            let pickuper_circle = Circle::new(
-                pickuper_position.0.x as i32 + pickuper_bounds.width as i32 / 2,
-                pickuper_position.0.y as i32 + pickuper_bounds.height as i32 / 2,
-                pickuper_bounds.radius
-            );
+    for (pickuper_entity, _) in pickupers.iter() {
+        let pickuper_position = positions.get(pickuper_entity).unwrap();
+        let pickuper_bounds = bounds.get(pickuper_entity).unwrap();
+        let pickuper_circle = Circle::new(
+            pickuper_position.0.x as i32 + pickuper_bounds.width as i32 / 2,
+            pickuper_position.0.y as i32 + pickuper_bounds.height as i32 / 2,
+            pickuper_bounds.radius
+        );
 
-            for (pickupable_entity, pickupable) in pickupables.iter() {
-                if pickupable.pre_timer <= 0.0 {
-                    let pickupable_position = positions.get(pickupable_entity).unwrap();
-                    let pickupable_bounds = bounds.get(pickupable_entity).unwrap();
-                    let pickupable_circle = Circle::new(
-                        pickupable_position.0.x as i32 + pickupable_bounds.width as i32 / 2,
-                        pickupable_position.0.y as i32 + pickupable_bounds.height as i32 / 2,
-                        pickupable_bounds.radius
-                    );
+        for (pickupable_entity, pickupable) in pickupables.iter() {
+            if pickupable.pre_timer <= 0.0 {
+                let pickupable_position = positions.get(pickupable_entity).unwrap();
+                let pickupable_bounds = bounds.get(pickupable_entity).unwrap();
+                let pickupable_circle = Circle::new(
+                    pickupable_position.0.x as i32 + pickupable_bounds.width as i32 / 2,
+                    pickupable_position.0.y as i32 + pickupable_bounds.height as i32 / 2,
+                    pickupable_bounds.radius
+                );
 
-                    if pickupable_circle.overlaps(&pickuper_circle) {
-                        context.event_publisher.queue(Event::Pickup(*pickuper_entity, *pickupable_entity));
-                    }
+                if pickupable_circle.overlaps(&pickuper_circle) {
+                    context.event_publisher.queue(Event::Pickup(*pickuper_entity, *pickupable_entity));
                 }
             }
         }
@@ -671,67 +656,65 @@ fn update_system_pickups(context: &mut Core) {
 fn render_system_sprites(context: &mut Core) {
     context.sprite_render_list.clear();
 
-    if let Some(sprites) = context.entities.components::<Sprite>() {
-        if let Some((_, camera)) = context.entities.components::<Camera>().single() {
-            let positions = context.entities.components::<Position>().unwrap();
-            let timed_flickers = context.entities.components::<TimedFlicker>().unwrap();
+    let sprites = context.entities.components::<Sprite>().unwrap();
+    let positions = context.entities.components::<Position>().unwrap();
+    let timed_flickers = context.entities.components::<TimedFlicker>().unwrap();
 
-            // build up list of entities to be rendered with their positions so we can sort them
-            // and render these entities with a proper y-based sort order
-            for (entity, _) in sprites.iter() {
-                let mut blit_method = BlitMethod::Transparent(0);
+    if let Some((_, camera)) = context.entities.components::<Camera>().single() {
+        // build up list of entities to be rendered with their positions so we can sort them
+        // and render these entities with a proper y-based sort order
+        for (entity, _) in sprites.iter() {
+            let mut blit_method = BlitMethod::Transparent(0);
 
-                // check for flicker effects
-                if let Some(flicker) = timed_flickers.get(entity) {
-                    if !flicker.flick {
-                        match flicker.method {
-                            FlickerMethod::OnOff => {
-                                // skip to the next entity, this one isn't visible
-                                continue;
-                            },
-                            FlickerMethod::Color(draw_color) => {
-                                blit_method = BlitMethod::TransparentSingle {
-                                    transparent_color: 0,
-                                    draw_color
-                                };
-                            }
+            // check for flicker effects
+            if let Some(flicker) = timed_flickers.get(entity) {
+                if !flicker.flick {
+                    match flicker.method {
+                        FlickerMethod::OnOff => {
+                            // skip to the next entity, this one isn't visible
+                            continue;
+                        },
+                        FlickerMethod::Color(draw_color) => {
+                            blit_method = BlitMethod::TransparentSingle {
+                                transparent_color: 0,
+                                draw_color
+                            };
                         }
                     }
                 }
-
-                let position = positions.get(entity).unwrap();
-                context.sprite_render_list.push((*entity, position.0, blit_method));
             }
-            context.sprite_render_list.sort_unstable_by(|a, b| (a.1.y as i32).cmp(&(b.1.y as i32)));
 
-            // now render them in the correct order ...
-            for (entity, position, blit_method) in context.sprite_render_list.iter() {
-                let sprite = sprites.get(entity).unwrap();
-                context.system.video.blit_atlas(
-                    blit_method.clone(),
-                    &sprite.atlas,
-                    sprite.index,
-                    position.x as i32 - camera.x,
-                    position.y as i32 - camera.y,
-                );
-            }
+            let position = positions.get(entity).unwrap();
+            context.sprite_render_list.push((*entity, position.0, blit_method));
+        }
+        context.sprite_render_list.sort_unstable_by(|a, b| (a.1.y as i32).cmp(&(b.1.y as i32)));
+
+        // now render them in the correct order ...
+        for (entity, position, blit_method) in context.sprite_render_list.iter() {
+            let sprite = sprites.get(entity).unwrap();
+            context.system.video.blit_atlas(
+                blit_method.clone(),
+                &sprite.atlas,
+                sprite.index,
+                position.x as i32 - camera.x,
+                position.y as i32 - camera.y,
+            );
         }
     }
 }
 
 fn render_system_pixels(context: &mut Core) {
-    if let Some(pixels) = context.entities.components::<Pixel>() {
-        if let Some((_, camera)) = context.entities.components::<Camera>().single() {
-            let positions = context.entities.components::<Position>();
+    let pixels = context.entities.components::<Pixel>().unwrap();
+    let positions = context.entities.components::<Position>();
 
-            for (entity, pixel) in pixels.iter() {
-                if let Some(position) = positions.get(entity) {
-                    context.system.video.set_pixel(
-                        position.0.x as i32 - camera.x,
-                        position.0.y as i32 - camera.y,
-                        pixel.0,
-                    );
-                }
+    if let Some((_, camera)) = context.entities.components::<Camera>().single() {
+        for (entity, pixel) in pixels.iter() {
+            if let Some(position) = positions.get(entity) {
+                context.system.video.set_pixel(
+                    position.0.x as i32 - camera.x,
+                    position.0.y as i32 - camera.y,
+                    pixel.0,
+                );
             }
         }
     }

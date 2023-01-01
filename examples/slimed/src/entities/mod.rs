@@ -395,12 +395,45 @@ pub fn init_everything(context: &mut Game, map_file: &Path, min_spawn_time: f32,
 }
 
 pub fn init_entities(entities: &mut Entities) {
-    entities.remove_all_entities();
-    entities.init_components::<Weapon>();
+    entities.init_components::<Player>();
+    entities.init_components::<Slime>();
+    entities.init_components::<Activity>();
+    entities.init_components::<AnimationDef>();
+    entities.init_components::<AnimationInstance>();
+    entities.init_components::<AnimateByActivity>();
+    entities.init_components::<KillWhenAnimationFinishes>();
+    entities.init_components::<Position>();
+    entities.init_components::<Velocity>();
+    entities.init_components::<Forces>();
+    entities.init_components::<Bounds>();
+    entities.init_components::<FacingDirection>();
+    entities.init_components::<IgnoresCollision>();
+    entities.init_components::<IgnoresFriction>();
+    entities.init_components::<Particle>();
+    entities.init_components::<LifeTime>();
+    entities.init_components::<Pixel>();
+    entities.init_components::<Sprite>();
+    entities.init_components::<RandomlyWalksAround>();
     entities.init_components::<WalkingTime>();
+    entities.init_components::<MovementSpeed>();
+    entities.init_components::<World>();
+    entities.init_components::<SpawnTimer>();
+    entities.init_components::<Camera>();
     entities.init_components::<Pushable>();
     entities.init_components::<Pusher>();
+    entities.init_components::<AttachedTo>();
+    entities.init_components::<Attachment>();
+    entities.init_components::<AttachmentOffset>();
+    entities.init_components::<AttachmentOffsetByDirection>();
+    entities.init_components::<Attackable>();
+    entities.init_components::<SpriteIndexByDirection>();
+    entities.init_components::<Weapon>();
+    entities.init_components::<Life>();
     entities.init_components::<TimedFlicker>();
+    entities.init_components::<HitParticleColor>();
+    entities.init_components::<Pickupable>();
+    entities.init_components::<Pickuper>();
+    entities.remove_all_entities();
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
