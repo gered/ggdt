@@ -544,15 +544,16 @@ where
         // needing the table to be able to hold buffers containing u16's instead of just u8's.
         // this does mean that the size of the table is always 2 less than the number of created codes.
 
-        let mut table = HashMap::<LzwCode, Vec<u8>>::with_capacity(initial_table_size + 2);
+        let mut table = vec![None; 1usize.wrapping_shl(MAX_BITS as u32)];
         for i in 0..initial_table_size {
-            table.insert(i as LzwCode, vec![i as u8]);
+            table[i] = Some(vec![i as u8]);
         }
         let mut max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
         let mut next_code = initial_table_size as LzwCode + 2;
 
         // read the next code which should actually be the first "interesting" value of the code stream
         code = match reader.read_code(src)? {
+            Some(code) if code > MAX_CODE_VALUE => return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code))),
             Some(code) if code == end_of_info_code => return Ok(()),
             Some(code) => code,
             None => return Err(LzwError::EncodingError(String::from("Unexpected end of code stream"))),
@@ -561,7 +562,7 @@ where
         // ok, now we're able to get started!
 
         // simply write out the table string associated with the first code
-        if let Some(string) = table.get(&code) {
+        if let Some(string) = table.get(code as usize).unwrap() {
             dest.write_all(string)?;
         } else {
             return Err(LzwError::EncodingError(format!("No table entry for code {}", code)));
@@ -572,6 +573,7 @@ where
         'inner: loop {
             // grab the next code
             code = match reader.read_code(src)? {
+                Some(code) if code > MAX_CODE_VALUE => return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code))),
                 Some(code) if code == end_of_info_code => break 'outer,
                 Some(code) if code == clear_code => {
                     // reset the bit size and reader and then loop back to the outer loop which
@@ -586,7 +588,7 @@ where
 
             // note: prev_code should always be present since we looked it up in the table during a
             // previous loop iteration ...
-            let prev_code_string = match table.get(&prev_code) {
+            let prev_code_string = match table.get(prev_code as usize).unwrap() {
                 Some(prev_code_string) => prev_code_string,
                 None => {
                     return Err(LzwError::EncodingError(format!("Previous code {} not found in table", prev_code)));
@@ -596,7 +598,7 @@ where
             let new_code = next_code;
             next_code += 1;
 
-            if let Some(string) = table.get(&code) {
+            if let Some(string) = table.get(code as usize).unwrap() {
                 // write out the matching table string for the code just read
                 dest.write_all(string)?;
 
@@ -604,7 +606,7 @@ where
                 let k = string.first().unwrap();
                 let mut new_string = prev_code_string.clone();
                 new_string.push(*k);
-                table.insert(new_code, new_string);
+                table[new_code as usize] = Some(new_string);
             } else {
                 // code is not yet present in the table.
                 // add prev_code string + the code we just read to the table and also write it out
@@ -612,7 +614,7 @@ where
                 let mut new_string = prev_code_string.clone();
                 new_string.push(*k);
                 dest.write_all(&new_string)?;
-                table.insert(new_code, new_string);
+                table[new_code as usize] = Some(new_string);
             }
 
             if new_code == max_code_value_for_bit_size {
