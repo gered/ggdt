@@ -30,3 +30,7 @@ harness = false
 [[bench]]
 name = "blit"
 harness = false
+
+[[bench]]
+name = "loading"
+harness = false
