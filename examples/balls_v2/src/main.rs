@@ -24,8 +24,11 @@ fn main() -> Result<()> {
 
     while is_running && !states.is_empty() {
         game.context.system.do_events_with(|event| {
-            if let sdl2::event::Event::Quit { .. } = event {
-                is_running = false;
+            match event {
+                SystemEvent::Quit => {
+                    is_running = false;
+                },
+                _ => {}
             }
         });
 

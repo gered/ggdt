@@ -1,5 +1,3 @@
-use sdl2::keyboard::Scancode;
-
 use libretrogd::entities::*;
 use libretrogd::events::*;
 use libretrogd::graphics::*;

@@ -1,5 +1,4 @@
 use anyhow::Result;
-use sdl2::keyboard::Scancode;
 
 use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
 use libretrogd::entities::*;
@@ -195,8 +194,11 @@ fn main() -> Result<()> {
 
     while is_running && !states.is_empty() {
         game.core.system.do_events_with(|event| {
-            if let sdl2::event::Event::Quit { .. } = event {
-                is_running = false;
+            match event {
+                SystemEvent::Quit => {
+                    is_running = false;
+                },
+                _ => {}
             }
         });
 

@@ -1,11 +1,9 @@
 use std::path::Path;
 
-use sdl2::keyboard::Scancode;
-
 use libretrogd::entities::*;
 use libretrogd::graphics::*;
-use libretrogd::math::Vector2;
 use libretrogd::states::*;
+use libretrogd::system::*;
 
 use crate::entities::*;
 use crate::Game;

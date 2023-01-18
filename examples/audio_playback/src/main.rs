@@ -1,8 +1,6 @@
-use std::f64::consts::PI;
 use std::path::Path;
 
 use anyhow::Result;
-use sdl2::keyboard::Scancode;
 
 use libretrogd::audio::*;
 use libretrogd::graphics::*;
@@ -73,8 +71,11 @@ fn main() -> Result<()> {
 
     while is_running {
         system.do_events_with(|event| {
-            if let sdl2::event::Event::Quit { .. } = event {
-                is_running = false;
+            match event {
+                SystemEvent::Quit => {
+                    is_running = false;
+                },
+                _ => {}
             }
         });
 
