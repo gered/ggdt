@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "1.0.55"
+anyhow = "=1.0.55"
 libretrogd = { path = "../../libretrogd", features = [] }
 sdl2 = { version = "0.34.5", features = ["static-link", "bundled", "unsafe_textures" ] }
 serde = { version = "1.0.136", features = ["derive"] }
