@@ -3,7 +3,6 @@ use std::fmt::Formatter;
 use byte_slice_cast::AsByteSlice;
 use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::audio::AudioSpecDesired;
-use sdl2::event::Event;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, WindowCanvas};
 use thiserror::Error;
@@ -12,10 +11,12 @@ use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::audio::*;
 use crate::graphics::*;
 
+pub use self::event::*;
 pub use self::input_devices::*;
 pub use self::input_devices::keyboard::*;
 pub use self::input_devices::mouse::*;
 
+pub mod event;
 pub mod input_devices;
 
 #[derive(Error, Debug)]
@@ -423,15 +424,17 @@ impl System {
     /// your application to also react to any events received.
     pub fn do_events_with<F>(&mut self, mut f: F)
     where
-        F: FnMut(&Event),
+        F: FnMut(&SystemEvent),
     {
         self.keyboard.update();
         self.mouse.update();
         self.sdl_event_pump.pump_events();
         for event in self.sdl_event_pump.poll_iter() {
-            self.keyboard.handle_event(&event);
-            self.mouse.handle_event(&event);
-            f(&event);
+            if let Ok(event) = event.try_into() {
+                self.keyboard.handle_event(&event);
+                self.mouse.handle_event(&event);
+                f(&event);
+            }
         }
     }
 

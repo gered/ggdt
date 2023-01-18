@@ -1,9 +1,12 @@
-use sdl2::event::Event;
-
 use crate::graphics::*;
 use crate::math::*;
+use crate::system::MouseEvent;
 
 use super::*;
+
+pub use self::buttons::*;
+
+pub mod buttons;
 
 const MAX_BUTTONS: usize = 32;
 
@@ -187,7 +190,7 @@ impl Mouse {
             DEFAULT_MOUSE_CURSOR_WIDTH as u32,
             DEFAULT_MOUSE_CURSOR_HEIGHT as u32,
         )
-        .unwrap();
+            .unwrap();
         cursor.pixels_mut().copy_from_slice(&DEFAULT_MOUSE_CURSOR);
 
         let cursor_background = Bitmap::new(cursor.width(), cursor.height()).unwrap();
@@ -290,29 +293,31 @@ impl InputDevice for Mouse {
         }
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: &SystemEvent) {
         match event {
-            Event::MouseMotion {
-                mousestate,
+            SystemEvent::Mouse(MouseEvent::MouseMotion {
                 x,
                 y,
-                xrel,
-                yrel,
-                ..
-            } => {
+                x_delta,
+                y_delta,
+                buttons,
+            }) => {
                 self.x = *x;
                 self.y = *y;
-                self.x_delta = *xrel;
-                self.y_delta = *yrel;
-                for (button, is_pressed) in mousestate.mouse_buttons() {
-                    self.update_button_state(button as u32, is_pressed);
-                }
+                self.x_delta = *x_delta;
+                self.y_delta = *y_delta;
+
+                self.update_button_state(MouseButton::Left as u32, buttons.contains(MouseButtons::LEFT_BUTTON));
+                self.update_button_state(MouseButton::Middle as u32, buttons.contains(MouseButtons::MIDDLE_BUTTON));
+                self.update_button_state(MouseButton::Right as u32, buttons.contains(MouseButtons::RIGHT_BUTTON));
+                self.update_button_state(MouseButton::X1 as u32, buttons.contains(MouseButtons::X1));
+                self.update_button_state(MouseButton::X2 as u32, buttons.contains(MouseButtons::X2));
             }
-            Event::MouseButtonDown { mouse_btn, .. } => {
-                self.update_button_state(*mouse_btn as u32, true);
+            SystemEvent::Mouse(MouseEvent::MouseButtonDown { button, .. }) => {
+                self.update_button_state(*button as u32, true);
             }
-            Event::MouseButtonUp { mouse_btn, .. } => {
-                self.update_button_state(*mouse_btn as u32, false);
+            SystemEvent::Mouse(MouseEvent::MouseButtonUp { button, .. }) => {
+                self.update_button_state(*button as u32, false);
             }
             _ => (),
         }

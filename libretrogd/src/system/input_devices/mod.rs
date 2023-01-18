@@ -1,4 +1,4 @@
-use sdl2::event::Event;
+use crate::system::SystemEvent;
 
 pub mod keyboard;
 pub mod mouse;
@@ -18,10 +18,8 @@ pub trait InputDevice {
     /// input events have been processed via `handle_event`.
     fn update(&mut self);
 
-    /// Processes the data from the given [`Event`] if it is relevant for this input device. You
-    /// should pass in all events received every frame and let the input device figure out if it
+    /// Processes the data from the given [`SystemEvent`] if it is relevant for this input device.
+    /// You should pass in all events received every frame and let the input device figure out if it
     /// is relevant to it or not.
-    ///
-    /// [`Event`]: sdl2::event::Event
-    fn handle_event(&mut self, event: &Event);
+    fn handle_event(&mut self, event: &SystemEvent);
 }

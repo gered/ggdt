@@ -1,7 +1,12 @@
-use sdl2::event::Event;
-use sdl2::keyboard::Scancode;
+use crate::system::event::{KeyboardEvent, SystemEvent};
 
 use super::*;
+
+pub use self::codes::*;
+pub use self::scancodes::*;
+
+pub mod codes;
+pub mod scancodes;
 
 const MAX_KEYS: usize = 256;
 
@@ -71,9 +76,9 @@ impl InputDevice for Keyboard {
         }
     }
 
-    fn handle_event(&mut self, event: &Event) {
+    fn handle_event(&mut self, event: &SystemEvent) {
         match event {
-            Event::KeyDown { scancode, .. } => {
+            SystemEvent::Keyboard(KeyboardEvent::KeyDown { scancode, .. }) => {
                 if let Some(scancode) = scancode {
                     let state = &mut self.keyboard[*scancode as usize];
                     *state = match *state {
@@ -83,7 +88,7 @@ impl InputDevice for Keyboard {
                     };
                 }
             }
-            Event::KeyUp { scancode, .. } => {
+            SystemEvent::Keyboard(KeyboardEvent::KeyUp { scancode, .. }) => {
                 if let Some(scancode) = scancode {
                     self.keyboard[*scancode as usize] = ButtonState::Released;
                 }
