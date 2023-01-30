@@ -19,6 +19,37 @@ pub use self::input_devices::mouse::*;
 pub mod event;
 pub mod input_devices;
 
+fn is_x11_compositor_skipping_problematic() -> bool {
+    /*
+    this is _probably_ a bit of a hack.
+
+    currently on linux systems, SDL2 (2.0.8+), tries to "skip" (disable) the X11 server
+    compositor when starting up. this is to reduce/remove any added latency from the SDL program
+    that is usually introduced by the compositor when it is enabled for the window. if SDL did
+    disable the compositor in this manner, it will re-enable it when SDL shuts down. the
+    intention is for the compositor to be disabled for just the SDL window(s) only and to affect
+    nothing else running concurrently.
+
+    this works great for several desktop environments, but it unfortunately has a global effect
+    on KDE/Kwin, where users may notice a visible screen flicker, other concurrently running
+    applications may exhibit visual artifacts/weirdness, and (all?) other application windows
+    while the SDL app is running will also have the compositor disabled for them too.
+
+    not great! this function is a quick, hacky, and probably-not-bullet-proof method to detect
+    if KDE/Kwin is the current desktop environment. in the future other known problem
+    configurations could be added here and/or this could/should be updated with a better method
+    to check for this.
+     */
+    if std::env::consts::OS == "linux" {
+        match std::env::var("XDG_SESSION_DESKTOP") {
+            Ok(value) => value.eq_ignore_ascii_case("KDE"),
+            Err(_) => false
+        }
+    } else {
+        false
+    }
+}
+
 #[derive(Error, Debug)]
 pub enum SystemError {
     #[error("System init error: {0}")]
@@ -42,6 +73,7 @@ pub struct SystemBuilder {
     show_mouse: bool,
     relative_mouse_scaling: bool,
     integer_scaling: bool,
+    skip_x11_compositor: bool,
 }
 
 impl SystemBuilder {
@@ -56,6 +88,7 @@ impl SystemBuilder {
             show_mouse: false,
             relative_mouse_scaling: true,
             integer_scaling: false,
+            skip_x11_compositor: !is_x11_compositor_skipping_problematic(),
         }
     }
 
@@ -117,6 +150,16 @@ impl SystemBuilder {
         self
     }
 
+    /// Enables or disables skipping the X11 server compositor on Linux systems only. This can be
+    /// set to manually control the underlying SDL hint that is used to control this setting. The
+    /// default setting that [`SystemBuilder`] configures is to follow the SDL default, except where
+    /// the setting affects the system globally (in certain desktop environments, e.g. KDE/Kwin)
+    /// which may be undesired by end-users, at the cost of some additional input latency.
+    pub fn skip_x11_compositor(&mut self, enable: bool) -> &mut SystemBuilder {
+        self.skip_x11_compositor = enable;
+        self
+    }
+
     /// Builds and returns a [`System`] from the current configuration.
     pub fn build(&self) -> Result<System, SystemError> {
         // todo: maybe let this be customized in the future, or at least halved so a 160x120 mode can be available ... ?
@@ -131,6 +174,15 @@ impl SystemBuilder {
             } else {
                 "0"
             },
+        );
+
+        sdl2::hint::set(
+            "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR",
+            if self.skip_x11_compositor {
+                "1"
+            } else {
+                "0"
+            }
         );
 
         // build all the individual SDL subsystems
