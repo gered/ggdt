@@ -40,13 +40,14 @@ fn is_x11_compositor_skipping_problematic() -> bool {
     configurations could be added here and/or this could/should be updated with a better method
     to check for this.
      */
-    if std::env::consts::OS == "linux" {
-        match std::env::var("XDG_SESSION_DESKTOP") {
-            Ok(value) => value.eq_ignore_ascii_case("KDE"),
-            Err(_) => false
-        }
-    } else {
-        false
+    match std::env::consts::OS {
+        "linux"|"freebsd"|"netbsd"|"openbsd" => {
+            match std::env::var("XDG_SESSION_DESKTOP") {
+                Ok(value) => value.eq_ignore_ascii_case("KDE"),
+                Err(_) => false
+            }
+        },
+        _ => false,
     }
 }
 
