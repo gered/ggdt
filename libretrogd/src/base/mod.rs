@@ -7,12 +7,12 @@ use crate::events::*;
 use crate::states::*;
 use crate::system::*;
 
-pub trait AppState {
+pub trait PrimaryState {
 	fn system(&self) -> &System;
 	fn system_mut(&mut self) -> &mut System;
 }
 
-pub trait AppStateWithFrameTiming: AppState {
+pub trait PrimaryStateWithFrameTiming: PrimaryState {
 	fn delta(&self) -> f32;
 	fn set_delta(&mut self, delta: f32);
 
@@ -25,7 +25,7 @@ pub trait AppStateWithFrameTiming: AppState {
 	}
 }
 
-pub trait AppStateWithEvents<EventType>: AppState {
+pub trait PrimaryStateWithEvents<EventType>: PrimaryState {
 	fn event_publisher(&mut self) -> &mut EventPublisher<EventType>;
 }
 
@@ -33,7 +33,7 @@ pub trait SupportSystems {}
 
 pub trait SupportSystemsWithEvents<EventType, ContextType>: SupportSystems
 where
-	ContextType: AppStateWithEvents<EventType>,
+	ContextType: PrimaryStateWithEvents<EventType>,
 {
 	fn event_listeners(&mut self) -> &mut EventListeners<EventType, ContextType>;
 
@@ -43,14 +43,14 @@ where
 	}
 }
 
-pub struct App<StateType, SupportType> {
-	pub state: StateType,
-	pub support: SupportType,
+pub struct App<PrimaryType, SupportType> {
+	pub primary_state: PrimaryType,
+	pub support_systems: SupportType,
 }
 
-impl<StateType, SupportType> App<StateType, SupportType> {
-	pub fn new(state: StateType, support: SupportType) -> Self {
-		App { state, support }
+impl<PrimaryType, SupportType> App<PrimaryType, SupportType> {
+	pub fn new(primary_state: PrimaryType, support_systems: SupportType) -> Self {
+		App { primary_state, support_systems }
 	}
 }
 
@@ -63,33 +63,35 @@ pub enum MainLoopError {
 	SystemError(#[from] SystemError),
 }
 
-pub fn main_loop<StateType, SupportType, State>(
-	mut app: App<StateType, SupportType>,
+pub fn main_loop<PrimaryType, SupportType, State>(
+	primary_state: PrimaryType,
+	support_systems: SupportType,
 	initial_state: State,
 ) -> Result<(), MainLoopError>
 where
-	StateType: AppStateWithFrameTiming,
+	PrimaryType: PrimaryStateWithFrameTiming,
 	SupportType: SupportSystems,
-	State: GameState<StateType> + 'static,
+	State: AppState<App<PrimaryType, SupportType>> + 'static,
 {
+	let mut app = App::new(primary_state, support_systems);
 	let mut states = States::new();
 	states.push(initial_state)?;
 
 	let mut is_running = true;
-	let mut last_ticks = app.state.system().ticks();
+	let mut last_ticks = app.primary_state.system().ticks();
 
 	while is_running && !states.is_empty() {
-		app.state.system_mut().do_events_with(|event| match event {
+		app.primary_state.system_mut().do_events_with(|event| match event {
 			SystemEvent::Quit => {
 				is_running = false;
 			}
 			_ => {}
 		});
 
-		last_ticks = app.state.update_frame_delta(last_ticks);
-		states.update(&mut app.state)?;
-		states.render(&mut app.state);
-		app.state.system_mut().display()?;
+		last_ticks = app.primary_state.update_frame_delta(last_ticks);
+		states.update(&mut app)?;
+		states.render(&mut app);
+		app.primary_state.system_mut().display()?;
 	}
 
 	Ok(())

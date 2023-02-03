@@ -76,7 +76,7 @@ impl Game {
 
 pub struct SimulationState;
 
-impl GameState<Game> for SimulationState {
+impl AppState<Game> for SimulationState {
     fn update(&mut self, _state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if context.context.system.keyboard.is_key_up(Scancode::S) {
             context.do_events();

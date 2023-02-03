@@ -30,8 +30,8 @@ pub enum State {
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub enum StateChange<ContextType> {
-    Push(Box<dyn GameState<ContextType>>),
-    Swap(Box<dyn GameState<ContextType>>),
+    Push(Box<dyn AppState<ContextType>>),
+    Swap(Box<dyn AppState<ContextType>>),
     Pop(u32),
 }
 
@@ -46,7 +46,7 @@ impl<ContextType> std::fmt::Debug for StateChange<ContextType> {
     }
 }
 
-pub trait GameState<ContextType> {
+pub trait AppState<ContextType> {
     fn update(&mut self, state: State, context: &mut ContextType) -> Option<StateChange<ContextType>>;
     fn render(&mut self, state: State, context: &mut ContextType);
     fn transition(&mut self, state: State, context: &mut ContextType) -> bool;
@@ -60,14 +60,14 @@ pub enum StateError {
     #[error("Operation cannot currently be performed because there is already a pending state change.")]
     HasPendingStateChange,
 
-    #[error("Operation cannot currently be performed because the GameState's current state ({0:?}) does not allow it.")]
-    GameStateInvalidState(State),
+    #[error("Operation cannot currently be performed because the State's current state ({0:?}) does not allow it.")]
+    AppStateInvalidState(State),
 }
 
 struct StateContainer<ContextType> {
     current_state: State,
     pending_state_change: Option<State>,
-    state: Box<dyn GameState<ContextType>>,
+    state: Box<dyn AppState<ContextType>>,
 }
 
 impl<ContextType> std::fmt::Debug for StateContainer<ContextType> {
@@ -80,7 +80,7 @@ impl<ContextType> std::fmt::Debug for StateContainer<ContextType> {
 }
 
 impl<ContextType> StateContainer<ContextType> {
-    pub fn new(state: Box<dyn GameState<ContextType>>) -> Self {
+    pub fn new(state: Box<dyn AppState<ContextType>>) -> Self {
         StateContainer {
             current_state: State::Dead,
             pending_state_change: None,
@@ -110,7 +110,7 @@ impl<ContextType> StateContainer<ContextType> {
     }
 
     #[inline]
-    pub fn state(&mut self) -> &mut dyn GameState<ContextType> {
+    pub fn state(&mut self) -> &mut dyn AppState<ContextType> {
         self.state.deref_mut()
     }
 
@@ -119,7 +119,7 @@ impl<ContextType> StateContainer<ContextType> {
             self.change_state(State::TransitionOut(to), context);
             Ok(())
         } else {
-            Err(StateError::GameStateInvalidState(self.current_state))
+            Err(StateError::AppStateInvalidState(self.current_state))
         }
     }
 
@@ -135,7 +135,7 @@ impl<ContextType> StateContainer<ContextType> {
                 Ok(())
             },
             _ => {
-                Err(StateError::GameStateInvalidState(self.current_state))
+                Err(StateError::AppStateInvalidState(self.current_state))
             }
         }
     }
@@ -180,7 +180,7 @@ impl<ContextType> StateContainer<ContextType> {
 pub struct States<ContextType> {
     states: VecDeque<StateContainer<ContextType>>,
     command: Option<StateChange<ContextType>>,
-    pending_state: Option<Box<dyn GameState<ContextType>>>,
+    pending_state: Option<Box<dyn AppState<ContextType>>>,
     pop_count: Option<u32>,
 }
 
@@ -226,7 +226,7 @@ impl<ContextType> States<ContextType> {
         true
     }
 
-    fn push_boxed_state(&mut self, boxed_state: Box<dyn GameState<ContextType>>) -> Result<(), StateError> {
+    fn push_boxed_state(&mut self, boxed_state: Box<dyn AppState<ContextType>>) -> Result<(), StateError> {
         if !self.can_push_or_pop() {
             Err(StateError::HasPendingStateChange)
         } else {
@@ -235,7 +235,7 @@ impl<ContextType> States<ContextType> {
         }
     }
 
-    fn swap_boxed_state(&mut self, boxed_state: Box<dyn GameState<ContextType>>) -> Result<(), StateError> {
+    fn swap_boxed_state(&mut self, boxed_state: Box<dyn AppState<ContextType>>) -> Result<(), StateError> {
         if !self.can_push_or_pop() {
             Err(StateError::HasPendingStateChange)
         } else {
@@ -244,11 +244,11 @@ impl<ContextType> States<ContextType> {
         }
     }
 
-    pub fn push(&mut self, state: impl GameState<ContextType> + 'static) -> Result<(), StateError> {
+    pub fn push(&mut self, state: impl AppState<ContextType> + 'static) -> Result<(), StateError> {
         self.push_boxed_state(Box::new(state))
     }
 
-    pub fn swap(&mut self, state: impl GameState<ContextType> + 'static) -> Result<(), StateError> {
+    pub fn swap(&mut self, state: impl AppState<ContextType> + 'static) -> Result<(), StateError> {
         self.swap_boxed_state(Box::new(state))
     }
 
@@ -382,11 +382,11 @@ impl<ContextType> States<ContextType> {
         match self.state_of_front_state() {
             Some(State::Paused) => {
                 // should never happen now. leaving here just in case ...
-                return Err(StateError::GameStateInvalidState(State::Paused));
+                return Err(StateError::AppStateInvalidState(State::Paused));
             },
             Some(State::Dead) => {
                 // should never happen now. leaving here just in case ...
-                return Err(StateError::GameStateInvalidState(State::Dead));
+                return Err(StateError::AppStateInvalidState(State::Dead));
             },
             Some(State::TransitionIn) => {
                 let state = self.states.front_mut().unwrap();
@@ -506,7 +506,7 @@ mod tests {
         }
     }
 
-    impl GameState<TestContext> for TestState {
+    impl AppState<TestContext> for TestState {
         fn update(&mut self, state: State, context: &mut TestContext) -> Option<StateChange<TestContext>> {
             context.log(LogEntry::Update(self.id, state));
             None
@@ -1284,7 +1284,7 @@ mod tests {
         }
     }
 
-    impl GameState<TestContext> for SelfPushPopState {
+    impl AppState<TestContext> for SelfPushPopState {
         fn update(&mut self, state: State, context: &mut TestContext) -> Option<StateChange<TestContext>> {
             context.log(LogEntry::Update(self.id, state));
             if state == State::Active {

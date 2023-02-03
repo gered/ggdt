@@ -97,7 +97,7 @@ impl DemoState {
     }
 }
 
-impl GameState<Game> for DemoState {
+impl AppState<Game> for DemoState {
     fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if state == State::Active {
             if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {

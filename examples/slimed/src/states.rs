@@ -23,7 +23,7 @@ impl MainMenuState {
     }
 }
 
-impl GameState<Game> for MainMenuState {
+impl AppState<Game> for MainMenuState {
     fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if state == State::Active {
             if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
@@ -108,7 +108,7 @@ impl GamePlayState {
     }
 }
 
-impl GameState<Game> for GamePlayState {
+impl AppState<Game> for GamePlayState {
     fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if state == State::Active {
             if self.in_menu {
