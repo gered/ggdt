@@ -187,4 +187,3 @@ impl From<sdl2::event::Event> for SystemEvent {
         }
     }
 }
-}
