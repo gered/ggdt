@@ -187,3 +187,38 @@ impl From<sdl2::event::Event> for SystemEvent {
         }
     }
 }
+
+pub trait SystemEventHandler {
+    /// Processes the data from the given [`SystemEvent`]. Returns true if the processing actually
+    /// recognized the passed event, or false if the event was ignored.
+    fn handle_event(&mut self, event: &SystemEvent) -> bool;
+}
+
+pub struct SystemEventIterator<'a> {
+    iter: sdl2::event::EventPollIterator<'a>,
+}
+
+impl Iterator for SystemEventIterator<'_> {
+    type Item = SystemEvent;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.iter.next().map(|e| e.into())
+    }
+}
+
+pub struct SystemEventPump {
+    sdl_event_pump: sdl2::EventPump,
+}
+
+impl SystemEventPump {
+    pub fn from(pump: sdl2::EventPump) -> Self {
+        SystemEventPump {
+            sdl_event_pump: pump,
+        }
+    }
+
+    pub fn poll_iter(&mut self) -> SystemEventIterator {
+        self.sdl_event_pump.pump_events();
+        SystemEventIterator { iter: self.sdl_event_pump.poll_iter() }
+    }
+}

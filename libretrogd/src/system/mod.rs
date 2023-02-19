@@ -1,7 +1,7 @@
 use std::fmt::Formatter;
 
 use byte_slice_cast::AsByteSlice;
-use sdl2::{AudioSubsystem, EventPump, Sdl, TimerSubsystem, VideoSubsystem};
+use sdl2::{AudioSubsystem, Sdl, TimerSubsystem, VideoSubsystem};
 use sdl2::audio::AudioSpecDesired;
 use sdl2::pixels::PixelFormatEnum;
 use sdl2::render::{Texture, WindowCanvas};
@@ -310,6 +310,8 @@ impl SystemBuilder {
         audio.resume();
         let audio_queue = AudioQueue::new(&audio);
 
+        let event_pump = SystemEventPump::from(sdl_event_pump);
+
         // create input device objects, exposed to the application
 
         let keyboard = Keyboard::new();
@@ -323,7 +325,6 @@ impl SystemBuilder {
             sdl_canvas,
             sdl_texture,
             sdl_texture_pitch,
-            sdl_event_pump,
             texture_pixels,
             audio,
             audio_queue,
@@ -332,6 +333,7 @@ impl SystemBuilder {
             font,
             keyboard,
             mouse,
+            event_pump,
             target_framerate: self.target_framerate,
             target_framerate_delta: None,
             next_tick: 0,
@@ -351,7 +353,6 @@ pub struct System {
     sdl_canvas: WindowCanvas,
     sdl_texture: Texture,
     sdl_texture_pitch: usize,
-    sdl_event_pump: EventPump,
 
     texture_pixels: Box<[u32]>,
 
@@ -387,6 +388,8 @@ pub struct System {
     /// The current mouse state. To ensure it is updated each frame, you should call
     /// [`System::do_events`] or [`System::do_events_with`] each frame.
     pub mouse: Mouse,
+
+    pub event_pump: SystemEventPump,
 }
 
 impl std::fmt::Debug for System {
@@ -481,8 +484,7 @@ impl System {
     {
         self.keyboard.update();
         self.mouse.update();
-        self.sdl_event_pump.pump_events();
-        for event in self.sdl_event_pump.poll_iter() {
+        for event in self.event_pump.poll_iter() {
             let event = event.into();
             self.keyboard.handle_event(&event);
             self.mouse.handle_event(&event);
