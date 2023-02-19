@@ -1,5 +1,6 @@
 use std::path::Path;
 
+use libretrogd::base::*;
 use libretrogd::entities::*;
 use libretrogd::graphics::*;
 use libretrogd::states::*;
@@ -45,7 +46,7 @@ impl AppState<Game> for MainMenuState {
             }
         }
 
-        context.do_events();
+        context.support.do_events(&mut context.core);
         context.support.component_systems.update(&mut context.core);
 
         None
@@ -154,7 +155,7 @@ impl AppState<Game> for GamePlayState {
             }
         }
 
-        context.do_events();
+        context.support.do_events(&mut context.core);
         context.support.component_systems.update(&mut context.core);
 
         None

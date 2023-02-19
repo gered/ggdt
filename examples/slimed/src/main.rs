@@ -4,13 +4,13 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 
+use libretrogd::base::*;
 use libretrogd::entities::*;
 use libretrogd::events::*;
 use libretrogd::graphics::*;
 use libretrogd::math::*;
-use libretrogd::states::*;
 use libretrogd::system::*;
 
 use crate::entities::*;
@@ -54,14 +54,61 @@ pub struct Core {
     pub sprite_render_list: Vec<(EntityId, Vector2, BlitMethod)>,
 }
 
+impl CoreState for Core {
+    fn system(&self) -> &System {
+        &self.system
+    }
+
+    fn system_mut(&mut self) -> &mut System {
+        &mut self.system
+    }
+
+    fn delta(&self) -> f32 {
+        self.delta
+    }
+
+    fn set_delta(&mut self, delta: f32) {
+        self.delta = delta;
+    }
+}
+
+impl CoreStateWithEvents<Event> for Core {
+    fn event_publisher(&mut self) -> &mut EventPublisher<Event> {
+        &mut self.event_publisher
+    }
+}
+
 pub struct Support {
     pub component_systems: ComponentSystems<Core, Core>,
     pub event_listeners: EventListeners<Event, Core>,
 }
 
+impl SupportSystems for Support {}
+
+impl SupportSystemsWithEvents<Event> for Support {
+    type ContextType = Core;
+
+    fn event_listeners(&mut self) -> &mut EventListeners<Event, Self::ContextType> {
+        &mut self.event_listeners
+    }
+}
+
 pub struct Game {
     pub core: Core,
     pub support: Support,
+}
+
+impl AppContext for Game {
+    type CoreType = Core;
+    type SupportType = Support;
+
+    fn core(&mut self) -> &mut Self::CoreType {
+        &mut self.core
+    }
+
+    fn support(&mut self) -> &mut Self::SupportType {
+        &mut self.support
+    }
 }
 
 impl Game {
@@ -146,44 +193,10 @@ impl Game {
             },
         })
     }
-
-    pub fn do_events(&mut self) {
-        self.support.event_listeners.take_queue_from(&mut self.core.event_publisher);
-        self.support.event_listeners.dispatch_queue(&mut self.core);
-    }
-
-    pub fn update_frame_delta(&mut self, last_ticks: u64) -> u64 {
-        let ticks = self.core.system.ticks();
-        let elapsed = ticks - last_ticks;
-        self.core.delta = (elapsed as f64 / self.core.system.tick_frequency() as f64) as f32;
-        ticks
-    }
 }
 
 fn main() -> Result<()> {
     let system = SystemBuilder::new().window_title("Slime Stabbing Simulator").vsync(true).build()?;
-    let mut game = Game::new(system)?;
-    let mut states = States::new();
-    states.push(MainMenuState::new())?;
-
-    let mut is_running = true;
-    let mut last_ticks = game.core.system.ticks();
-
-    while is_running && !states.is_empty() {
-        game.core.system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
-        last_ticks = game.update_frame_delta(last_ticks);
-        states.update(&mut game)?;
-        states.render(&mut game);
-        game.core.system.display()?;
-    }
-
-    Ok(())
+    let game = Game::new(system)?;
+    main_loop(game, MainMenuState::new()).context("Main loop error")
 }
