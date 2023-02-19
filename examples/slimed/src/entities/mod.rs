@@ -385,8 +385,8 @@ pub struct Pickuper;
 
 pub fn init_everything(context: &mut Game, map_file: &Path, min_spawn_time: f32, max_spawn_time: f32, max_slimes: usize) {
     init_entities(&mut context.core.entities);
-    init_component_system(&mut context.component_systems);
-    init_events(&mut context.event_listeners);
+    init_component_system(&mut context.support.component_systems);
+    init_events(&mut context.support.event_listeners);
     context.core.event_publisher.clear();
 
     context.core.tilemap = TileMap::load_from(map_file).unwrap();

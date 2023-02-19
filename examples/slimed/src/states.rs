@@ -46,14 +46,14 @@ impl AppState<Game> for MainMenuState {
         }
 
         context.do_events();
-        context.component_systems.update(&mut context.core);
+        context.support.component_systems.update(&mut context.core);
 
         None
     }
 
     fn render(&mut self, state: State, context: &mut Game) {
         context.core.tilemap.draw(&mut context.core.system.video, &context.core.tiles, 0, 0);
-        context.component_systems.render(&mut context.core);
+        context.support.component_systems.render(&mut context.core);
 
         let x = 32;
         let y = 160;
@@ -155,7 +155,7 @@ impl AppState<Game> for GamePlayState {
         }
 
         context.do_events();
-        context.component_systems.update(&mut context.core);
+        context.support.component_systems.update(&mut context.core);
 
         None
     }
@@ -164,7 +164,7 @@ impl AppState<Game> for GamePlayState {
         if let Some((_, camera)) = context.core.entities.components::<Camera>().single() {
             context.core.tilemap.draw(&mut context.core.system.video, &context.core.tiles, camera.x, camera.y);
         }
-        context.component_systems.render(&mut context.core);
+        context.support.component_systems.render(&mut context.core);
 
         if self.in_menu {
             let x = 32;

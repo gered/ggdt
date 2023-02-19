@@ -54,10 +54,14 @@ pub struct Core {
     pub sprite_render_list: Vec<(EntityId, Vector2, BlitMethod)>,
 }
 
-pub struct Game {
-    pub core: Core,
+pub struct Support {
     pub component_systems: ComponentSystems<Core, Core>,
     pub event_listeners: EventListeners<Event, Core>,
+}
+
+pub struct Game {
+    pub core: Core,
+    pub support: Support,
 }
 
 impl Game {
@@ -136,14 +140,16 @@ impl Game {
                 sparkles_animation_def,
                 sprite_render_list: Vec::with_capacity(1024),
             },
-            component_systems,
-            event_listeners,
+            support: Support {
+                component_systems,
+                event_listeners,
+            },
         })
     }
 
     pub fn do_events(&mut self) {
-        self.event_listeners.take_queue_from(&mut self.core.event_publisher);
-        self.event_listeners.dispatch_queue(&mut self.core);
+        self.support.event_listeners.take_queue_from(&mut self.core.event_publisher);
+        self.support.event_listeners.dispatch_queue(&mut self.core);
     }
 
     pub fn update_frame_delta(&mut self, last_ticks: u64) -> u64 {
