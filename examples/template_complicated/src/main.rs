@@ -1,9 +1,9 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 
 use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use libretrogd::base::*;
 use libretrogd::entities::*;
 use libretrogd::events::*;
-use libretrogd::graphics::*;
 use libretrogd::math::*;
 use libretrogd::states::*;
 use libretrogd::system::*;
@@ -82,23 +82,23 @@ pub fn render_system_pixels(context: &mut Core) {
 pub struct DemoState;
 
 impl DemoState {
-    fn init(&mut self, context: &mut Game) {
+    fn init(&mut self, context: &mut App) {
         context.core.entities.init_components::<Position>();
         context.core.entities.init_components::<Velocity>();
         context.core.entities.init_components::<Color>();
 
-        context.component_systems.reset();
-        context.component_systems.add_update_system(update_system_movement);
-        context.component_systems.add_update_system(update_system_remove_offscreen);
-        context.component_systems.add_render_system(render_system_pixels);
+        context.support.component_systems.reset();
+        context.support.component_systems.add_update_system(update_system_movement);
+        context.support.component_systems.add_update_system(update_system_remove_offscreen);
+        context.support.component_systems.add_render_system(render_system_pixels);
 
-        context.event_listeners.clear();
-        context.event_listeners.add(event_listener);
+        context.support.event_listeners.clear();
+        context.support.event_listeners.add(event_listener);
     }
 }
 
-impl AppState<Game> for DemoState {
-    fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
+impl AppState<App> for DemoState {
+    fn update(&mut self, state: State, context: &mut App) -> Option<StateChange<App>> {
         if state == State::Active {
             if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
                 return Some(StateChange::Pop(1))
@@ -109,22 +109,22 @@ impl AppState<Game> for DemoState {
             context.core.event_publisher.queue(Event::SpawnPixel);
         }
 
-        context.do_events();
-        context.component_systems.update(&mut context.core);
+        context.support.do_events(&mut context.core);
+        context.support.component_systems.update(&mut context.core);
 
         None
     }
 
-    fn render(&mut self, state: State, context: &mut Game) {
+    fn render(&mut self, state: State, context: &mut App) {
         context.core.system.video.clear(0);
-        context.component_systems.render(&mut context.core);
+        context.support.component_systems.render(&mut context.core);
     }
 
-    fn transition(&mut self, state: State, context: &mut Game) -> bool {
+    fn transition(&mut self, state: State, context: &mut App) -> bool {
         true
     }
 
-    fn state_change(&mut self, new_state: State, old_state: State, context: &mut Game) {
+    fn state_change(&mut self, new_state: State, old_state: State, context: &mut App) {
         match new_state {
             State::Pending => {
                 self.init(context);
@@ -143,41 +143,82 @@ pub struct Core {
     pub event_publisher: EventPublisher<Event>,
 }
 
-pub struct Game {
-    pub core: Core,
+impl CoreState for Core {
+    fn system(&self) -> &System {
+        &self.system
+    }
+
+    fn system_mut(&mut self) -> &mut System {
+        &mut self.system
+    }
+
+    fn delta(&self) -> f32 {
+        self.delta
+    }
+
+    fn set_delta(&mut self, delta: f32) {
+        self.delta = delta;
+    }
+}
+
+impl CoreStateWithEvents<Event> for Core {
+    fn event_publisher(&mut self) -> &mut EventPublisher<Event> {
+        &mut self.event_publisher
+    }
+}
+
+pub struct Support {
     pub component_systems: ComponentSystems<Core, Core>,
     pub event_listeners: EventListeners<Event, Core>
 }
 
-impl Game {
+impl SupportSystems for Support {}
+
+impl SupportSystemsWithEvents<Event> for Support {
+    type ContextType = Core;
+
+    fn event_listeners(&mut self) -> &mut EventListeners<Event, Self::ContextType> {
+        &mut self.event_listeners
+    }
+}
+
+pub struct App {
+    pub core: Core,
+    pub support: Support,
+}
+
+impl AppContext for App {
+    type CoreType = Core;
+    type SupportType = Support;
+
+    fn core(&mut self) -> &mut Core {
+        &mut self.core
+    }
+
+    fn support(&mut self) -> &mut Support {
+        &mut self.support
+    }
+}
+
+impl App {
     pub fn new(system: System) -> Result<Self> {
         let entities = Entities::new();
         let component_systems = ComponentSystems::new();
         let event_publisher = EventPublisher::new();
         let event_listeners = EventListeners::new();
 
-        Ok(Game {
+        Ok(App {
             core: Core {
                 delta: 0.0,
                 system,
                 entities,
-                event_publisher
+                event_publisher,
             },
-            component_systems,
-            event_listeners
+            support: Support {
+                component_systems,
+                event_listeners,
+            }
         })
-    }
-
-    pub fn do_events(&mut self) {
-        self.event_listeners.take_queue_from(&mut self.core.event_publisher);
-        self.event_listeners.dispatch_queue(&mut self.core);
-    }
-
-    pub fn update_frame_delta(&mut self, last_ticks: u64) -> u64 {
-        let ticks = self.core.system.ticks();
-        let elapsed = ticks - last_ticks;
-        self.core.delta = (elapsed as f64 / self.core.system.tick_frequency() as f64) as f32;
-        ticks
     }
 }
 
@@ -185,28 +226,6 @@ impl Game {
 
 fn main() -> Result<()> {
     let system = SystemBuilder::new().window_title("Complicated Template").vsync(true).build()?;
-    let mut game = Game::new(system)?;
-    let mut states = States::new();
-    states.push(DemoState)?;
-
-    let mut is_running = true;
-    let mut last_ticks = game.core.system.ticks();
-
-    while is_running && !states.is_empty() {
-        game.core.system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
-        last_ticks = game.update_frame_delta(last_ticks);
-        states.update(&mut game)?;
-        states.render(&mut game);
-        game.core.system.display()?;
-    }
-
-    Ok(())
+    let app = App::new(system)?;
+    main_loop(app, DemoState).context("Main loop error")
 }
