@@ -14,7 +14,7 @@ pub enum ButtonState {
 /// Common trait for input device implementations.
 pub trait InputDevice {
     /// Performs internal house-keeping necessary for properly reporting the current state of this
-    /// input device. Normally this should be called on the device after all of this frame's
+    /// input device. Normally this should be called on the device before all of this frame's
     /// input events have been processed via `handle_event`.
     fn update(&mut self);
 
