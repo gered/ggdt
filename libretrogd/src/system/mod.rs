@@ -483,11 +483,10 @@ impl System {
         self.mouse.update();
         self.sdl_event_pump.pump_events();
         for event in self.sdl_event_pump.poll_iter() {
-            if let Ok(event) = event.try_into() {
-                self.keyboard.handle_event(&event);
-                self.mouse.handle_event(&event);
-                f(&event);
-            }
+            let event = event.into();
+            self.keyboard.handle_event(&event);
+            self.mouse.handle_event(&event);
+            f(&event);
         }
     }
 

@@ -30,28 +30,28 @@ pub enum WindowEvent {
     FocusGained,
     FocusLost,
     Close,
+    // for sdl2::event::WindowEvent enum values we haven't mapped / don't care about (yet?)
+    Unimplemented,
 }
 
-impl TryFrom<sdl2::event::WindowEvent> for WindowEvent {
-    type Error = ();
-
-    fn try_from(value: sdl2::event::WindowEvent) -> Result<Self, Self::Error> {
+impl From<sdl2::event::WindowEvent> for WindowEvent {
+    fn from(value: sdl2::event::WindowEvent) -> Self {
         match value {
-            sdl2::event::WindowEvent::Shown => Ok(WindowEvent::Shown),
-            sdl2::event::WindowEvent::Hidden => Ok(WindowEvent::Hidden),
-            sdl2::event::WindowEvent::Exposed => Ok(WindowEvent::Exposed),
-            sdl2::event::WindowEvent::Moved(x, y) => Ok(WindowEvent::Moved(x, y)),
-            sdl2::event::WindowEvent::Resized(width, height) => Ok(WindowEvent::Resized(width, height)),
-            sdl2::event::WindowEvent::SizeChanged(width, height) => Ok(WindowEvent::SizeChanged(width, height)),
-            sdl2::event::WindowEvent::Minimized => Ok(WindowEvent::Minimized),
-            sdl2::event::WindowEvent::Maximized => Ok(WindowEvent::Maximized),
-            sdl2::event::WindowEvent::Restored => Ok(WindowEvent::Restored),
-            sdl2::event::WindowEvent::Enter => Ok(WindowEvent::Enter),
-            sdl2::event::WindowEvent::Leave => Ok(WindowEvent::Leave),
-            sdl2::event::WindowEvent::FocusGained => Ok(WindowEvent::FocusGained),
-            sdl2::event::WindowEvent::FocusLost => Ok(WindowEvent::FocusLost),
-            sdl2::event::WindowEvent::Close => Ok(WindowEvent::Close),
-            _ => Err(())
+            sdl2::event::WindowEvent::Shown => WindowEvent::Shown,
+            sdl2::event::WindowEvent::Hidden => WindowEvent::Hidden,
+            sdl2::event::WindowEvent::Exposed => WindowEvent::Exposed,
+            sdl2::event::WindowEvent::Moved(x, y) => WindowEvent::Moved(x, y),
+            sdl2::event::WindowEvent::Resized(width, height) => WindowEvent::Resized(width, height),
+            sdl2::event::WindowEvent::SizeChanged(width, height) => WindowEvent::SizeChanged(width, height),
+            sdl2::event::WindowEvent::Minimized => WindowEvent::Minimized,
+            sdl2::event::WindowEvent::Maximized => WindowEvent::Maximized,
+            sdl2::event::WindowEvent::Restored => WindowEvent::Restored,
+            sdl2::event::WindowEvent::Enter => WindowEvent::Enter,
+            sdl2::event::WindowEvent::Leave => WindowEvent::Leave,
+            sdl2::event::WindowEvent::FocusGained => WindowEvent::FocusGained,
+            sdl2::event::WindowEvent::FocusLost => WindowEvent::FocusLost,
+            sdl2::event::WindowEvent::Close => WindowEvent::Close,
+            _ => WindowEvent::Unimplemented,
         }
     }
 }
@@ -125,68 +125,66 @@ pub enum SystemEvent {
     Window(WindowEvent),
     Keyboard(KeyboardEvent),
     Mouse(MouseEvent),
+    // for the many sdl2::event::Event enum values that we don't are about quite yet ...
+    Unimplemented,
 }
 
-impl TryFrom<sdl2::event::Event> for SystemEvent {
-    type Error = ();
-
-    fn try_from(value: sdl2::event::Event) -> Result<Self, Self::Error> {
+impl From<sdl2::event::Event> for SystemEvent {
+    fn from(value: sdl2::event::Event) -> Self {
         match value {
-            sdl2::event::Event::Quit { .. } => Ok(SystemEvent::Quit),
-            sdl2::event::Event::AppTerminating { .. } => Ok(SystemEvent::AppTerminating),
-            sdl2::event::Event::AppLowMemory { .. } => Ok(SystemEvent::AppLowMemory),
-            sdl2::event::Event::AppWillEnterBackground { .. } => Ok(SystemEvent::AppWillEnterBackground),
-            sdl2::event::Event::AppDidEnterBackground { .. } => Ok(SystemEvent::AppDidEnterBackground),
-            sdl2::event::Event::AppWillEnterForeground { .. } => Ok(SystemEvent::AppWillEnterForeground),
-            sdl2::event::Event::AppDidEnterForeground { .. } => Ok(SystemEvent::AppDidEnterForeground),
-            sdl2::event::Event::Window { win_event, .. } => {
-                match win_event.try_into() {
-                    Ok(window_event) => Ok(SystemEvent::Window(window_event)),
-                    Err(e) => Err(e),
-                }
-            },
+            sdl2::event::Event::Quit { .. } => SystemEvent::Quit,
+            sdl2::event::Event::AppTerminating { .. } => SystemEvent::AppTerminating,
+            sdl2::event::Event::AppLowMemory { .. } => SystemEvent::AppLowMemory,
+            sdl2::event::Event::AppWillEnterBackground { .. } => SystemEvent::AppWillEnterBackground,
+            sdl2::event::Event::AppDidEnterBackground { .. } => SystemEvent::AppDidEnterBackground,
+            sdl2::event::Event::AppWillEnterForeground { .. } => SystemEvent::AppWillEnterForeground,
+            sdl2::event::Event::AppDidEnterForeground { .. } => SystemEvent::AppDidEnterForeground,
+            sdl2::event::Event::Window { win_event, .. } => SystemEvent::Window(win_event.into()),
+
             sdl2::event::Event::KeyDown { keycode, scancode, keymod, repeat, .. } => {
-                Ok(SystemEvent::Keyboard(KeyboardEvent::KeyDown {
+                SystemEvent::Keyboard(KeyboardEvent::KeyDown {
                     keycode: keycode.map(|keycode| keycode.into()),
                     scancode: scancode.map(|scancode| scancode.into()),
                     keymod: KeyModifiers::from_bits_truncate(keymod.bits()),
                     repeat
-                }))
+                })
             },
             sdl2::event::Event::KeyUp { keycode, scancode, keymod, repeat, .. } => {
-                Ok(SystemEvent::Keyboard(KeyboardEvent::KeyUp {
+                SystemEvent::Keyboard(KeyboardEvent::KeyUp {
                     keycode: keycode.map(|keycode| keycode.into()),
                     scancode: scancode.map(|scancode| scancode.into()),
                     keymod: KeyModifiers::from_bits_truncate(keymod.bits()),
                     repeat
-                }))
+                })
             }
             sdl2::event::Event::MouseMotion { mousestate, x, y, xrel, yrel, .. } => {
-                Ok(SystemEvent::Mouse(MouseEvent::MouseMotion {
+                SystemEvent::Mouse(MouseEvent::MouseMotion {
                     x,
                     y,
                     x_delta: xrel,
                     y_delta: yrel,
                     buttons: MouseButtons::from_bits_truncate(mousestate.to_sdl_state()),
-                }))
+                })
             },
             sdl2::event::Event::MouseButtonDown { mouse_btn, clicks, x, y, .. } => {
-                Ok(SystemEvent::Mouse(MouseEvent::MouseButtonDown {
+                SystemEvent::Mouse(MouseEvent::MouseButtonDown {
                     x,
                     y,
                     clicks,
                     button: mouse_btn.into(),
-                }))
+                })
             },
             sdl2::event::Event::MouseButtonUp { mouse_btn, clicks, x, y, .. } => {
-                Ok(SystemEvent::Mouse(MouseButtonUp {
+                SystemEvent::Mouse(MouseButtonUp {
                     x,
                     y,
                     clicks,
                     button: mouse_btn.into(),
-                }))
+                })
             },
-            _ => Err(())
+
+            _ => SystemEvent::Unimplemented,
         }
     }
+}
 }
