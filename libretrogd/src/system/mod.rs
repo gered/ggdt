@@ -476,10 +476,10 @@ impl System {
     /// true if a [`SystemEvent::Quit`] event is encountered, in which case, the application
     /// should quit. Otherwise, returns false.
     ///
-    /// ```
+    /// ```no_run
     /// use libretrogd::system::*;
     ///
-    /// let mut system = SystemBuilder::new().window_title("Example").build()?;
+    /// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
     ///
     /// while !system.do_events() {
     ///     // ... the body of your main loop here ...
@@ -490,10 +490,10 @@ impl System {
     /// [`System::do_events`], you should instead manually take care of event polling in your
     /// main loop. For example:
     ///
-    /// ```
+    /// ```no_run
     /// use libretrogd::system::*;
     ///
-    /// let mut system = SystemBuilder::new().window_title("Example").build()?;
+    /// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
     ///
     /// 'mainloop: loop {
     ///     system.input_devices.update();
