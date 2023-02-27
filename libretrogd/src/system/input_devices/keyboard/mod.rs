@@ -75,8 +75,10 @@ impl InputDevice for Keyboard {
             };
         }
     }
+}
 
-    fn handle_event(&mut self, event: &SystemEvent) {
+impl SystemEventHandler for Keyboard {
+    fn handle_event(&mut self, event: &SystemEvent) -> bool {
         match event {
             SystemEvent::Keyboard(KeyboardEvent::KeyDown { scancode, .. }) => {
                 if let Some(scancode) = scancode {
@@ -87,13 +89,15 @@ impl InputDevice for Keyboard {
                         _ => ButtonState::Pressed,
                     };
                 }
+                true
             }
             SystemEvent::Keyboard(KeyboardEvent::KeyUp { scancode, .. }) => {
                 if let Some(scancode) = scancode {
                     self.keyboard[*scancode as usize] = ButtonState::Released;
                 }
+                true
             }
-            _ => (),
+            _ => false,
         }
     }
 }

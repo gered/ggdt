@@ -188,12 +188,15 @@ impl From<sdl2::event::Event> for SystemEvent {
     }
 }
 
+/// Common trait for implementing a handler of [`SystemEvent`]s that are polled during the
+/// application's main loop.
 pub trait SystemEventHandler {
     /// Processes the data from the given [`SystemEvent`]. Returns true if the processing actually
-    /// recognized the passed event, or false if the event was ignored.
+    /// recognized the passed event and handled it, or false if the event was ignored.
     fn handle_event(&mut self, event: &SystemEvent) -> bool;
 }
 
+/// An interator for SDL2 system events, polled via [`SystemEventPump`].
 pub struct SystemEventIterator<'a> {
     iter: sdl2::event::EventPollIterator<'a>,
 }
@@ -206,6 +209,8 @@ impl Iterator for SystemEventIterator<'_> {
     }
 }
 
+/// Provides an event pump iterator that wraps over SDL2 events, allowing applications to respond
+/// to all events each frame as [`SystemEvent`] instances.
 pub struct SystemEventPump {
     sdl_event_pump: sdl2::EventPump,
 }
@@ -217,6 +222,8 @@ impl SystemEventPump {
         }
     }
 
+    /// Returns an iterator over [`SystemEvent`]s that have been generated since the last time
+    /// events were polled (usually, in the previous frame).
     pub fn poll_iter(&mut self) -> SystemEventIterator {
         self.sdl_event_pump.pump_events();
         SystemEventIterator { iter: self.sdl_event_pump.poll_iter() }

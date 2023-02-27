@@ -292,16 +292,18 @@ impl InputDevice for Mouse {
             }
         }
     }
+}
 
-    fn handle_event(&mut self, event: &SystemEvent) {
+impl SystemEventHandler for Mouse {
+    fn handle_event(&mut self, event: &SystemEvent) -> bool {
         match event {
             SystemEvent::Mouse(MouseEvent::MouseMotion {
-                x,
-                y,
-                x_delta,
-                y_delta,
-                buttons,
-            }) => {
+                                   x,
+                                   y,
+                                   x_delta,
+                                   y_delta,
+                                   buttons,
+                               }) => {
                 self.x = *x;
                 self.y = *y;
                 self.x_delta = *x_delta;
@@ -312,14 +314,17 @@ impl InputDevice for Mouse {
                 self.update_button_state(MouseButton::Right as u32, buttons.contains(MouseButtons::RIGHT_BUTTON));
                 self.update_button_state(MouseButton::X1 as u32, buttons.contains(MouseButtons::X1));
                 self.update_button_state(MouseButton::X2 as u32, buttons.contains(MouseButtons::X2));
+                true
             }
             SystemEvent::Mouse(MouseEvent::MouseButtonDown { button, .. }) => {
                 self.update_button_state(*button as u32, true);
+                true
             }
             SystemEvent::Mouse(MouseEvent::MouseButtonUp { button, .. }) => {
                 self.update_button_state(*button as u32, false);
+                true
             }
-            _ => (),
+            _ => false,
         }
     }
 }

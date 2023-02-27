@@ -189,17 +189,9 @@ where
 	let mut states = States::new();
 	states.push(initial_state)?;
 
-	let mut is_running = true;
 	let mut last_ticks = app.core().system().ticks();
 
-	while is_running && !states.is_empty() {
-		app.core().system_mut().do_events_with(|event| match event {
-			SystemEvent::Quit => {
-				is_running = false;
-			}
-			_ => {}
-		});
-
+	while !app.core().system_mut().do_events() && !states.is_empty() {
 		last_ticks = app.core().update_frame_delta(last_ticks);
 		states.update(&mut app)?;
 		states.render(&mut app);

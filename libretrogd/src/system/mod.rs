@@ -317,6 +317,11 @@ impl SystemBuilder {
         let keyboard = Keyboard::new();
         let mouse = Mouse::new();
 
+        let input_devices = InputDevices {
+            keyboard,
+            mouse,
+        };
+
         Ok(System {
             sdl_context,
             sdl_audio_subsystem,
@@ -331,8 +336,7 @@ impl SystemBuilder {
             video: framebuffer,
             palette,
             font,
-            keyboard,
-            mouse,
+            input_devices,
             event_pump,
             target_framerate: self.target_framerate,
             target_framerate_delta: None,
@@ -381,13 +385,11 @@ pub struct System {
     /// A pre-loaded [`Font`] that can be used for text rendering.
     pub font: BitmaskFont,
 
-    /// The current keyboard state. To ensure it is updated each frame, you should call
-    /// [`System::do_events`] or [`System::do_events_with`] each frame.
-    pub keyboard: Keyboard,
-
-    /// The current mouse state. To ensure it is updated each frame, you should call
-    /// [`System::do_events`] or [`System::do_events_with`] each frame.
-    pub mouse: Mouse,
+    /// Contains instances representing the current state of the input devices available.
+    /// To ensure these are updated each frame, ensure that you are either calling
+    /// [`System::do_events`] or manually implementing an event polling loop which calls
+    /// [`InputDevices::update`] and [`InputDevices::handle_event`].
+    pub input_devices: InputDevices,
 
     pub event_pump: SystemEventPump,
 }
@@ -400,8 +402,8 @@ impl std::fmt::Debug for System {
             .field("video", &self.video)
             .field("palette", &self.palette)
             .field("font", &self.font)
-            .field("keyboard", &self.keyboard)
-            .field("mouse", &self.mouse)
+            //.field("keyboard", &self.keyboard)
+            //.field("mouse", &self.mouse)
             .field("target_framerate", &self.target_framerate)
             .field("target_framerate_delta", &self.target_framerate_delta)
             .field("next_tick", &self.next_tick)
@@ -415,7 +417,7 @@ impl System {
     /// will block to wait for V-sync. Otherwise, if a target framerate was configured a delay
     /// might be used to try to meet that framerate.
     pub fn display(&mut self) -> Result<(), SystemError> {
-        self.mouse.render_cursor(&mut self.video);
+        self.input_devices.mouse.render_cursor(&mut self.video);
 
         // convert application framebuffer to 32-bit RGBA pixels, and then upload it to the SDL
         // texture so it will be displayed on screen
@@ -436,7 +438,7 @@ impl System {
         }
         self.sdl_canvas.present();
 
-        self.mouse.hide_cursor(&mut self.video);
+        self.input_devices.mouse.hide_cursor(&mut self.video);
 
         // if a specific target framerate is desired, apply some loop timing/delay to achieve it
         // TODO: do this better. delaying when running faster like this is a poor way to do this..
@@ -470,26 +472,54 @@ impl System {
     }
 
     /// Checks for and responds to all SDL2 events waiting in the queue. Each event is passed to
-    /// all [`InputDevice`]'s automatically to ensure input device state is up to date.
-    pub fn do_events(&mut self) {
-        self.do_events_with(|_event| {});
-    }
-
-    /// Same as [`System::do_events`] but also takes a function which will be called for each
-    /// SDL2 event being processed (after everything else has already processed it), allowing
-    /// your application to also react to any events received.
-    pub fn do_events_with<F>(&mut self, mut f: F)
-    where
-        F: FnMut(&SystemEvent),
-    {
-        self.keyboard.update();
-        self.mouse.update();
+    /// all [`InputDevice`]'s automatically to ensure input device state is up to date. Returns
+    /// true if a [`SystemEvent::Quit`] event is encountered, in which case, the application
+    /// should quit. Otherwise, returns false.
+    ///
+    /// ```
+    /// use libretrogd::system::*;
+    ///
+    /// let mut system = SystemBuilder::new().window_title("Example").build()?;
+    ///
+    /// while !system.do_events() {
+    ///     // ... the body of your main loop here ...
+    /// }
+    /// ```
+    ///
+    /// If your application needs to react to [`SystemEvent`]s, then instead of using
+    /// [`System::do_events`], you should instead manually take care of event polling in your
+    /// main loop. For example:
+    ///
+    /// ```
+    /// use libretrogd::system::*;
+    ///
+    /// let mut system = SystemBuilder::new().window_title("Example").build()?;
+    ///
+    /// 'mainloop: loop {
+    ///     system.input_devices.update();
+    ///     for event in system.event_pump.poll_iter() {
+    ///         system.input_devices.handle_event(&event);
+    ///         match event {
+    ///             SystemEvent::Quit => {
+    ///                 break 'mainloop
+    ///             },
+    ///             _ => {},
+    ///         }
+    ///     }
+    ///
+    ///     //  ...the rest of the body of your main loop here ...
+    /// }
+    /// ```
+    pub fn do_events(&mut self) -> bool {
+        let mut should_quit = false;
+        self.input_devices.update();
         for event in self.event_pump.poll_iter() {
-            let event = event.into();
-            self.keyboard.handle_event(&event);
-            self.mouse.handle_event(&event);
-            f(&event);
+            self.input_devices.handle_event(&event);
+            if event == SystemEvent::Quit {
+                should_quit = true;
+            }
         }
+        should_quit
     }
 
     pub fn ticks(&self) -> u64 {
