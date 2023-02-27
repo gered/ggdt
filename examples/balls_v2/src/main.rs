@@ -17,21 +17,10 @@ fn main() -> Result<()> {
     let mut states = States::new();
     states.push(SimulationState)?;
 
-    let mut is_running = true;
-
     let tick_frequency = game.context.system.tick_frequency();
     let mut last_ticks = game.context.system.ticks();
 
-    while is_running && !states.is_empty() {
-        game.context.system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
+    while !game.context.system.do_events() && !states.is_empty() {
         let ticks = game.context.system.ticks();
         let elapsed = ticks - last_ticks;
         last_ticks = ticks;

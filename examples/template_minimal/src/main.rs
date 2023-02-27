@@ -8,24 +8,14 @@ use libretrogd::utils::rnd_value;
 fn main() -> Result<()> {
     let mut system = SystemBuilder::new().window_title("Minimal Template").vsync(true).build()?;
 
-    let mut is_running = true;
     let font = BitmaskFont::new_vga_font()?;
 
     system.video.clear(0);
     system.video.print_string("Hello, world!", 20, 20, FontRenderOpts::Color(15), &font);
 
-    while is_running {
-        system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
-        if system.keyboard.is_key_pressed(Scancode::Escape) {
-            is_running = false;
+    while !system.do_events() {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+            break;
         }
 
         let x = rnd_value(0, SCREEN_RIGHT) as i32;

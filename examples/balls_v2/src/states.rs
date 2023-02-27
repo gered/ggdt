@@ -78,12 +78,12 @@ pub struct SimulationState;
 
 impl AppState<Game> for SimulationState {
     fn update(&mut self, _state: State, context: &mut Game) -> Option<StateChange<Game>> {
-        if context.context.system.keyboard.is_key_up(Scancode::S) {
+        if context.context.system.input_devices.keyboard.is_key_up(Scancode::S) {
             context.do_events();
             context.component_systems.update(&mut context.context);
         }
 
-        if context.context.system.keyboard.is_key_pressed(Scancode::Escape) {
+        if context.context.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
             return Some(StateChange::Pop(1));
         }
 

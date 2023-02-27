@@ -100,7 +100,7 @@ impl DemoState {
 impl AppState<App> for DemoState {
     fn update(&mut self, state: State, context: &mut App) -> Option<StateChange<App>> {
         if state == State::Active {
-            if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
+            if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
                 return Some(StateChange::Pop(1))
             }
         }

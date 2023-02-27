@@ -55,7 +55,6 @@ impl AudioGenerator for SineWaveGenerator {
 fn main() -> Result<()> {
     let mut system = SystemBuilder::new().window_title("Audio Playback").vsync(true).build()?;
 
-    let mut is_running = true;
     let mut using_queue_commands = false;
     let mut volume = 1.0;
 
@@ -69,24 +68,15 @@ fn main() -> Result<()> {
 
     let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];
 
-    while is_running {
-        system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
-        if system.keyboard.is_key_pressed(Scancode::Escape) {
-            is_running = false;
+    while !system.do_events() {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+            break;
         }
 
         let mut audio_device = system.audio.lock();
         audio_device.volume = volume;
 
-        if system.keyboard.is_key_pressed(Scancode::Num1) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num1) {
             if using_queue_commands {
                 system.audio_queue.play_buffer(&sounds[0], false);
             } else {
@@ -94,7 +84,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num2) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num2) {
             if using_queue_commands {
                 system.audio_queue.play_buffer(&sounds[1], false);
             } else {
@@ -102,7 +92,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num3) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num3) {
             if using_queue_commands {
                 system.audio_queue.play_buffer(&sounds[2], false);
 
@@ -111,7 +101,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num4) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num4) {
             if using_queue_commands {
                 system.audio_queue.play_buffer(&sounds[3], false);
 
@@ -120,7 +110,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num5) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num5) {
             if using_queue_commands {
                 system.audio_queue.play_buffer(&sounds[4], false);
             } else {
@@ -128,7 +118,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num6) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num6) {
             if using_queue_commands {
                 system.audio_queue.play_generator(Box::new(SineWaveGenerator::new()), false);
             } else {
@@ -136,7 +126,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::Num7) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Num7) {
             let index = rnd_value(0, sounds.len() - 1);
             if using_queue_commands {
                 system.audio_queue.play_buffer_on_channel(7, &sounds[index], false)?;
@@ -145,7 +135,7 @@ fn main() -> Result<()> {
             }
         }
 
-        if system.keyboard.is_key_pressed(Scancode::S) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::S) {
             if using_queue_commands {
                 system.audio_queue.stop_all();
             } else {
@@ -155,13 +145,13 @@ fn main() -> Result<()> {
 
         system.audio_queue.apply_to_device(&mut audio_device)?;
 
-        if system.keyboard.is_key_pressed(Scancode::KpMinus) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::KpMinus) {
             volume -= 0.1;
         }
-        if system.keyboard.is_key_pressed(Scancode::KpPlus) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::KpPlus) {
             volume += 0.1;
         }
-        if system.keyboard.is_key_pressed(Scancode::Q) {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Q) {
             using_queue_commands = !using_queue_commands;
         }
 

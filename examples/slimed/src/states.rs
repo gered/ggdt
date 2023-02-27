@@ -27,17 +27,17 @@ impl MainMenuState {
 impl AppState<Game> for MainMenuState {
     fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if state == State::Active {
-            if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
+            if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
                 return Some(StateChange::Pop(1));
             }
-            if context.core.system.keyboard.is_key_pressed(Scancode::Up) {
+            if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Up) {
                 self.selection = (self.selection - 1).clamp(0, 1);
             }
-            if context.core.system.keyboard.is_key_pressed(Scancode::Down) {
+            if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Down) {
                 self.selection = (self.selection + 1).clamp(0, 1);
             }
 
-            if context.core.system.keyboard.is_key_pressed(Scancode::Return) {
+            if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Return) {
                 match self.selection {
                     0 => return Some(StateChange::Push(Box::new(GamePlayState::new()))),
                     1 => return Some(StateChange::Pop(1)),
@@ -113,17 +113,17 @@ impl AppState<Game> for GamePlayState {
     fn update(&mut self, state: State, context: &mut Game) -> Option<StateChange<Game>> {
         if state == State::Active {
             if self.in_menu {
-                if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
+                if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
                     self.in_menu = false;
                 }
-                if context.core.system.keyboard.is_key_pressed(Scancode::Up) {
+                if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Up) {
                     self.selection = (self.selection - 1).clamp(0, 1);
                 }
-                if context.core.system.keyboard.is_key_pressed(Scancode::Down) {
+                if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Down) {
                     self.selection = (self.selection + 1).clamp(0, 1);
                 }
 
-                if context.core.system.keyboard.is_key_pressed(Scancode::Return) {
+                if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Return) {
                     match self.selection {
                         0 => self.in_menu = false,
                         1 => return Some(StateChange::Pop(1)),
@@ -131,24 +131,24 @@ impl AppState<Game> for GamePlayState {
                     }
                 }
             } else {
-                if context.core.system.keyboard.is_key_pressed(Scancode::Escape) {
+                if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
                     self.in_menu = true;
                 }
 
                 if let Some((player_entity, _)) = context.core.entities.components::<Player>().single() {
-                    if context.core.system.keyboard.is_key_down(Scancode::Up) {
+                    if context.core.system.input_devices.keyboard.is_key_down(Scancode::Up) {
                         context.core.event_publisher.queue(Event::TurnAndMove(*player_entity, Direction::North));
                     }
-                    if context.core.system.keyboard.is_key_down(Scancode::Down) {
+                    if context.core.system.input_devices.keyboard.is_key_down(Scancode::Down) {
                         context.core.event_publisher.queue(Event::TurnAndMove(*player_entity, Direction::South));
                     }
-                    if context.core.system.keyboard.is_key_down(Scancode::Left) {
+                    if context.core.system.input_devices.keyboard.is_key_down(Scancode::Left) {
                         context.core.event_publisher.queue(Event::TurnAndMove(*player_entity, Direction::West));
                     }
-                    if context.core.system.keyboard.is_key_down(Scancode::Right) {
+                    if context.core.system.input_devices.keyboard.is_key_down(Scancode::Right) {
                         context.core.event_publisher.queue(Event::TurnAndMove(*player_entity, Direction::East));
                     }
-                    if context.core.system.keyboard.is_key_pressed(Scancode::Space) {
+                    if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Space) {
                         context.core.event_publisher.queue(Event::Attack(*player_entity));
                     }
                 }

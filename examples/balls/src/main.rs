@@ -27,8 +27,6 @@ fn main() -> Result<()> {
         .vsync(true)
         .build()?;
 
-    let mut is_running = true;
-
     let font = BitmaskFont::new_vga_font()?;
 
     let (balls_bmp, balls_palette) = Bitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
@@ -61,21 +59,12 @@ fn main() -> Result<()> {
         balls.push(ball);
     }
 
-    while is_running {
-        system.do_events_with(|event| {
-            match event {
-                SystemEvent::Quit => {
-                    is_running = false;
-                },
-                _ => {}
-            }
-        });
-
-        if system.keyboard.is_key_pressed(Scancode::Escape) {
-            is_running = false;
+    while !system.do_events() {
+        if system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+            break;
         }
 
-        if system.keyboard.is_key_up(Scancode::S) {
+        if system.input_devices.keyboard.is_key_up(Scancode::S) {
             for i in 0..NUM_BALLS {
                 let ball = &mut balls[i];
                 ball.x += ball.dir_x;
