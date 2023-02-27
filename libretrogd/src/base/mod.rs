@@ -124,6 +124,7 @@
 
 use thiserror::Error;
 
+use crate::audio::*;
 use crate::events::*;
 use crate::states::*;
 use crate::system::*;
@@ -176,6 +177,9 @@ pub enum MainLoopError {
 
 	#[error("System error: {0}")]
 	SystemError(#[from] SystemError),
+
+	#[error("AudioDevice error: {0}")]
+	AudioDeviceError(#[from] AudioDeviceError),
 }
 
 pub fn main_loop<ContextType, State>(
@@ -194,6 +198,7 @@ where
 	while !app.core().system_mut().do_events() && !states.is_empty() {
 		last_ticks = app.core().update_frame_delta(last_ticks);
 		states.update(&mut app)?;
+		app.core().system_mut().apply_audio_queue()?;
 		states.render(&mut app);
 		app.core().system_mut().display()?;
 	}
