@@ -522,6 +522,13 @@ impl System {
         should_quit
     }
 
+    /// Convenience method that applies any [`AudioBuffer`]s that may have been queued up on
+    /// [`System::audio_queue`] to the system audio device so that they will be played. Do not
+    /// call this when you already have an active lock on an [`AudioDevice`].
+    pub fn apply_audio_queue(&mut self) -> Result<(), AudioDeviceError> {
+        self.audio_queue.apply(&mut self.audio)
+    }
+
     pub fn ticks(&self) -> u64 {
         self.sdl_timer_subsystem.performance_counter()
     }
