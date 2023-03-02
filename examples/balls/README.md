@@ -1,4 +1,4 @@
-# libretrogd - 'Flying Balls' Demo
+# ggdt - 'Flying Balls' Demo
 
 Just a silly demo. Very minimal.
 

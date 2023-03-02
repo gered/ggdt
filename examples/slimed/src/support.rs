@@ -2,8 +2,8 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
-use libretrogd::graphics::*;
-use libretrogd::states::*;
+use ggdt::graphics::*;
+use ggdt::states::*;
 
 use crate::{Game, TILE_HEIGHT, TILE_WIDTH};
 

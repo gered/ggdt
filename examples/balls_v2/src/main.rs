@@ -2,8 +2,8 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use libretrogd::states::*;
-use libretrogd::system::*;
+use ggdt::states::*;
+use ggdt::system::*;
 
 use crate::entities::*;
 use crate::states::*;

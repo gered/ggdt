@@ -477,7 +477,7 @@ impl System {
 	/// should quit. Otherwise, returns false.
 	///
 	/// ```no_run
-	/// use libretrogd::system::*;
+	/// use ggdt::system::*;
 	///
 	/// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
 	///
@@ -491,7 +491,7 @@ impl System {
 	/// main loop. For example:
 	///
 	/// ```no_run
-	/// use libretrogd::system::*;
+	/// use ggdt::system::*;
 	///
 	/// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
 	///

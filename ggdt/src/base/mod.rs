@@ -5,10 +5,10 @@
 //! way for a long while yet. And, truthfully, I suspect I may rip this out eventually. Maybe.
 //!
 //! The very-long-winded rationale here is that as I've started building more and more things with
-//! libretrogd, I started implementing games/apps using a particular pattern which I was largely
+//! ggdt, I started implementing games/apps using a particular pattern which I was largely
 //! pushed towards due to the Rust borrow-checker (as is often the case with Rust). My games/apps
 //! needed to keep their state (for clarity, the word 'state' here is being used very broadly to
-//! refer to all game/app state, and not just referring to the stuff inside `libretrogd::states`)
+//! refer to all game/app state, and not just referring to the stuff inside `ggdt::states`)
 //! somewhere and my needs were a bit complicated since my game/app state often included things
 //! which needed to get passed other things from inside that same "bag" of state.
 //!
@@ -19,11 +19,11 @@
 //! pub enum Event { /* .. various events here .. */ }
 //! struct App {
 //! 	pub delta: f32,
-//! 	pub system: libretrogd::system::System,
-//! 	pub entities: libretrogd::entities::Entities,
-//! 	pub component_systems: libretrogd::entities::ComponentSystems<App, App>,  // oh no! :'(
-//! 	pub event_publisher: libretrogd::events::EventPublisher<Event>,
-//! 	pub event_listeners: libretrogd::events::EventListeners<Event, App>,  // oh no again! :'(
+//! 	pub system: ggdt::system::System,
+//! 	pub entities: ggdt::entities::Entities,
+//! 	pub component_systems: ggdt::entities::ComponentSystems<App, App>,  // oh no! :'(
+//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
+//! 	pub event_listeners: ggdt::events::EventListeners<Event, App>,  // oh no again! :'(
 //! }
 //! ```
 //!
@@ -42,21 +42,21 @@
 //! // "core" because what the heck else do i call this? "InnerContext"? "InnerApp"? ...
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: libretrogd::system::System,
-//! 	pub entities: libretrogd::entities::Entities,
-//! 	pub event_publisher: libretrogd::events::EventPublisher<Event>,
+//! 	pub system: ggdt::system::System,
+//! 	pub entities: ggdt::entities::Entities,
+//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
 //! }
 //!
 //! // i guess this is a bit more obvious what to call it, but still ... doesn't sit right with me
 //! struct App {
 //! 	pub core: Core,
-//! 	pub component_systems: libretrogd::entities::ComponentSystems<Core, Core>,
-//! 	pub event_listeners: libretrogd::events::EventListeners<Event, Core>,
+//! 	pub component_systems: ggdt::entities::ComponentSystems<Core, Core>,
+//! 	pub event_listeners: ggdt::events::EventListeners<Event, Core>,
 //! }
 //! ```
 //!
 //! This structure seemed to work generally well and I've gotten pretty far with it. Keeping the
-//! main `libretrogd::states::States` instance _separate_ was also key, and never really a problem
+//! main `ggdt::states::States` instance _separate_ was also key, and never really a problem
 //! since that can (and should) just live at the top in your main loop. Easy.
 //!
 //! I ended up with some common bits of code that I'd always add to projects using this structure,
@@ -81,16 +81,16 @@
 //! // with. you'd probably want to put your game/app resources/assets on this struct too.
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: libretrogd::system::System,
-//! 	pub entities: libretrogd::entities::Entities,
-//! 	pub event_publisher: libretrogd::events::EventPublisher<Event>,
+//! 	pub system: ggdt::system::System,
+//! 	pub entities: ggdt::entities::Entities,
+//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
 //! }
 //!
 //! // "Support" because it contains things that support the main/core game state?
 //! // kinda grasping at straws here maybe ...
 //! struct Support {
-//! 	pub component_systems: libretrogd::entities::ComponentSystems<Core, Core>,
-//! 	pub event_listeners: libretrogd::events::EventListeners<Event, Core>,
+//! 	pub component_systems: ggdt::entities::ComponentSystems<Core, Core>,
+//! 	pub event_listeners: ggdt::events::EventListeners<Event, Core>,
 //! }
 //!
 //! // better, maybe?
@@ -103,7 +103,7 @@
 //! Even though it's another struct being added, I do like this more, despite the naming
 //! uncertainty.
 //!
-//! So, with this being my current preferred way to architect a libretrogd-using project, I created
+//! So, with this being my current preferred way to architect a ggdt-using project, I created
 //! some traits here in this module to formalize this all a bit more. `CoreState` and (optionally)
 //! `CoreStateWithEvents` are what you'd make your project's `Core` struct (as shown in the above
 //! example code) implement, while `SupportSystems` and (optionally) `SupportSystemsWithEvents`
@@ -112,7 +112,7 @@
 //!
 //! Once you have all this (which ironically ends up being _more_ code than if you'd not used these
 //! traits ... heh), you can now optionally use the `main_loop` function to get a ready-to-use
-//! main loop which is set up to use a `libretrogd::states::State` state manager.
+//! main loop which is set up to use a `ggdt::states::State` state manager.
 //!
 //! Having said all of this ... again, I will reiterate that I don't believe any of this has reached
 //! anything resembling a "good design" ... yet. There may be a good design hidden somewhere in

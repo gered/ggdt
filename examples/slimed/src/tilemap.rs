@@ -5,9 +5,9 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
-use libretrogd::graphics::*;
-use libretrogd::math::*;
-use libretrogd::utils::rnd_value;
+use ggdt::graphics::*;
+use ggdt::math::*;
+use ggdt::utils::rnd_value;
 
 use crate::{TILE_HEIGHT, TILE_WIDTH};
 

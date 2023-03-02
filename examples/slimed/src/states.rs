@@ -1,10 +1,10 @@
 use std::path::Path;
 
-use libretrogd::base::*;
-use libretrogd::entities::*;
-use libretrogd::graphics::*;
-use libretrogd::states::*;
-use libretrogd::system::*;
+use ggdt::base::*;
+use ggdt::entities::*;
+use ggdt::graphics::*;
+use ggdt::states::*;
+use ggdt::system::*;
 
 use crate::entities::*;
 use crate::Game;

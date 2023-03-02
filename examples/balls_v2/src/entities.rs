@@ -1,9 +1,9 @@
-use libretrogd::*;
-use libretrogd::entities::*;
-use libretrogd::events::*;
-use libretrogd::graphics::*;
-use libretrogd::math::*;
-use libretrogd::utils::*;
+use ggdt::*;
+use ggdt::entities::*;
+use ggdt::events::*;
+use ggdt::graphics::*;
+use ggdt::math::*;
+use ggdt::utils::*;
 
 use crate::states::*;
 

@@ -1,6 +1,6 @@
-use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use libretrogd::entities::*;
-use libretrogd::math::*;
+use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use ggdt::entities::*;
+use ggdt::math::*;
 
 use crate::{Core, TILE_HEIGHT, TILE_WIDTH};
 use crate::entities::*;

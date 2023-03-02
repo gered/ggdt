@@ -2,10 +2,10 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use libretrogd::audio::*;
-use libretrogd::graphics::*;
-use libretrogd::system::*;
-use libretrogd::utils::rnd_value;
+use ggdt::audio::*;
+use ggdt::graphics::*;
+use ggdt::system::*;
+use ggdt::utils::rnd_value;
 
 #[derive(Debug, Copy, Clone)]
 struct AudioChannelStatus {

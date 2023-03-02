@@ -1,9 +1,9 @@
 use anyhow::Result;
 
-use libretrogd::{SCREEN_BOTTOM, SCREEN_RIGHT};
-use libretrogd::graphics::*;
-use libretrogd::system::*;
-use libretrogd::utils::rnd_value;
+use ggdt::{SCREEN_BOTTOM, SCREEN_RIGHT};
+use ggdt::graphics::*;
+use ggdt::system::*;
+use ggdt::utils::rnd_value;
 
 fn main() -> Result<()> {
 	let mut system = SystemBuilder::new().window_title("Minimal Template").vsync(true).build()?;

@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use libretrogd::graphics::*;
+use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use ggdt::graphics::*;
 
 fn setup() -> (Bitmap, Palette) {
 	let palette = Palette::new_vga_palette().unwrap();

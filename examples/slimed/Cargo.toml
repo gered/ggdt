@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "=1.0.55"
-libretrogd = { path = "../../libretrogd", features = [] }
+ggdt = { path = "../../ggdt", features = [] }
 serde = { version = "1.0.136", features = ["derive"] }
 serde_json = "1.0.79"
 

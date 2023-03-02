@@ -1,4 +1,4 @@
-# libretrogd - Audio Playback Example
+# ggdt - Audio Playback Example
 
 Simple example of playing back one or more sounds loaded from WAV files simultaneously.
 

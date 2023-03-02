@@ -1,13 +1,13 @@
 use anyhow::{Context, Result};
 
-use libretrogd::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use libretrogd::base::*;
-use libretrogd::entities::*;
-use libretrogd::events::*;
-use libretrogd::math::*;
-use libretrogd::states::*;
-use libretrogd::system::*;
-use libretrogd::utils::rnd_value;
+use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use ggdt::base::*;
+use ggdt::entities::*;
+use ggdt::events::*;
+use ggdt::math::*;
+use ggdt::states::*;
+use ggdt::system::*;
+use ggdt::utils::rnd_value;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

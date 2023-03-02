@@ -6,12 +6,12 @@ use std::rc::Rc;
 
 use anyhow::{Context, Result};
 
-use libretrogd::base::*;
-use libretrogd::entities::*;
-use libretrogd::events::*;
-use libretrogd::graphics::*;
-use libretrogd::math::*;
-use libretrogd::system::*;
+use ggdt::base::*;
+use ggdt::entities::*;
+use ggdt::events::*;
+use ggdt::graphics::*;
+use ggdt::math::*;
+use ggdt::system::*;
 
 use crate::entities::*;
 use crate::states::*;

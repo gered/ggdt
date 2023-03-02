@@ -1,5 +1,5 @@
-use libretrogd::entities::*;
-use libretrogd::events::*;
+use ggdt::entities::*;
+use ggdt::events::*;
 
 use crate::Core;
 use crate::entities::*;

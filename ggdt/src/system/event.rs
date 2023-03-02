@@ -2,9 +2,9 @@
 // us to *not* expose SDL2 types back to applications, thus preventing them
 // from being required to explicitly add SDL2 as a dependency even if they
 // never call into SDL2 directly anywhere (the SDL2 dependency can just be
-// provided automatically by libretrogd).
+// provided automatically by ggdt).
 //
-// Also note, that with the intended use-cases (for now) that I have for libretrogd,
+// Also note, that with the intended use-cases (for now) that I have for ggdt,
 // I don't really care about all possible SDL2 events that could be raised. Thus,
 // I only map the SDL2 events which I care about here. I will extend this in the
 // future should I require it.

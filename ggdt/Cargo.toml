@@ -1,6 +1,6 @@
 [package]
-name = "libretrogd"
-description = "A 'retro'-like game development library, for funsies."
+name = "ggdt"
+description = "Gered's Game Dev Tools. A strictly for-fun, retro-style game dev set of tools and other code to help with my own projects."
 version = "0.1.0"
 authors = ["Gered King <gered@blarg.ca>"]
 edition = "2021"

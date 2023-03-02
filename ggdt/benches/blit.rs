@@ -2,8 +2,8 @@ use std::path::Path;
 
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use libretrogd::graphics::*;
-use libretrogd::math::*;
+use ggdt::graphics::*;
+use ggdt::math::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
 	let mut framebuffer = Bitmap::new(320, 240).unwrap();

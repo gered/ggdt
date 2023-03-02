@@ -2,11 +2,11 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use libretrogd::*;
-use libretrogd::graphics::*;
-use libretrogd::math::*;
-use libretrogd::system::*;
-use libretrogd::utils::*;
+use ggdt::*;
+use ggdt::graphics::*;
+use ggdt::math::*;
+use ggdt::system::*;
+use ggdt::utils::*;
 
 const NUM_BALLS: usize = 128;
 const NUM_BALL_SPRITES: usize = 16;
