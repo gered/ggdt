@@ -186,9 +186,9 @@ pub fn main_loop<ContextType, State>(
 	mut app: ContextType,
 	initial_state: State,
 ) -> Result<(), MainLoopError>
-where
-	ContextType: AppContext,
-	State: AppState<ContextType> + 'static,
+	where
+		ContextType: AppContext,
+		State: AppState<ContextType> + 'static,
 {
 	let mut states = States::new();
 	states.push(initial_state)?;
