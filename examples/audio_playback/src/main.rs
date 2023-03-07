@@ -53,8 +53,11 @@ impl AudioGenerator for SineWaveGenerator {
 }
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
-	let mut system = SystemBuilder::new().window_title("Audio Playback").build(config)?;
+	let config = DosLikeConfig::new();
+	let mut system = SystemBuilder::new()
+		.window_title("Audio Playback")
+		.vsync(true)
+		.build(config)?;
 
 	let mut using_queue_commands = false;
 	let mut volume = 1.0;

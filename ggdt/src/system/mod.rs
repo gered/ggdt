@@ -70,6 +70,8 @@ pub enum SystemError {
 #[derive(Debug)]
 pub struct SystemBuilder {
 	window_title: String,
+	vsync: bool,
+	target_framerate: Option<u32>,
 	resizable: bool,
 	show_mouse: bool,
 	relative_mouse_scaling: bool,
@@ -81,6 +83,8 @@ impl SystemBuilder {
 	pub fn new() -> SystemBuilder {
 		SystemBuilder {
 			window_title: String::new(),
+			vsync: false,
+			target_framerate: None,
 			resizable: true,
 			show_mouse: false,
 			relative_mouse_scaling: true,
@@ -89,13 +93,30 @@ impl SystemBuilder {
 	}
 
 	/// Set the window title for the [`System`] to be built.
-	pub fn window_title(&mut self, window_title: &str) -> &mut SystemBuilder {
+	pub fn window_title(mut self, window_title: &str) -> Self {
 		self.window_title = window_title.to_string();
 		self
 	}
 
+	/// Enables or disables V-Sync for the [`System`] to be built. Enabling V-sync automatically
+	/// disables `target_framerate`.
+	pub fn vsync(mut self, enable: bool) -> Self {
+		self.vsync = enable;
+		self.target_framerate = None;
+		self
+	}
+
+	/// Sets a target framerate for the [`System`] being built to run at. This is intended to be
+	/// used when V-sync is not desired, so setting a target framerate automatically disables
+	/// `vsync`.
+	pub fn target_framerate(mut self, target_framerate: u32) -> Self {
+		self.target_framerate = Some(target_framerate);
+		self.vsync = false;
+		self
+	}
+
 	/// Sets whether the window will be resizable by the user for the [`System`] being built.
-	pub fn resizable(&mut self, enable: bool) -> &mut SystemBuilder {
+	pub fn resizable(mut self, enable: bool) -> Self {
 		self.resizable = enable;
 		self
 	}
@@ -103,14 +124,14 @@ impl SystemBuilder {
 	/// Enables or disables mouse cursor display by the operating system when the cursor is over
 	/// the window for the [`System`] being built. Disable this if you intend to render your own
 	/// custom mouse cursor.
-	pub fn show_mouse(&mut self, enable: bool) -> &mut SystemBuilder {
+	pub fn show_mouse(mut self, enable: bool) -> Self {
 		self.show_mouse = enable;
 		self
 	}
 
 	/// Enables or disables automatic DPI scaling of mouse relative movement values (delta values)
 	/// available via the [`Mouse`] input device.
-	pub fn relative_mouse_scaling(&mut self, enable: bool) -> &mut SystemBuilder {
+	pub fn relative_mouse_scaling(mut self, enable: bool) -> Self {
 		self.relative_mouse_scaling = enable;
 		self
 	}
@@ -120,7 +141,7 @@ impl SystemBuilder {
 	/// default setting that [`SystemBuilder`] configures is to follow the SDL default, except where
 	/// the setting affects the system globally (in certain desktop environments, e.g. KDE/Kwin)
 	/// which may be undesired by end-users, at the cost of some additional input latency.
-	pub fn skip_x11_compositor(&mut self, enable: bool) -> &mut SystemBuilder {
+	pub fn skip_x11_compositor(mut self, enable: bool) -> Self {
 		self.skip_x11_compositor = enable;
 		self
 	}
@@ -130,23 +151,10 @@ impl SystemBuilder {
 		&self,
 		config: ConfigType,
 	) -> Result<System<ConfigType::SystemResourcesType>, SystemError> {
-		sdl2::hint::set(
-			"SDL_MOUSE_RELATIVE_SCALING",
-			if self.relative_mouse_scaling {
-				"1"
-			} else {
-				"0"
-			},
-		);
 
-		sdl2::hint::set(
-			"SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR",
-			if self.skip_x11_compositor {
-				"1"
-			} else {
-				"0"
-			},
-		);
+		sdl2::hint::set("SDL_RENDER_VSYNC", if self.vsync { "1" } else { "0" });
+		sdl2::hint::set("SDL_MOUSE_RELATIVE_SCALING", if self.relative_mouse_scaling { "1" } else { "0" });
+		sdl2::hint::set("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", if self.skip_x11_compositor { "1" } else { "0" });
 
 		// build all the individual SDL subsystems
 
@@ -211,6 +219,8 @@ impl SystemBuilder {
 			sdl_timer_subsystem,
 			res: system_resources,
 			event_pump,
+			vsync: self.vsync,
+			target_framerate: self.target_framerate,
 			target_framerate_delta: None,
 			next_tick: 0,
 		})
@@ -228,6 +238,8 @@ where SystemResType: SystemResources {
 	sdl_video_subsystem: VideoSubsystem,
 	sdl_timer_subsystem: TimerSubsystem,
 
+	vsync: bool,
+	target_framerate: Option<u32>,
 	target_framerate_delta: Option<i64>,
 	next_tick: i64,
 
@@ -241,6 +253,8 @@ where SystemResType: SystemResources {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("System")
 			.field("res", &self.res)
+			.field("vsync", &self.vsync)
+			.field("target_framerate", &self.target_framerate)
 			.field("target_framerate_delta", &self.target_framerate_delta)
 			.field("next_tick", &self.next_tick)
 			.finish_non_exhaustive()
@@ -259,7 +273,7 @@ where SystemResType: SystemResources {
 		// if a specific target framerate is desired, apply some loop timing/delay to achieve it
 		// TODO: do this better. delaying when running faster like this is a poor way to do this..
 
-		if let Some(target_framerate) = self.res.target_framerate() {
+		if let Some(target_framerate) = self.target_framerate {
 			if self.target_framerate_delta.is_some() {
 				// normal path for every other loop iteration except the first
 				let delay = self.next_tick - self.ticks() as i64;
@@ -344,6 +358,16 @@ where SystemResType: SystemResources {
 			return Err(SystemError::SystemResourcesError(error));
 		}
 		Ok(())
+	}
+
+	#[inline]
+	pub fn vsync(&self) -> bool {
+		self.vsync
+	}
+
+	#[inline]
+	pub fn target_framerate(&self) -> Option<u32> {
+		self.target_framerate
 	}
 
 	pub fn ticks(&self) -> u64 {

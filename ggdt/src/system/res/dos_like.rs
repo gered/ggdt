@@ -5,8 +5,6 @@ use crate::system::*;
 pub struct DosLikeConfig {
 	screen_width: u32,
 	screen_height: u32,
-	vsync: bool,
-	target_framerate: Option<u32>,
 	initial_scale_factor: u32,
 	integer_scaling: bool,
 }
@@ -16,28 +14,9 @@ impl DosLikeConfig {
 		DosLikeConfig {
 			screen_width: SCREEN_WIDTH,
 			screen_height: SCREEN_HEIGHT,
-			vsync: false,
-			target_framerate: None,
 			initial_scale_factor: DEFAULT_SCALE_FACTOR,
 			integer_scaling: false,
 		}
-	}
-
-	/// Enables or disables V-Sync for the [`System`] to be built. Enabling V-sync automatically
-	/// disables `target_framerate`.
-	pub fn vsync(mut self, enable: bool) -> Self {
-		self.vsync = enable;
-		self.target_framerate = None;
-		self
-	}
-
-	/// Sets a target framerate for the [`System`] being built to run at. This is intended to be
-	/// used when V-sync is not desired, so setting a target framerate automatically disables
-	/// `vsync`.
-	pub fn target_framerate(mut self, target_framerate: u32) -> Self {
-		self.target_framerate = Some(target_framerate);
-		self.vsync = false;
-		self
 	}
 
 	/// Sets an integer scaling factor for the [`System`] being built to up-scale the virtual
@@ -75,9 +54,6 @@ impl SystemResourcesConfig for DosLikeConfig {
 		// turn the window into a canvas (under the hood, an SDL Renderer that owns the window)
 
 		let mut canvas_builder = window.into_canvas();
-		if self.vsync {
-			canvas_builder = canvas_builder.present_vsync();
-		}
 		let mut sdl_canvas = match canvas_builder.build() {
 			Ok(canvas) => canvas,
 			Err(error) => return Err(SystemResourcesError::SDLError(error.to_string())),
@@ -162,8 +138,6 @@ impl SystemResourcesConfig for DosLikeConfig {
 			sdl_texture,
 			sdl_texture_pitch,
 			texture_pixels,
-			vsync: self.vsync,
-			target_framerate: self.target_framerate,
 			audio,
 			audio_queue,
 			palette,
@@ -180,8 +154,6 @@ pub struct DosLike {
 	sdl_texture: Texture,
 	sdl_texture_pitch: usize,
 	texture_pixels: Box<[u32]>,
-	vsync: bool,
-	target_framerate: Option<u32>,
 
 	/// An [`Audio`] instance that allows interacting with the system's audio output device.
 	pub audio: Audio,
@@ -223,8 +195,6 @@ impl std::fmt::Debug for DosLike {
             .field("font", &self.font)
             .field("keyboard", &self.keyboard)
             .field("mouse", &self.mouse)
-            .field("vsync", &self.vsync)
-            .field("target_framerate", &self.target_framerate)
             .finish_non_exhaustive()
     }
 }
@@ -284,15 +254,5 @@ impl SystemResources for DosLike {
 	#[inline]
 	fn height(&self) -> u32 {
 		self.video.height()
-	}
-
-	#[inline]
-	fn vsync(&self) -> bool {
-		self.vsync
-	}
-
-	#[inline]
-	fn target_framerate(&self) -> Option<u32> {
-		self.target_framerate
 	}
 }

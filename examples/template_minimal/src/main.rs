@@ -6,8 +6,11 @@ use ggdt::system::*;
 use ggdt::utils::rnd_value;
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
-	let mut system = SystemBuilder::new().window_title("Minimal Template").build(config)?;
+	let config = DosLikeConfig::new();
+	let mut system = SystemBuilder::new()
+		.window_title("Minimal Template")
+		.vsync(true)
+		.build(config)?;
 
 	system.res.video.clear(0);
 	system.res.video.print_string("Hello, world!", 20, 20, FontRenderOpts::Color(15), &system.res.font);

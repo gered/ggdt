@@ -36,6 +36,4 @@ pub trait SystemResources : std::fmt::Debug {
 
 	fn width(&self) -> u32;
 	fn height(&self) -> u32;
-	fn vsync(&self) -> bool;
-	fn target_framerate(&self) -> Option<u32>;
 }

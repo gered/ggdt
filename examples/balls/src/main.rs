@@ -22,9 +22,10 @@ struct Ball {
 }
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
+	let config = DosLikeConfig::new();
 	let mut system = SystemBuilder::new()
 		.window_title("Flying Balls!")
+		.vsync(true)
 		.build(config)?;
 
 	let font = BitmaskFont::new_vga_font()?;

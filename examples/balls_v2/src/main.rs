@@ -12,8 +12,11 @@ mod entities;
 mod states;
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
-	let system = SystemBuilder::new().window_title("Flying Balls").build(config)?;
+	let config = DosLikeConfig::new();
+	let system = SystemBuilder::new()
+		.window_title("Flying Balls")
+		.vsync(true)
+		.build(config)?;
 	let mut game = Game::new(system)?;
 	let mut states = States::new();
 	states.push(SimulationState)?;

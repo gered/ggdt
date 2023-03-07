@@ -225,8 +225,11 @@ impl App {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
-	let system = SystemBuilder::new().window_title("Complicated Template").build(config)?;
+	let config = DosLikeConfig::new();
+	let system = SystemBuilder::new()
+		.window_title("Complicated Template")
+		.vsync(true)
+		.build(config)?;
 	let app = App::new(system)?;
 	main_loop(app, DemoState).context("Main loop error")
 }

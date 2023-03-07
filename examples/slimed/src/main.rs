@@ -196,8 +196,11 @@ impl Game {
 }
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new().vsync(true);
-	let system = SystemBuilder::new().window_title("Slime Stabbing Simulator").build(config)?;
+	let config = DosLikeConfig::new();
+	let system = SystemBuilder::new()
+		.window_title("Slime Stabbing Simulator")
+		.vsync(true)
+		.build(config)?;
 	let game = Game::new(system)?;
 	main_loop(game, MainMenuState::new()).context("Main loop error")
 }
