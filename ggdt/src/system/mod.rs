@@ -263,10 +263,9 @@ where SystemResType: SystemResources {
 
 impl<SystemResType> System<SystemResType>
 where SystemResType: SystemResources {
-	/// Takes the `video` backbuffer bitmap and `palette` and renders it to the window, up-scaled
-	/// to fill the window (preserving aspect ratio of course). If V-sync is enabled, this method
-	/// will block to wait for V-sync. Otherwise, if a target framerate was configured a delay
-	/// might be used to try to meet that framerate.
+	/// Displays the current backbuffer on to the window. If a `target_framerate` is set, this will
+	/// attempt to apply some timing to achieve that framerate. If V-sync is enabled, that will take
+	/// priority instead. You must call this in your application's main loop to display anything on screen.
 	pub fn display(&mut self) -> Result<(), SystemError> {
 		self.res.display()?;
 
@@ -353,6 +352,9 @@ where SystemResType: SystemResources {
 		Ok(should_quit)
 	}
 
+	/// Perform any per-frame hardware resource and system updates. This includes important state management such
+	/// as ensuring audio queues are fed to the audio device, etc. You should call this in your application's
+	/// main loop.
 	pub fn update(&mut self) -> Result<(), SystemError> {
 		if let Err(error) = self.res.update() {
 			return Err(SystemError::SystemResourcesError(error));
@@ -360,11 +362,13 @@ where SystemResType: SystemResources {
 		Ok(())
 	}
 
+	/// Returns true if the current configuration has V-sync enabled.
 	#[inline]
 	pub fn vsync(&self) -> bool {
 		self.vsync
 	}
 
+	/// Returns the current configuration's target framerate, or `None` if not set.
 	#[inline]
 	pub fn target_framerate(&self) -> Option<u32> {
 		self.target_framerate

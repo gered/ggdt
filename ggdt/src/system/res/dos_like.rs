@@ -1,7 +1,37 @@
+//! This provides a "DOS-like" implementation of [`SystemResources`] which is used in conjunction with a [`System`]
+//! instance to provide something resembling an old DOS VGA mode 13h style experience (there are differences, however).
+//!
+//! ```no_run
+//! use ggdt::graphics::*;
+//! use ggdt::system::*;
+//!
+//! let config = DosLikeConfig::new();
+//! let mut system = SystemBuilder::new()
+//! 	.window_title("Example")
+//! 	.build(config)
+//! 	.unwrap();
+//!
+//! while !system.do_events().unwrap() {
+//! 	if system.res.keyboard.is_key_pressed(Scancode::Escape) {
+//! 		break;
+//! 	}
+//!
+//! 	system.update().unwrap();
+//!
+//!     system.res.video.clear(0);
+//!     system.res.video.set_pixel(10, 10, 4);
+//!     system.res.video.print_string("Hello, world!", 10, 50, FontRenderOpts::Color(10), &system.res.font);
+//!
+//! 	system.display().unwrap();
+//! }
+//! ```
+//!
+
 use sdl2::video::Window;
 
 use crate::system::*;
 
+/// Configuration / builder for configuring and constructing an instance of [`DosLike`].
 pub struct DosLikeConfig {
 	screen_width: u32,
 	screen_height: u32,
@@ -10,6 +40,7 @@ pub struct DosLikeConfig {
 }
 
 impl DosLikeConfig {
+	/// Returns a new [`DosLikeConfig`] with a default configuration.
 	pub fn new() -> Self {
 		DosLikeConfig {
 			screen_width: SCREEN_WIDTH,
@@ -18,6 +49,8 @@ impl DosLikeConfig {
 			integer_scaling: false,
 		}
 	}
+
+	// TODO: add customization ability for setting different screen dimensions instead of it being hardcoded
 
 	/// Sets an integer scaling factor for the [`System`] being built to up-scale the virtual
 	/// framebuffer to when displaying it on screen.
@@ -149,6 +182,8 @@ impl SystemResourcesConfig for DosLikeConfig {
 	}
 }
 
+/// A [`SystemResources`] implementation that provides indexed-colour [`Bitmap`]s for graphics, simple 8-bit / 22khz
+/// audio via [`Audio`] and keyboard/mouse input.
 pub struct DosLike {
 	sdl_canvas: WindowCanvas,
 	sdl_texture: Texture,
@@ -207,6 +242,8 @@ impl SystemResources for DosLike {
 		}
 	}
 
+	/// Takes the `video` backbuffer bitmap and `palette` and renders it to the window, up-scaled
+	/// to fill the window (preserving aspect ratio of course).
 	fn display(&mut self) -> Result<(), SystemResourcesError> {
         self.mouse.render_cursor(&mut self.video);
 
