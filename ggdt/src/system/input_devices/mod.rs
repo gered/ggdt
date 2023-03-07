@@ -18,28 +18,3 @@ pub trait InputDevice {
 	/// input events have been processed via `handle_event`.
 	fn update(&mut self);
 }
-
-/// Container for all available input devices available for applications to use.
-pub struct InputDevices {
-	pub keyboard: keyboard::Keyboard,
-	pub mouse: mouse::Mouse,
-}
-
-impl InputDevice for InputDevices {
-	fn update(&mut self) {
-		self.keyboard.update();
-		self.mouse.update();
-	}
-}
-
-impl SystemEventHandler for InputDevices {
-	fn handle_event(&mut self, event: &SystemEvent) -> bool {
-		if self.keyboard.handle_event(event) {
-			return true;
-		}
-		if self.mouse.handle_event(event) {
-			return true;
-		}
-		false
-	}
-}
