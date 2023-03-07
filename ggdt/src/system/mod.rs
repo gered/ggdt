@@ -57,7 +57,7 @@ pub enum SystemError {
 	SDLError(String),
 
 	#[error("System audio error: {0}")]
-	AudioError(#[from] crate::audio::AudioError),
+	AudioError(#[from] AudioError),
 }
 
 /// Builder for configuring and constructing an instance of [`System`].
