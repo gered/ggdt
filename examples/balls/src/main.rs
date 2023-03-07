@@ -22,15 +22,15 @@ struct Ball {
 }
 
 fn main() -> Result<()> {
+	let config = DosLikeConfig::new().vsync(true);
 	let mut system = SystemBuilder::new()
 		.window_title("Flying Balls!")
-		.vsync(true)
-		.build()?;
+		.build(config)?;
 
 	let font = BitmaskFont::new_vga_font()?;
 
 	let (balls_bmp, balls_palette) = Bitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
-	system.palette = balls_palette.clone();
+	system.res.palette = balls_palette.clone();
 
 	let mut sprites = Vec::<Bitmap>::new();
 	let mut balls = Vec::<Ball>::new();
@@ -59,12 +59,12 @@ fn main() -> Result<()> {
 		balls.push(ball);
 	}
 
-	while !system.do_events() {
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+	while !system.do_events()? {
+		if system.res.keyboard.is_key_pressed(Scancode::Escape) {
 			break;
 		}
 
-		if system.input_devices.keyboard.is_key_up(Scancode::S) {
+		if system.res.keyboard.is_key_up(Scancode::S) {
 			for i in 0..NUM_BALLS {
 				let ball = &mut balls[i];
 				ball.x += ball.dir_x;
@@ -96,14 +96,13 @@ fn main() -> Result<()> {
 			}
 		}
 
-		system.video.clear(2);
+		system.update()?;
+		system.res.video.clear(2);
 
-		system
-			.video
-			.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &font);
+		system.res.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &font);
 
 		for i in 0..NUM_BALLS {
-			system.video.blit(
+			system.res.video.blit(
 				BlitMethod::Transparent(0),
 				&sprites[balls[i].sprite],
 				balls[i].x,

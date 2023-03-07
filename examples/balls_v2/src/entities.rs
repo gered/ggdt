@@ -165,7 +165,7 @@ fn render_system_sprites(context: &mut Context) {
 
 	for (entity, sprite_index) in sprite_indices.iter() {
 		let position = positions.get(&entity).unwrap();
-		context.system.video.blit(
+		context.system.res.video.blit(
 			BlitMethod::Transparent(0),
 			&context.sprites[sprite_index.0],
 			position.0.x as i32,
@@ -206,7 +206,7 @@ fn render_system_particles(context: &mut Context) {
 		}
 
 		if let Some(color) = pixel_color {
-			context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color);
+			context.system.res.video.set_pixel(position.0.x as i32, position.0.y as i32, color);
 		}
 	}
 }

@@ -61,7 +61,7 @@ pub fn update_system_movement(context: &mut Core) {
 pub fn update_system_remove_offscreen(context: &mut Core) {
 	let positions = context.entities.components::<Position>().unwrap();
 	for (entity, position) in positions.iter() {
-		if !context.system.video.is_xy_visible(position.0.x as i32, position.0.y as i32) {
+		if !context.system.res.video.is_xy_visible(position.0.x as i32, position.0.y as i32) {
 			context.event_publisher.queue(Event::Remove(*entity));
 		}
 	}
@@ -73,7 +73,7 @@ pub fn render_system_pixels(context: &mut Core) {
 
 	for (entity, position) in positions.iter() {
 		let color = colors.get(entity).unwrap();
-		context.system.video.set_pixel(position.0.x as i32, position.0.y as i32, color.0);
+		context.system.res.video.set_pixel(position.0.x as i32, position.0.y as i32, color.0);
 	}
 }
 
@@ -100,7 +100,7 @@ impl DemoState {
 impl AppState<App> for DemoState {
 	fn update(&mut self, state: State, context: &mut App) -> Option<StateChange<App>> {
 		if state == State::Active {
-			if context.core.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+			if context.core.system.res.keyboard.is_key_pressed(Scancode::Escape) {
 				return Some(StateChange::Pop(1));
 			}
 		}
@@ -116,7 +116,7 @@ impl AppState<App> for DemoState {
 	}
 
 	fn render(&mut self, state: State, context: &mut App) {
-		context.core.system.video.clear(0);
+		context.core.system.res.video.clear(0);
 		context.support.component_systems.render(&mut context.core);
 	}
 
@@ -138,17 +138,17 @@ impl AppState<App> for DemoState {
 
 pub struct Core {
 	pub delta: f32,
-	pub system: System,
+	pub system: System<DosLike>,
 	pub entities: Entities,
 	pub event_publisher: EventPublisher<Event>,
 }
 
-impl CoreState for Core {
-	fn system(&self) -> &System {
+impl CoreState<DosLike> for Core {
+	fn system(&self) -> &System<DosLike> {
 		&self.system
 	}
 
-	fn system_mut(&mut self) -> &mut System {
+	fn system_mut(&mut self) -> &mut System<DosLike> {
 		&mut self.system
 	}
 
@@ -161,7 +161,7 @@ impl CoreState for Core {
 	}
 }
 
-impl CoreStateWithEvents<Event> for Core {
+impl CoreStateWithEvents<DosLike, Event> for Core {
 	fn event_publisher(&mut self) -> &mut EventPublisher<Event> {
 		&mut self.event_publisher
 	}
@@ -174,7 +174,7 @@ pub struct Support {
 
 impl SupportSystems for Support {}
 
-impl SupportSystemsWithEvents<Event> for Support {
+impl SupportSystemsWithEvents<DosLike, Event> for Support {
 	type ContextType = Core;
 
 	fn event_listeners(&mut self) -> &mut EventListeners<Event, Self::ContextType> {
@@ -187,7 +187,7 @@ pub struct App {
 	pub support: Support,
 }
 
-impl AppContext for App {
+impl AppContext<DosLike> for App {
 	type CoreType = Core;
 	type SupportType = Support;
 
@@ -201,7 +201,7 @@ impl AppContext for App {
 }
 
 impl App {
-	pub fn new(system: System) -> Result<Self> {
+	pub fn new(system: System<DosLike>) -> Result<Self> {
 		let entities = Entities::new();
 		let component_systems = ComponentSystems::new();
 		let event_publisher = EventPublisher::new();
@@ -225,7 +225,8 @@ impl App {
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 fn main() -> Result<()> {
-	let system = SystemBuilder::new().window_title("Complicated Template").vsync(true).build()?;
+	let config = DosLikeConfig::new().vsync(true);
+	let system = SystemBuilder::new().window_title("Complicated Template").build(config)?;
 	let app = App::new(system)?;
 	main_loop(app, DemoState).context("Main loop error")
 }

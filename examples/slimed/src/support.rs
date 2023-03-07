@@ -58,10 +58,10 @@ pub fn update_fade_transition(state: State, fade: &mut f32, delta: f32, context:
 			*fade += delta;
 			if *fade >= 1.0 {
 				*fade = 1.0;
-				context.core.system.palette = context.core.palette.clone();
+				context.core.system.res.palette = context.core.palette.clone();
 				true
 			} else {
-				context.core.system.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
+				context.core.system.res.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
 				false
 			}
 		}
@@ -69,10 +69,10 @@ pub fn update_fade_transition(state: State, fade: &mut f32, delta: f32, context:
 			*fade -= delta;
 			if *fade <= 0.0 {
 				*fade = 0.0;
-				context.core.system.palette = context.core.fade_out_palette.clone();
+				context.core.system.res.palette = context.core.fade_out_palette.clone();
 				true
 			} else {
-				context.core.system.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
+				context.core.system.res.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
 				false
 			}
 		}

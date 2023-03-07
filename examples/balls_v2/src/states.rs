@@ -13,7 +13,7 @@ pub const NUM_BALL_SPRITES: usize = 16;
 
 pub struct Context {
 	pub delta: f32,
-	pub system: System,
+	pub system: System<DosLike>,
 	pub font: BitmaskFont,
 	pub sprites: Vec<Bitmap>,
 	pub entities: Entities,
@@ -27,11 +27,11 @@ pub struct Game {
 }
 
 impl Game {
-	pub fn new(mut system: System) -> Result<Self> {
+	pub fn new(mut system: System<DosLike>) -> Result<Self> {
 		let font = BitmaskFont::new_vga_font()?;
 
 		let (balls_bmp, balls_palette) = Bitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
-		system.palette = balls_palette.clone();
+		system.res.palette = balls_palette.clone();
 
 		let mut sprites = Vec::new();
 		for i in 0..NUM_BALL_SPRITES {
@@ -78,12 +78,12 @@ pub struct SimulationState;
 
 impl AppState<Game> for SimulationState {
 	fn update(&mut self, _state: State, context: &mut Game) -> Option<StateChange<Game>> {
-		if context.context.system.input_devices.keyboard.is_key_up(Scancode::S) {
+		if context.context.system.res.keyboard.is_key_up(Scancode::S) {
 			context.do_events();
 			context.component_systems.update(&mut context.context);
 		}
 
-		if context.context.system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+		if context.context.system.res.keyboard.is_key_pressed(Scancode::Escape) {
 			return Some(StateChange::Pop(1));
 		}
 
@@ -91,9 +91,9 @@ impl AppState<Game> for SimulationState {
 	}
 
 	fn render(&mut self, _state: State, context: &mut Game) {
-		context.context.system.video.clear(2);
+		context.context.system.res.video.clear(2);
 		context.component_systems.render(&mut context.context);
-		context.context.system.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &context.context.font);
+		context.context.system.res.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &context.context.font);
 	}
 
 	fn transition(&mut self, _state: State, _context: &mut Game) -> bool {

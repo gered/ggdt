@@ -28,7 +28,7 @@ pub const TILE_HEIGHT: u32 = 16;
 
 pub struct Core {
 	pub delta: f32,
-	pub system: System,
+	pub system: System<DosLike>,
 	pub font: BitmaskFont,
 	pub entities: Entities,
 	pub event_publisher: EventPublisher<Event>,
@@ -54,12 +54,12 @@ pub struct Core {
 	pub sprite_render_list: Vec<(EntityId, Vector2, BlitMethod)>,
 }
 
-impl CoreState for Core {
-	fn system(&self) -> &System {
+impl CoreState<DosLike> for Core {
+	fn system(&self) -> &System<DosLike> {
 		&self.system
 	}
 
-	fn system_mut(&mut self) -> &mut System {
+	fn system_mut(&mut self) -> &mut System<DosLike> {
 		&mut self.system
 	}
 
@@ -72,7 +72,7 @@ impl CoreState for Core {
 	}
 }
 
-impl CoreStateWithEvents<Event> for Core {
+impl CoreStateWithEvents<DosLike, Event> for Core {
 	fn event_publisher(&mut self) -> &mut EventPublisher<Event> {
 		&mut self.event_publisher
 	}
@@ -85,7 +85,7 @@ pub struct Support {
 
 impl SupportSystems for Support {}
 
-impl SupportSystemsWithEvents<Event> for Support {
+impl SupportSystemsWithEvents<DosLike, Event> for Support {
 	type ContextType = Core;
 
 	fn event_listeners(&mut self) -> &mut EventListeners<Event, Self::ContextType> {
@@ -98,7 +98,7 @@ pub struct Game {
 	pub support: Support,
 }
 
-impl AppContext for Game {
+impl AppContext<DosLike> for Game {
 	type CoreType = Core;
 	type SupportType = Support;
 
@@ -112,9 +112,9 @@ impl AppContext for Game {
 }
 
 impl Game {
-	pub fn new(mut system: System) -> Result<Self> {
+	pub fn new(mut system: System<DosLike>) -> Result<Self> {
 		let palette = load_palette(Path::new("./assets/db16.pal"))?;
-		system.palette = palette.clone();
+		system.res.palette = palette.clone();
 
 		let font = load_font(Path::new("./assets/dp.fnt"))?;
 
@@ -196,7 +196,8 @@ impl Game {
 }
 
 fn main() -> Result<()> {
-	let system = SystemBuilder::new().window_title("Slime Stabbing Simulator").vsync(true).build()?;
+	let config = DosLikeConfig::new().vsync(true);
+	let system = SystemBuilder::new().window_title("Slime Stabbing Simulator").build(config)?;
 	let game = Game::new(system)?;
 	main_loop(game, MainMenuState::new()).context("Main loop error")
 }

@@ -40,7 +40,7 @@ impl SineWaveGenerator {
 }
 
 impl AudioGenerator for SineWaveGenerator {
-	fn gen_sample(&mut self, position: usize) -> Option<u8> {
+	fn gen_sample(&mut self, _position: usize) -> Option<u8> {
 		const MAX_TIME: usize = AUDIO_FREQUENCY_22KHZ as usize * 3;  // 3 seconds
 		if self.t < MAX_TIME {
 			let sample = (self.t as f64 * 0.25).sin() * 80.0;
@@ -53,103 +53,104 @@ impl AudioGenerator for SineWaveGenerator {
 }
 
 fn main() -> Result<()> {
-	let mut system = SystemBuilder::new().window_title("Audio Playback").vsync(true).build()?;
+	let config = DosLikeConfig::new().vsync(true);
+	let mut system = SystemBuilder::new().window_title("Audio Playback").build(config)?;
 
 	let mut using_queue_commands = false;
 	let mut volume = 1.0;
 
 	let sounds = [
-		load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/powerup.wav"), system.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/explosion.wav"), system.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/jump.wav"), system.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.audio.spec())?,
+		load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.res.audio.spec())?,
+		load_and_convert_wav(Path::new("./assets/powerup.wav"), system.res.audio.spec())?,
+		load_and_convert_wav(Path::new("./assets/explosion.wav"), system.res.audio.spec())?,
+		load_and_convert_wav(Path::new("./assets/jump.wav"), system.res.audio.spec())?,
+		load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.res.audio.spec())?,
 	];
 
 	let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];
 
-	while !system.do_events() {
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Escape) {
+	while !system.do_events()? {
+		if system.res.keyboard.is_key_pressed(Scancode::Escape) {
 			break;
 		}
 
-		let mut audio_device = system.audio.lock();
+		let mut audio_device = system.res.audio.lock();
 		audio_device.volume = volume;
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num1) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num1) {
 			if using_queue_commands {
-				system.audio_queue.play_buffer(&sounds[0], false);
+				system.res.audio_queue.play_buffer(&sounds[0], false)?;
 			} else {
 				audio_device.play_buffer(&sounds[0], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num2) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num2) {
 			if using_queue_commands {
-				system.audio_queue.play_buffer(&sounds[1], false);
+				system.res.audio_queue.play_buffer(&sounds[1], false)?;
 			} else {
 				audio_device.play_buffer(&sounds[1], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num3) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num3) {
 			if using_queue_commands {
-				system.audio_queue.play_buffer(&sounds[2], false);
+				system.res.audio_queue.play_buffer(&sounds[2], false)?;
 			} else {
 				audio_device.play_buffer(&sounds[2], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num4) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num4) {
 			if using_queue_commands {
-				system.audio_queue.play_buffer(&sounds[3], false);
+				system.res.audio_queue.play_buffer(&sounds[3], false)?;
 			} else {
 				audio_device.play_buffer(&sounds[3], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num5) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num5) {
 			if using_queue_commands {
-				system.audio_queue.play_buffer(&sounds[4], false);
+				system.res.audio_queue.play_buffer(&sounds[4], false)?;
 			} else {
 				audio_device.play_buffer(&sounds[4], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num6) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num6) {
 			if using_queue_commands {
-				system.audio_queue.play_generator(Box::new(SineWaveGenerator::new()), false);
+				system.res.audio_queue.play_generator(Box::new(SineWaveGenerator::new()), false)?;
 			} else {
-				audio_device.play_generator(Box::new(SineWaveGenerator::new()), false);
+				audio_device.play_generator(Box::new(SineWaveGenerator::new()), false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Num7) {
+		if system.res.keyboard.is_key_pressed(Scancode::Num7) {
 			let index = rnd_value(0, sounds.len() - 1);
 			if using_queue_commands {
-				system.audio_queue.play_buffer_on_channel(7, &sounds[index], false)?;
+				system.res.audio_queue.play_buffer_on_channel(7, &sounds[index], false)?;
 			} else {
 				audio_device.play_buffer_on_channel(7, &sounds[index], false)?;
 			}
 		}
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::S) {
+		if system.res.keyboard.is_key_pressed(Scancode::S) {
 			if using_queue_commands {
-				system.audio_queue.stop_all();
+				system.res.audio_queue.stop_all();
 			} else {
 				audio_device.stop_all();
 			}
 		}
 
-		system.audio_queue.apply_to_device(&mut audio_device)?;
+		system.res.audio_queue.apply_to_device(&mut audio_device)?;
 
-		if system.input_devices.keyboard.is_key_pressed(Scancode::KpMinus) {
+		if system.res.keyboard.is_key_pressed(Scancode::KpMinus) {
 			volume -= 0.1;
 		}
-		if system.input_devices.keyboard.is_key_pressed(Scancode::KpPlus) {
+		if system.res.keyboard.is_key_pressed(Scancode::KpPlus) {
 			volume += 0.1;
 		}
-		if system.input_devices.keyboard.is_key_pressed(Scancode::Q) {
+		if system.res.keyboard.is_key_pressed(Scancode::Q) {
 			using_queue_commands = !using_queue_commands;
 		}
 
@@ -163,24 +164,31 @@ fn main() -> Result<()> {
 
 		drop(audio_device);
 
-		system.video.clear(0);
+		system.update()?;
+		system.res.video.clear(0);
 
-		system.video.print_string(&format!("Volume: {:2.2}", volume), 16, 16, FontRenderOpts::Color(10), &system.font);
-		system.video.print_string(
+		system.res.video.print_string(
+			&format!("Volume: {:2.2}", volume),
+			16, 16, FontRenderOpts::Color(10), &system.res.font
+		);
+		system.res.video.print_string(
 			if using_queue_commands {
 				"Queueing Commands"
 			} else {
 				"Direct Commands"
 			},
-			160, 16, FontRenderOpts::Color(9), &system.font,
+			160, 16, FontRenderOpts::Color(9), &system.res.font,
 		);
 
-		system.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.font);
+		system.res.video.print_string(
+			"Audio Channels",
+			16, 32, FontRenderOpts::Color(14), &system.res.font
+		);
 
 		let mut y = 48;
 		for index in 0..NUM_CHANNELS {
 			let status = &statuses[index];
-			system.video.print_string(
+			system.res.video.print_string(
 				&format!(
 					"channel {} - {} {}",
 					index,
@@ -189,7 +197,7 @@ fn main() -> Result<()> {
 				),
 				16, y,
 				FontRenderOpts::Color(15),
-				&system.font,
+				&system.res.font,
 			);
 			y += 16;
 		}

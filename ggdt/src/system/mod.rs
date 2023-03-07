@@ -15,9 +15,12 @@ pub use self::event::*;
 pub use self::input_devices::*;
 pub use self::input_devices::keyboard::*;
 pub use self::input_devices::mouse::*;
+pub use self::res::*;
+pub use self::res::dos_like::*;
 
 pub mod event;
 pub mod input_devices;
+pub mod res;
 
 fn is_x11_compositor_skipping_problematic() -> bool {
 	/*
@@ -58,19 +61,18 @@ pub enum SystemError {
 
 	#[error("System audio error: {0}")]
 	AudioError(#[from] AudioError),
+
+	#[error("SystemResources error: {0}")]
+	SystemResourcesError(#[from] SystemResourcesError),
 }
 
 /// Builder for configuring and constructing an instance of [`System`].
 #[derive(Debug)]
 pub struct SystemBuilder {
 	window_title: String,
-	vsync: bool,
-	target_framerate: Option<u32>,
-	initial_scale_factor: u32,
 	resizable: bool,
 	show_mouse: bool,
 	relative_mouse_scaling: bool,
-	integer_scaling: bool,
 	skip_x11_compositor: bool,
 }
 
@@ -79,13 +81,9 @@ impl SystemBuilder {
 	pub fn new() -> SystemBuilder {
 		SystemBuilder {
 			window_title: String::new(),
-			vsync: false,
-			target_framerate: None,
-			initial_scale_factor: DEFAULT_SCALE_FACTOR,
 			resizable: true,
 			show_mouse: false,
 			relative_mouse_scaling: true,
-			integer_scaling: false,
 			skip_x11_compositor: !is_x11_compositor_skipping_problematic(),
 		}
 	}
@@ -93,30 +91,6 @@ impl SystemBuilder {
 	/// Set the window title for the [`System`] to be built.
 	pub fn window_title(&mut self, window_title: &str) -> &mut SystemBuilder {
 		self.window_title = window_title.to_string();
-		self
-	}
-
-	/// Enables or disables V-Sync for the [`System`] to be built. Enabling V-sync automatically
-	/// disables `target_framerate`.
-	pub fn vsync(&mut self, enable: bool) -> &mut SystemBuilder {
-		self.vsync = enable;
-		self.target_framerate = None;
-		self
-	}
-
-	/// Sets a target framerate for the [`System`] being built to run at. This is intended to be
-	/// used when V-sync is not desired, so setting a target framerate automatically disables
-	/// `vsync`.
-	pub fn target_framerate(&mut self, target_framerate: u32) -> &mut SystemBuilder {
-		self.target_framerate = Some(target_framerate);
-		self.vsync = false;
-		self
-	}
-
-	/// Sets an integer scaling factor for the [`System`] being built to up-scale the virtual
-	/// framebuffer to when displaying it on screen.
-	pub fn scale_factor(&mut self, scale_factor: u32) -> &mut SystemBuilder {
-		self.initial_scale_factor = scale_factor;
 		self
 	}
 
@@ -141,13 +115,6 @@ impl SystemBuilder {
 		self
 	}
 
-	/// Enables or disables restricting the final rendered output to always be integer scaled,
-	/// even if that result will not fully fill the area of the window.
-	pub fn integer_scaling(&mut self, enable: bool) -> &mut SystemBuilder {
-		self.integer_scaling = enable;
-		self
-	}
-
 	/// Enables or disables skipping the X11 server compositor on Linux systems only. This can be
 	/// set to manually control the underlying SDL hint that is used to control this setting. The
 	/// default setting that [`SystemBuilder`] configures is to follow the SDL default, except where
@@ -159,12 +126,10 @@ impl SystemBuilder {
 	}
 
 	/// Builds and returns a [`System`] from the current configuration.
-	pub fn build(&self) -> Result<System, SystemError> {
-		// todo: maybe let this be customized in the future, or at least halved so a 160x120 mode can be available ... ?
-		let screen_width = SCREEN_WIDTH;
-		let screen_height = SCREEN_HEIGHT;
-		let texture_pixel_size = 4; // 32-bit ARGB format
-
+	pub fn build<ConfigType: SystemResourcesConfig>(
+		&self,
+		config: ConfigType,
+	) -> Result<System<ConfigType::SystemResourcesType>, SystemError> {
 		sdl2::hint::set(
 			"SDL_MOUSE_RELATIVE_SCALING",
 			if self.relative_mouse_scaling {
@@ -210,14 +175,13 @@ impl SystemBuilder {
 			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
-		// create the window
+		// create the window with an initial default size that will be overridden during
+		// SystemResources initialization
 
-		let window_width = screen_width * self.initial_scale_factor;
-		let window_height = screen_height * self.initial_scale_factor;
 		let mut window_builder = &mut (sdl_video_subsystem.window(
 			self.window_title.as_str(),
-			window_width,
-			window_height,
+			640,
+			480,
 		));
 		if self.resizable {
 			window_builder = window_builder.resizable();
@@ -229,113 +193,24 @@ impl SystemBuilder {
 
 		sdl_context.mouse().show_cursor(self.show_mouse);
 
-		// turn the window into a canvas (under the hood, an SDL Renderer that owns the window)
-
-		let mut canvas_builder = sdl_window.into_canvas();
-		if self.vsync {
-			canvas_builder = canvas_builder.present_vsync();
-		}
-		let mut sdl_canvas = match canvas_builder.build() {
-			Ok(canvas) => canvas,
-			Err(error) => return Err(SystemError::SDLError(error.to_string())),
-		};
-		if let Err(error) = sdl_canvas.set_logical_size(screen_width, screen_height) {
-			return Err(SystemError::SDLError(error.to_string()));
-		};
-
-		// TODO: newer versions of rust-sdl2 support this directly off the WindowCanvas struct
-		unsafe {
-			sdl2::sys::SDL_RenderSetIntegerScale(
-				sdl_canvas.raw(),
-				if self.integer_scaling {
-					sdl2::sys::SDL_bool::SDL_TRUE
-				} else {
-					sdl2::sys::SDL_bool::SDL_FALSE
-				},
-			);
-		}
-
-		// create an SDL texture which we will be uploading to every frame to display the
-		// application's framebuffer
-
-		let sdl_texture = match sdl_canvas.create_texture_streaming(
-			Some(PixelFormatEnum::ARGB8888),
-			screen_width,
-			screen_height,
+		let system_resources = match config.build(
+			&sdl_video_subsystem,
+			&sdl_audio_subsystem,
+			sdl_window
 		) {
-			Ok(texture) => texture,
-			Err(error) => return Err(SystemError::SDLError(error.to_string())),
+			Ok(system_resources) => system_resources,
+			Err(error) => return Err(SystemError::SystemResourcesError(error)),
 		};
-		let sdl_texture_pitch = (sdl_texture.query().width * texture_pixel_size) as usize;
-
-		// create a raw 32-bit RGBA buffer that will be used as the temporary source for
-		// SDL texture uploads each frame. necessary as applications are dealing with 8-bit indexed
-		// bitmaps, not 32-bit RGBA pixels, so this temporary buffer is where we convert the final
-		// application framebuffer to 32-bit RGBA pixels before it is uploaded to the SDL texture
-		let texture_pixels_size = (screen_width * screen_height * texture_pixel_size) as usize;
-		let texture_pixels = vec![0u32; texture_pixels_size].into_boxed_slice();
-
-		// create the Bitmap object that will be exposed to the application acting as the system
-		// backbuffer
-
-		let framebuffer = match Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT) {
-			Ok(bmp) => bmp,
-			Err(error) => return Err(SystemError::SDLError(error.to_string())),
-		};
-
-		// create the default palette, initialized to the VGA default palette. also exposed to the
-		// application for manipulation
-
-		let palette = match Palette::new_vga_palette() {
-			Ok(palette) => palette,
-			Err(error) => return Err(SystemError::SDLError(error.to_string())),
-		};
-
-		// create the default font, initialized to the VGA BIOS default font.
-
-		let font = match BitmaskFont::new_vga_font() {
-			Ok(font) => font,
-			Err(error) => return Err(SystemError::SDLError(error.to_string())),
-		};
-
-		let audio_spec = AudioSpecDesired {
-			freq: Some(TARGET_AUDIO_FREQUENCY as i32),
-			channels: Some(TARGET_AUDIO_CHANNELS),
-			samples: None,
-		};
-		let mut audio = Audio::new(audio_spec, &sdl_audio_subsystem)?;
-		audio.resume();
-		let audio_queue = AudioQueue::new(&audio);
 
 		let event_pump = SystemEventPump::from(sdl_event_pump);
-
-		// create input device objects, exposed to the application
-
-		let keyboard = Keyboard::new();
-		let mouse = Mouse::new();
-
-		let input_devices = InputDevices {
-			keyboard,
-			mouse,
-		};
 
 		Ok(System {
 			sdl_context,
 			sdl_audio_subsystem,
 			sdl_video_subsystem,
 			sdl_timer_subsystem,
-			sdl_canvas,
-			sdl_texture,
-			sdl_texture_pitch,
-			texture_pixels,
-			audio,
-			audio_queue,
-			video: framebuffer,
-			palette,
-			font,
-			input_devices,
+			res: system_resources,
 			event_pump,
-			target_framerate: self.target_framerate,
 			target_framerate_delta: None,
 			next_tick: 0,
 		})
@@ -346,101 +221,45 @@ impl SystemBuilder {
 /// applications to render to the display, react to input device events, etc. through the
 /// "virtual machine" exposed by this library.
 #[allow(dead_code)]
-pub struct System {
+pub struct System<SystemResType>
+where SystemResType: SystemResources {
 	sdl_context: Sdl,
 	sdl_audio_subsystem: AudioSubsystem,
 	sdl_video_subsystem: VideoSubsystem,
 	sdl_timer_subsystem: TimerSubsystem,
-	sdl_canvas: WindowCanvas,
-	sdl_texture: Texture,
-	sdl_texture_pitch: usize,
 
-	texture_pixels: Box<[u32]>,
-
-	target_framerate: Option<u32>,
 	target_framerate_delta: Option<i64>,
 	next_tick: i64,
 
-	/// An [`Audio`] instance that allows interacting with the system's audio output device.
-	pub audio: Audio,
-
-	/// An [`AudioQueue`] instance that can queue up playback/stop commands to be issued to the
-	/// system's [`Audio`] instance a bit more flexibly. If you use this, your application must
-	/// manually call [`AudioQueue::apply`] or [`AudioQueue::apply_to_device`] in your loop to
-	/// flush the queued commands, otherwise this queue will not do anything.
-	pub audio_queue: AudioQueue,
-
-	/// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
-	/// [`System::display`] is called. Regardless of the actual window size, this bitmap is always
-	/// [`SCREEN_WIDTH`]x[`SCREEN_HEIGHT`] pixels in size.
-	pub video: Bitmap,
-
-	/// The [`Palette`] that will be used in conjunction with the `video` backbuffer to
-	/// render the final output to the screen whenever [`System::display`] is called.
-	pub palette: Palette,
-
-	/// A pre-loaded [`Font`] that can be used for text rendering.
-	pub font: BitmaskFont,
-
-	/// Contains instances representing the current state of the input devices available.
-	/// To ensure these are updated each frame, ensure that you are either calling
-	/// [`System::do_events`] or manually implementing an event polling loop which calls
-	/// [`InputDevices::update`] and [`InputDevices::handle_event`].
-	pub input_devices: InputDevices,
+	pub res: SystemResType,
 
 	pub event_pump: SystemEventPump,
 }
 
-impl std::fmt::Debug for System {
+impl<SystemResType> std::fmt::Debug for System<SystemResType>
+where SystemResType: SystemResources {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("System")
-			.field("audio", &self.audio)
-			.field("audio_queue", &self.audio_queue)
-			.field("video", &self.video)
-			.field("palette", &self.palette)
-			.field("font", &self.font)
-			//.field("keyboard", &self.keyboard)
-			//.field("mouse", &self.mouse)
-			.field("target_framerate", &self.target_framerate)
+			.field("res", &self.res)
 			.field("target_framerate_delta", &self.target_framerate_delta)
 			.field("next_tick", &self.next_tick)
 			.finish_non_exhaustive()
 	}
 }
 
-impl System {
+impl<SystemResType> System<SystemResType>
+where SystemResType: SystemResources {
 	/// Takes the `video` backbuffer bitmap and `palette` and renders it to the window, up-scaled
 	/// to fill the window (preserving aspect ratio of course). If V-sync is enabled, this method
 	/// will block to wait for V-sync. Otherwise, if a target framerate was configured a delay
 	/// might be used to try to meet that framerate.
 	pub fn display(&mut self) -> Result<(), SystemError> {
-		self.input_devices.mouse.render_cursor(&mut self.video);
-
-		// convert application framebuffer to 32-bit RGBA pixels, and then upload it to the SDL
-		// texture so it will be displayed on screen
-
-		self.video
-			.copy_as_argb_to(&mut self.texture_pixels, &self.palette);
-
-		let texture_pixels = self.texture_pixels.as_byte_slice();
-		if let Err(error) = self
-			.sdl_texture
-			.update(None, texture_pixels, self.sdl_texture_pitch)
-		{
-			return Err(SystemError::SDLError(error.to_string()));
-		}
-		self.sdl_canvas.clear();
-		if let Err(error) = self.sdl_canvas.copy(&self.sdl_texture, None, None) {
-			return Err(SystemError::SDLError(error));
-		}
-		self.sdl_canvas.present();
-
-		self.input_devices.mouse.hide_cursor(&mut self.video);
+		self.res.display()?;
 
 		// if a specific target framerate is desired, apply some loop timing/delay to achieve it
 		// TODO: do this better. delaying when running faster like this is a poor way to do this..
 
-		if let Some(target_framerate) = self.target_framerate {
+		if let Some(target_framerate) = self.res.target_framerate() {
 			if self.target_framerate_delta.is_some() {
 				// normal path for every other loop iteration except the first
 				let delay = self.next_tick - self.ticks() as i64;
@@ -457,8 +276,7 @@ impl System {
 				// target_framerate_delta was not yet set to avoid doing any delay on the first
 				// loop, just in case there was some other processing between the System struct
 				// being created and the actual beginning of the first loop ...
-				self.target_framerate_delta =
-					Some((self.tick_frequency() / target_framerate as u64) as i64);
+				self.target_framerate_delta = Some((self.tick_frequency() / target_framerate as u64) as i64);
 			}
 
 			// expected time for the next display() call to happen by
@@ -476,9 +294,10 @@ impl System {
 	/// ```no_run
 	/// use ggdt::system::*;
 	///
-	/// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
+	/// let config = DosLikeConfig::new();
+	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
 	///
-	/// while !system.do_events() {
+	/// while !system.do_events().unwrap() {
 	///     // ... the body of your main loop here ...
 	/// }
 	/// ```
@@ -490,12 +309,13 @@ impl System {
 	/// ```no_run
 	/// use ggdt::system::*;
 	///
-	/// let mut system = SystemBuilder::new().window_title("Example").build().unwrap();
+	/// let config = DosLikeConfig::new();
+	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
 	///
 	/// 'mainloop: loop {
-	///     system.input_devices.update();
+	///     system.res.update_event_state().unwrap();
 	///     for event in system.event_pump.poll_iter() {
-	///         system.input_devices.handle_event(&event);
+	///         system.res.handle_event(&event).unwrap();
 	///         match event {
 	///             SystemEvent::Quit => {
 	///                 break 'mainloop
@@ -507,23 +327,23 @@ impl System {
 	///     //  ...the rest of the body of your main loop here ...
 	/// }
 	/// ```
-	pub fn do_events(&mut self) -> bool {
+	pub fn do_events(&mut self) -> Result<bool, SystemError> {
 		let mut should_quit = false;
-		self.input_devices.update();
+		self.res.update_event_state()?;
 		for event in self.event_pump.poll_iter() {
-			self.input_devices.handle_event(&event);
+			self.res.handle_event(&event)?;
 			if event == SystemEvent::Quit {
 				should_quit = true;
 			}
 		}
-		should_quit
+		Ok(should_quit)
 	}
 
-	/// Convenience method that applies any [`AudioBuffer`]s that may have been queued up on
-	/// [`System::audio_queue`] to the system audio device so that they will be played. Do not
-	/// call this when you already have an active lock on an [`AudioDevice`].
-	pub fn apply_audio_queue(&mut self) -> Result<(), AudioDeviceError> {
-		self.audio_queue.apply(&mut self.audio)
+	pub fn update(&mut self) -> Result<(), SystemError> {
+		if let Err(error) = self.res.update() {
+			return Err(SystemError::SystemResourcesError(error));
+		}
+		Ok(())
 	}
 
 	pub fn ticks(&self) -> u64 {

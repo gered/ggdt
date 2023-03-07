@@ -19,7 +19,7 @@
 //! pub enum Event { /* .. various events here .. */ }
 //! struct App {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System,
+//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
 //! 	pub entities: ggdt::entities::Entities,
 //! 	pub component_systems: ggdt::entities::ComponentSystems<App, App>,  // oh no! :'(
 //! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
@@ -42,7 +42,7 @@
 //! // "core" because what the heck else do i call this? "InnerContext"? "InnerApp"? ...
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System,
+//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
 //! 	pub entities: ggdt::entities::Entities,
 //! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
 //! }
@@ -81,7 +81,7 @@
 //! // with. you'd probably want to put your game/app resources/assets on this struct too.
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System,
+//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
 //! 	pub entities: ggdt::entities::Entities,
 //! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
 //! }
@@ -129,9 +129,10 @@ use crate::events::*;
 use crate::states::*;
 use crate::system::*;
 
-pub trait CoreState {
-	fn system(&self) -> &System;
-	fn system_mut(&mut self) -> &mut System;
+pub trait CoreState<SystemResType>
+where SystemResType: SystemResources {
+	fn system(&self) -> &System<SystemResType>;
+	fn system_mut(&mut self) -> &mut System<SystemResType>;
 
 	fn delta(&self) -> f32;
 	fn set_delta(&mut self, delta: f32);
@@ -145,15 +146,17 @@ pub trait CoreState {
 	}
 }
 
-pub trait CoreStateWithEvents<EventType>: CoreState {
+pub trait CoreStateWithEvents<SystemResType, EventType>: CoreState<SystemResType>
+where SystemResType: SystemResources {
 	fn event_publisher(&mut self) -> &mut EventPublisher<EventType>;
 }
 
 pub trait SupportSystems {}
 
-pub trait SupportSystemsWithEvents<EventType>: SupportSystems
+pub trait SupportSystemsWithEvents<SystemResType, EventType>: SupportSystems
+where SystemResType: SystemResources
 {
-	type ContextType: CoreStateWithEvents<EventType>;
+	type ContextType: CoreStateWithEvents<SystemResType, EventType>;
 	fn event_listeners(&mut self) -> &mut EventListeners<EventType, Self::ContextType>;
 
 	fn do_events(&mut self, context: &mut Self::ContextType) {
@@ -162,8 +165,9 @@ pub trait SupportSystemsWithEvents<EventType>: SupportSystems
 	}
 }
 
-pub trait AppContext {
-	type CoreType: CoreState;
+pub trait AppContext<SystemResType>
+where SystemResType: SystemResources {
+	type CoreType: CoreState<SystemResType>;
 	type SupportType: SupportSystems;
 
 	fn core(&mut self) -> &mut Self::CoreType;
@@ -182,23 +186,24 @@ pub enum MainLoopError {
 	AudioDeviceError(#[from] AudioDeviceError),
 }
 
-pub fn main_loop<ContextType, State>(
+pub fn main_loop<SystemResType, ContextType, State>(
 	mut app: ContextType,
 	initial_state: State,
 ) -> Result<(), MainLoopError>
-	where
-		ContextType: AppContext,
-		State: AppState<ContextType> + 'static,
+where
+	SystemResType: SystemResources,
+	ContextType: AppContext<SystemResType>,
+	State: AppState<ContextType> + 'static,
 {
 	let mut states = States::new();
 	states.push(initial_state)?;
 
 	let mut last_ticks = app.core().system().ticks();
 
-	while !app.core().system_mut().do_events() && !states.is_empty() {
+	while !app.core().system_mut().do_events()? && !states.is_empty() {
 		last_ticks = app.core().update_frame_delta(last_ticks);
 		states.update(&mut app)?;
-		app.core().system_mut().apply_audio_queue()?;
+		app.core().system_mut().update()?;
 		states.render(&mut app);
 		app.core().system_mut().display()?;
 	}
