@@ -53,11 +53,8 @@ fn is_x11_compositor_skipping_problematic() -> bool {
 
 #[derive(Error, Debug)]
 pub enum SystemError {
-	#[error("System init error: {0}")]
-	InitError(String),
-
-	#[error("System display error: {0}")]
-	DisplayError(String),
+	#[error("System SDL error: {0}")]
+	SDLError(String),
 
 	#[error("System audio error: {0}")]
 	AudioError(#[from] crate::audio::AudioError),
@@ -190,27 +187,27 @@ impl SystemBuilder {
 
 		let sdl_context = match sdl2::init() {
 			Ok(sdl_context) => sdl_context,
-			Err(message) => return Err(SystemError::InitError(message)),
+			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
 		let sdl_timer_subsystem = match sdl_context.timer() {
 			Ok(timer_subsystem) => timer_subsystem,
-			Err(message) => return Err(SystemError::InitError(message)),
+			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
 		let sdl_video_subsystem = match sdl_context.video() {
 			Ok(video_subsystem) => video_subsystem,
-			Err(message) => return Err(SystemError::InitError(message)),
+			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
 		let sdl_event_pump = match sdl_context.event_pump() {
 			Ok(event_pump) => event_pump,
-			Err(message) => return Err(SystemError::InitError(message)),
+			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
 		let sdl_audio_subsystem = match sdl_context.audio() {
 			Ok(audio_subsystem) => audio_subsystem,
-			Err(message) => return Err(SystemError::InitError(message)),
+			Err(message) => return Err(SystemError::SDLError(message)),
 		};
 
 		// create the window
@@ -227,7 +224,7 @@ impl SystemBuilder {
 		}
 		let sdl_window = match window_builder.build() {
 			Ok(window) => window,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 
 		sdl_context.mouse().show_cursor(self.show_mouse);
@@ -240,10 +237,10 @@ impl SystemBuilder {
 		}
 		let mut sdl_canvas = match canvas_builder.build() {
 			Ok(canvas) => canvas,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 		if let Err(error) = sdl_canvas.set_logical_size(screen_width, screen_height) {
-			return Err(SystemError::InitError(error.to_string()));
+			return Err(SystemError::SDLError(error.to_string()));
 		};
 
 		// TODO: newer versions of rust-sdl2 support this directly off the WindowCanvas struct
@@ -267,7 +264,7 @@ impl SystemBuilder {
 			screen_height,
 		) {
 			Ok(texture) => texture,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 		let sdl_texture_pitch = (sdl_texture.query().width * texture_pixel_size) as usize;
 
@@ -283,7 +280,7 @@ impl SystemBuilder {
 
 		let framebuffer = match Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT) {
 			Ok(bmp) => bmp,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 
 		// create the default palette, initialized to the VGA default palette. also exposed to the
@@ -291,14 +288,14 @@ impl SystemBuilder {
 
 		let palette = match Palette::new_vga_palette() {
 			Ok(palette) => palette,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 
 		// create the default font, initialized to the VGA BIOS default font.
 
 		let font = match BitmaskFont::new_vga_font() {
 			Ok(font) => font,
-			Err(error) => return Err(SystemError::InitError(error.to_string())),
+			Err(error) => return Err(SystemError::SDLError(error.to_string())),
 		};
 
 		let audio_spec = AudioSpecDesired {
@@ -430,11 +427,11 @@ impl System {
 			.sdl_texture
 			.update(None, texture_pixels, self.sdl_texture_pitch)
 		{
-			return Err(SystemError::DisplayError(error.to_string()));
+			return Err(SystemError::SDLError(error.to_string()));
 		}
 		self.sdl_canvas.clear();
 		if let Err(error) = self.sdl_canvas.copy(&self.sdl_texture, None, None) {
-			return Err(SystemError::DisplayError(error));
+			return Err(SystemError::SDLError(error));
 		}
 		self.sdl_canvas.present();
 
