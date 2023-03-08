@@ -165,6 +165,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 
 		let keyboard = Keyboard::new();
 		let mouse = Mouse::new();
+		let cursor = CustomMouseCursor::new();
 
 		Ok(DosLike {
 			sdl_canvas,
@@ -178,6 +179,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 			font,
 			keyboard,
 			mouse,
+			cursor,
         })
 	}
 }
@@ -218,6 +220,10 @@ pub struct DosLike {
 	/// The current mouse state. To ensure it is updated each frame, you should call
 	/// [`System::do_events`] or [`System::do_events_with`] each frame.
 	pub mouse: Mouse,
+
+	/// Manages custom mouse cursor graphics and state. Use this to set/unset a custom mouse cursor bitmap.
+	/// When set, rendering should occur automatically during calls to [`SystemResources::display`].
+	pub cursor: CustomMouseCursor,
 }
 
 impl std::fmt::Debug for DosLike {
@@ -236,6 +242,8 @@ impl std::fmt::Debug for DosLike {
 
 impl SystemResources for DosLike {
 	fn update(&mut self) -> Result<(), SystemResourcesError> {
+		self.cursor.update(&self.mouse);
+
 		match self.audio_queue.apply(&mut self.audio) {
 			Ok(_) => Ok(()),
 			Err(error) => Err(SystemResourcesError::AudioDeviceError(error))
@@ -245,7 +253,7 @@ impl SystemResources for DosLike {
 	/// Takes the `video` backbuffer bitmap and `palette` and renders it to the window, up-scaled
 	/// to fill the window (preserving aspect ratio of course).
 	fn display(&mut self) -> Result<(), SystemResourcesError> {
-        self.mouse.render_cursor(&mut self.video);
+        self.cursor.render(&mut self.video);
 
         // convert application framebuffer to 32-bit RGBA pixels, and then upload it to the SDL
         // texture so it will be displayed on screen
@@ -262,7 +270,7 @@ impl SystemResources for DosLike {
         }
         self.sdl_canvas.present();
 
-        self.mouse.hide_cursor(&mut self.video);
+        self.cursor.hide(&mut self.video);
 
         Ok(())
 	}
