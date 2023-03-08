@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use crate::graphics::BitmapAtlas;
 
 use crate::graphics::indexed::*;
 use crate::math::*;
@@ -947,7 +948,7 @@ impl Bitmap {
 	}
 
 	#[inline]
-	pub fn blit_atlas(&mut self, method: BlitMethod, src: &BitmapAtlas, index: usize, x: i32, y: i32) {
+	pub fn blit_atlas(&mut self, method: BlitMethod, src: &BitmapAtlas<Self>, index: usize, x: i32, y: i32) {
 		if let Some(src_region) = src.get(index) {
 			self.blit_region(method, src.bitmap(), src_region, x, y);
 		}
@@ -960,7 +961,7 @@ impl Bitmap {
 	}
 
 	#[inline]
-	pub unsafe fn blit_atlas_unchecked(&mut self, method: BlitMethod, src: &BitmapAtlas, index: usize, x: i32, y: i32) {
+	pub unsafe fn blit_atlas_unchecked(&mut self, method: BlitMethod, src: &BitmapAtlas<Self>, index: usize, x: i32, y: i32) {
 		if let Some(src_region) = src.get(index) {
 			self.blit_region_unchecked(method, src.bitmap(), &src_region, x, y);
 		}

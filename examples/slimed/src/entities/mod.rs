@@ -3,6 +3,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use ggdt::entities::*;
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::utils::rnd_value;
@@ -221,7 +222,7 @@ pub struct LifeTime(pub f32);
 pub struct Pixel(pub u8);
 
 pub struct Sprite {
-	pub atlas: Rc<BitmapAtlas>,
+	pub atlas: Rc<BitmapAtlas<Bitmap>>,
 	pub index: usize,
 }
 
@@ -317,7 +318,7 @@ pub struct SpriteIndexByDirection {
 }
 
 pub struct Weapon {
-	pub atlas: Rc<BitmapAtlas>,
+	pub atlas: Rc<BitmapAtlas<Bitmap>>,
 	pub base_index: usize,
 	pub offsets: [Vector2; 4],
 	pub damage: i32,

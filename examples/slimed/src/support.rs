@@ -2,6 +2,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::states::*;
 
@@ -15,20 +16,20 @@ pub fn load_font(path: &Path) -> Result<BitmaskFont> {
 	BitmaskFont::load_from_file(path).context(format!("Loading font: {:?}", path))
 }
 
-pub fn load_bitmap_atlas_autogrid(path: &Path) -> Result<BitmapAtlas> {
+pub fn load_bitmap_atlas_autogrid(path: &Path) -> Result<BitmapAtlas<Bitmap>> {
 	let (bmp, _) = Bitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
 	let mut atlas = BitmapAtlas::new(bmp);
 	atlas.add_grid(TILE_WIDTH, TILE_HEIGHT)?;
 	Ok(atlas)
 }
 
-pub fn load_bitmap_atlas(path: &Path) -> Result<BitmapAtlas> {
+pub fn load_bitmap_atlas(path: &Path) -> Result<BitmapAtlas<Bitmap>> {
 	let (bmp, _) = Bitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
 	let atlas = BitmapAtlas::new(bmp);
 	Ok(atlas)
 }
 
-pub fn draw_window(dest: &mut Bitmap, ui: &BitmapAtlas, left: i32, top: i32, right: i32, bottom: i32) {
+pub fn draw_window(dest: &mut Bitmap, ui: &BitmapAtlas<Bitmap>, left: i32, top: i32, right: i32, bottom: i32) {
 	dest.filled_rect(left + 8, top + 8, right - 8, bottom - 8, 1);
 
 	// corners

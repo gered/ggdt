@@ -100,6 +100,11 @@ impl BasicImage for indexed::Bitmap {
 	}
 
 	#[inline]
+	fn full_bounds(&self) -> Rect {
+		self.full_bounds()
+	}
+
+	#[inline]
 	fn clear(&mut self, color: u8) {
 		self.clear(color);
 	}

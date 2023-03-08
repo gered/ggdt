@@ -5,6 +5,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::utils::rnd_value;
@@ -63,7 +64,7 @@ impl TileMap {
 		&self.layers[2]
 	}
 
-	pub fn draw(&self, dest: &mut Bitmap, tiles: &BitmapAtlas, camera_x: i32, camera_y: i32) {
+	pub fn draw(&self, dest: &mut Bitmap, tiles: &BitmapAtlas<Bitmap>, camera_x: i32, camera_y: i32) {
 		let xt = camera_x / TILE_WIDTH as i32;
 		let yt = camera_y / TILE_HEIGHT as i32;
 		let xp = camera_x % TILE_WIDTH as i32;

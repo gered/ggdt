@@ -9,6 +9,7 @@ use anyhow::{Context, Result};
 use ggdt::base::*;
 use ggdt::entities::*;
 use ggdt::events::*;
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::system::*;
@@ -34,17 +35,17 @@ pub struct Core {
 	pub event_publisher: EventPublisher<Event>,
 	pub palette: Palette,
 	pub fade_out_palette: Palette,
-	pub tiles: Rc<BitmapAtlas>,
-	pub hero_male: Rc<BitmapAtlas>,
-	pub hero_female: Rc<BitmapAtlas>,
-	pub green_slime: Rc<BitmapAtlas>,
-	pub blue_slime: Rc<BitmapAtlas>,
-	pub orange_slime: Rc<BitmapAtlas>,
-	pub fist: Rc<BitmapAtlas>,
-	pub sword: Rc<BitmapAtlas>,
-	pub particles: Rc<BitmapAtlas>,
-	pub items: Rc<BitmapAtlas>,
-	pub ui: Rc<BitmapAtlas>,
+	pub tiles: Rc<BitmapAtlas<Bitmap>>,
+	pub hero_male: Rc<BitmapAtlas<Bitmap>>,
+	pub hero_female: Rc<BitmapAtlas<Bitmap>>,
+	pub green_slime: Rc<BitmapAtlas<Bitmap>>,
+	pub blue_slime: Rc<BitmapAtlas<Bitmap>>,
+	pub orange_slime: Rc<BitmapAtlas<Bitmap>>,
+	pub fist: Rc<BitmapAtlas<Bitmap>>,
+	pub sword: Rc<BitmapAtlas<Bitmap>>,
+	pub particles: Rc<BitmapAtlas<Bitmap>>,
+	pub items: Rc<BitmapAtlas<Bitmap>>,
+	pub ui: Rc<BitmapAtlas<Bitmap>>,
 	pub tilemap: TileMap,
 	pub slime_activity_states: Rc<HashMap<EntityActivity, Rc<AnimationDef>>>,
 	pub hero_activity_states: Rc<HashMap<EntityActivity, Rc<AnimationDef>>>,

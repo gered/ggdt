@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::graphics::indexed::*;
+use crate::graphics::*;
 use crate::math::*;
 
 #[derive(Error, Debug)]
@@ -12,14 +12,20 @@ pub enum BitmapAtlasError {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct BitmapAtlas {
-	bitmap: Bitmap,
+pub struct BitmapAtlas<BitmapType>
+where
+	BitmapType: BasicImage
+{
+	bitmap: BitmapType,
 	bounds: Rect,
 	tiles: Vec<Rect>,
 }
 
-impl BitmapAtlas {
-	pub fn new(bitmap: Bitmap) -> BitmapAtlas {
+impl<BitmapType> BitmapAtlas<BitmapType>
+where
+	BitmapType: BasicImage
+{
+	pub fn new(bitmap: BitmapType) -> Self {
 		let bounds = bitmap.full_bounds();
 		BitmapAtlas {
 			bitmap,
@@ -108,12 +114,14 @@ impl BitmapAtlas {
 	}
 
 	#[inline]
-	pub fn bitmap(&self) -> &Bitmap {
+	pub fn bitmap(&self) -> &BitmapType {
 		&self.bitmap
 	}
 }
 
-impl Index<usize> for BitmapAtlas {
+impl<BitmapType> Index<usize> for BitmapAtlas<BitmapType>
+where
+	BitmapType: BasicImage {
 	type Output = Rect;
 
 	#[inline]
@@ -128,9 +136,11 @@ pub mod tests {
 
 	use super::*;
 
+	use crate::graphics::indexed;
+
 	#[test]
 	pub fn adding_rects() {
-		let bmp = Bitmap::new(64, 64).unwrap();
+		let bmp = indexed::Bitmap::new(64, 64).unwrap();
 		let mut atlas = BitmapAtlas::new(bmp);
 
 		let rect = Rect::new(0, 0, 16, 16);
@@ -164,7 +174,7 @@ pub mod tests {
 
 	#[test]
 	pub fn adding_grid() {
-		let bmp = Bitmap::new(64, 64).unwrap();
+		let bmp = indexed::Bitmap::new(64, 64).unwrap();
 		let mut atlas = BitmapAtlas::new(bmp);
 
 		assert_eq!(3, atlas.add_custom_grid(0, 0, 8, 8, 2, 2, 0).unwrap());
