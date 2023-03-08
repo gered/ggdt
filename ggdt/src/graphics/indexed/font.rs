@@ -6,10 +6,10 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 
-pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../assets/vga.fnt");
+pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../../assets/vga.fnt");
 
 pub const NUM_CHARS: usize = 256;
 pub const CHAR_HEIGHT: usize = 8;

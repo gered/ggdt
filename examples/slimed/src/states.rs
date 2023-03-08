@@ -2,7 +2,7 @@ use std::path::Path;
 
 use ggdt::base::*;
 use ggdt::entities::*;
-use ggdt::graphics::*;
+use ggdt::graphics::indexed::*;
 use ggdt::states::*;
 use ggdt::system::*;
 

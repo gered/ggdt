@@ -9,7 +9,6 @@ use thiserror::Error;
 
 use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::audio::*;
-use crate::graphics::*;
 
 pub use self::event::*;
 pub use self::input_devices::*;

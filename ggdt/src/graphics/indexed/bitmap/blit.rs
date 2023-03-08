@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 
 #[derive(Clone, PartialEq)]

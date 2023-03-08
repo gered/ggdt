@@ -2,7 +2,7 @@
 //! instance to provide something resembling an old DOS VGA mode 13h style experience (there are differences, however).
 //!
 //! ```no_run
-//! use ggdt::graphics::*;
+//! use ggdt::graphics::indexed::*;
 //! use ggdt::system::*;
 //!
 //! let config = DosLikeConfig::new();
@@ -30,6 +30,7 @@
 use sdl2::video::Window;
 
 use crate::system::*;
+use crate::graphics::indexed::*;
 
 /// Configuration / builder for configuring and constructing an instance of [`DosLike`].
 pub struct DosLikeConfig {

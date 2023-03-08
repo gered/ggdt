@@ -5,7 +5,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
-use ggdt::graphics::*;
+use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::utils::rnd_value;
 

@@ -7,7 +7,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::NUM_COLORS;
 use crate::utils::abs_diff;
 
@@ -16,7 +16,7 @@ pub trait ColorRange: RangeBounds<u8> + Iterator<Item=u8> {}
 
 impl<T> ColorRange for T where T: RangeBounds<u8> + Iterator<Item=u8> {}
 
-pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../assets/vga.pal");
+pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../../assets/vga.pal");
 
 /// Converts a set of individual ARGB components to a combined 32-bit color value, packed into
 /// the format 0xAARRGGBB

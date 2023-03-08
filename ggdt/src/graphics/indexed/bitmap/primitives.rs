@@ -1,6 +1,6 @@
 use std::mem::swap;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 
 impl Bitmap {

@@ -4,7 +4,7 @@ use std::slice;
 
 use thiserror::Error;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 
 pub use self::blit::*;

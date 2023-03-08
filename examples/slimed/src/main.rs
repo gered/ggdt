@@ -9,7 +9,7 @@ use anyhow::{Context, Result};
 use ggdt::base::*;
 use ggdt::entities::*;
 use ggdt::events::*;
-use ggdt::graphics::*;
+use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::system::*;
 

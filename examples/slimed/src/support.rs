@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::{Context, Result};
 
-use ggdt::graphics::*;
+use ggdt::graphics::indexed::*;
 use ggdt::states::*;
 
 use crate::{Game, TILE_HEIGHT, TILE_WIDTH};

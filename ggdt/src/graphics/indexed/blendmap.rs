@@ -6,7 +6,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 use crate::utils::bytes::ReadFixedLengthByteArray;
 

@@ -2,7 +2,7 @@ use std::path::Path;
 
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use ggdt::graphics::*;
+use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {

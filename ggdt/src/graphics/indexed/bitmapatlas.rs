@@ -2,7 +2,7 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::graphics::*;
+use crate::graphics::indexed::*;
 use crate::math::*;
 
 #[derive(Error, Debug)]
