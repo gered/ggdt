@@ -123,7 +123,8 @@ impl SystemBuilder {
 
 	/// Enables or disables mouse cursor display by the operating system when the cursor is over
 	/// the window for the [`System`] being built. Disable this if you intend to render your own
-	/// custom mouse cursor.
+	/// custom mouse cursor (either via [`CustomMouseCursor`] or otherwise), otherwise you will
+	/// end up with two cursors being visible.
 	pub fn show_mouse(mut self, enable: bool) -> Self {
 		self.show_mouse = enable;
 		self

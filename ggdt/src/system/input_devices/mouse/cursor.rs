@@ -32,6 +32,8 @@ const DEFAULT_MOUSE_CURSOR: [u8; DEFAULT_MOUSE_CURSOR_WIDTH * DEFAULT_MOUSE_CURS
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 ];
 
+/// Provides custom mouse cursor rendering functionality via application provided [`Bitmap`]s (or falling back
+/// to a default cursor if none is set by the application). Custom cursor rendering is disabled by default.
 #[derive(Debug)]
 pub struct CustomMouseCursor {
 	last_x: i32,
