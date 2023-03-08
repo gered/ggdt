@@ -1,3 +1,7 @@
+// TODO: in the near future, this will need to be re-worked again somewhat to provide implementations
+//       that are not specific to just our 256 colour Bitmap functionality. whether this takes the form
+//       of a generified CustomMouseCursor struct, or multiple versions ... well, i'm not quite sure yet!
+
 use crate::graphics::*;
 use crate::math::*;
 
