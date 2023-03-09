@@ -4,3 +4,4 @@ pub use self::bitmapatlas::*;
 pub mod basicimage;
 pub mod bitmapatlas;
 pub mod indexed;
+pub mod rgb;
