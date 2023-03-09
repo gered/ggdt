@@ -3,6 +3,7 @@ use std::path::Path;
 use anyhow::Result;
 
 use ggdt::audio::*;
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::system::*;
 use ggdt::utils::rnd_value;

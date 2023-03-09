@@ -35,6 +35,9 @@ pub trait GeneralBitmap: Sized + Clone {
 	/// Returns the height of the bitmap in pixels.
 	fn height(&self) -> u32;
 
+	/// Returns the current clipping region set on this bitmap.
+	fn clip_region(&self) -> &Rect;
+
 	/// Returns a rect representing the full bitmap boundaries, ignoring the current clipping
 	/// region set on this bitmap.
 	fn full_bounds(&self) -> Rect;
@@ -109,6 +112,10 @@ impl GeneralBitmap for indexed::Bitmap {
 	#[inline]
 	fn height(&self) -> u32 {
 		self.height()
+	}
+
+	fn clip_region(&self) -> &Rect {
+		self.clip_region()
 	}
 
 	#[inline]

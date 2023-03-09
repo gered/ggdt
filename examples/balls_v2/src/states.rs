@@ -1,5 +1,6 @@
 use ggdt::entities::*;
 use ggdt::events::*;
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::states::*;

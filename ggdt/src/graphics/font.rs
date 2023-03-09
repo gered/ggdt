@@ -4,12 +4,14 @@ use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
+use num_traits::{PrimInt, Unsigned};
 use thiserror::Error;
 
+use crate::graphics::*;
 use crate::graphics::indexed::*;
 use crate::math::*;
 
-pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../../assets/vga.fnt");
+pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../assets/vga.fnt");
 
 pub const NUM_CHARS: usize = 256;
 pub const CHAR_HEIGHT: usize = 8;
@@ -25,14 +27,16 @@ pub enum FontError {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum FontRenderOpts {
-	Color(u8),
+pub enum FontRenderOpts<PixelType: PrimInt + Unsigned> {
+	Color(PixelType),
 	None,
 }
 
 pub trait Character {
 	fn bounds(&self) -> &Rect;
-	fn draw(&self, dest: &mut Bitmap, x: i32, y: i32, opts: FontRenderOpts);
+	fn draw<BitmapType>(&self, dest: &mut BitmapType, x: i32, y: i32, opts: FontRenderOpts<BitmapType::PixelType>)
+	where
+		BitmapType: GeneralBitmap;
 }
 
 pub trait Font {
@@ -41,7 +45,9 @@ pub trait Font {
 	fn character(&self, ch: char) -> &Self::CharacterType;
 	fn space_width(&self) -> u8;
 	fn line_height(&self) -> u8;
-	fn measure(&self, text: &str, opts: FontRenderOpts) -> (u32, u32);
+	fn measure<PixelType>(&self, text: &str, opts: FontRenderOpts<PixelType>) -> (u32, u32)
+	where
+		PixelType: PrimInt + Unsigned;
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -56,7 +62,10 @@ impl Character for BitmaskCharacter {
 		&self.bounds
 	}
 
-	fn draw(&self, dest: &mut Bitmap, x: i32, y: i32, opts: FontRenderOpts) {
+	fn draw<BitmapType>(&self, dest: &mut BitmapType, x: i32, y: i32, opts: FontRenderOpts<BitmapType::PixelType>)
+	where
+		BitmapType: GeneralBitmap
+	{
 		// out of bounds check
 		if ((x + self.bounds.width as i32) < dest.clip_region().x)
 			|| ((y + self.bounds.height as i32) < dest.clip_region().y)
@@ -68,7 +77,11 @@ impl Character for BitmaskCharacter {
 
 		let color = match opts {
 			FontRenderOpts::Color(color) => color,
-			_ => 0,
+			// this kind of highlights a weakness of this design i guess. what does it mean to render a BitmaskFont,
+			// which has no inherent colour information in it, when there is no specific render colour passed in?
+			// TODO: is it better to return an error here? should a BitmaskFont have a "default colour" to fall back to?
+			//       or, should a Bitmap have a "default colour" property we could fall back to? not sure!
+			_ => return,
 		};
 
 		// TODO: i'm sure this can be optimized, lol
@@ -195,7 +208,10 @@ impl Font for BitmaskFont {
 		self.line_height
 	}
 
-	fn measure(&self, text: &str, _opts: FontRenderOpts) -> (u32, u32) {
+	fn measure<PixelType>(&self, text: &str, _opts: FontRenderOpts<PixelType>) -> (u32, u32)
+	where
+		PixelType: PrimInt + Unsigned
+	{
 		if text.is_empty() {
 			return (0, 0);
 		}
@@ -249,29 +265,29 @@ pub mod tests {
 		{
 			let font = BitmaskFont::load_from_file(Path::new("./assets/vga.fnt"))?;
 
-			assert_eq!((40, 8), font.measure("Hello", FontRenderOpts::None));
-			assert_eq!((40, 16), font.measure("Hello\nthere", FontRenderOpts::None));
-			assert_eq!((88, 24), font.measure("longer line\nshort\nthe end", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure("", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure(" ", FontRenderOpts::None));
-			assert_eq!((40, 16), font.measure("\nhello", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure("\n", FontRenderOpts::None));
-			assert_eq!((40, 8), font.measure("hello\n", FontRenderOpts::None));
-			assert_eq!((40, 24), font.measure("hello\n\nthere", FontRenderOpts::None));
+			assert_eq!((40, 8), font.measure("Hello", FontRenderOpts::<u8>::None));
+			assert_eq!((40, 16), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));
+			assert_eq!((88, 24), font.measure("longer line\nshort\nthe end", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure("", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure(" ", FontRenderOpts::<u8>::None));
+			assert_eq!((40, 16), font.measure("\nhello", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure("\n", FontRenderOpts::<u8>::None));
+			assert_eq!((40, 8), font.measure("hello\n", FontRenderOpts::<u8>::None));
+			assert_eq!((40, 24), font.measure("hello\n\nthere", FontRenderOpts::<u8>::None));
 		}
 
 		{
 			let font = BitmaskFont::load_from_file(Path::new("./test-assets/small.fnt"))?;
 
-			assert_eq!((22, 7), font.measure("Hello", FontRenderOpts::None));
-			assert_eq!((24, 14), font.measure("Hello\nthere", FontRenderOpts::None));
-			assert_eq!((50, 21), font.measure("longer line\nshort\nthe end", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure("", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure(" ", FontRenderOpts::None));
-			assert_eq!((21, 14), font.measure("\nhello", FontRenderOpts::None));
-			assert_eq!((0, 0), font.measure("\n", FontRenderOpts::None));
-			assert_eq!((21, 7), font.measure("hello\n", FontRenderOpts::None));
-			assert_eq!((24, 21), font.measure("hello\n\nthere", FontRenderOpts::None));
+			assert_eq!((22, 7), font.measure("Hello", FontRenderOpts::<u8>::None));
+			assert_eq!((24, 14), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));
+			assert_eq!((50, 21), font.measure("longer line\nshort\nthe end", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure("", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure(" ", FontRenderOpts::<u8>::None));
+			assert_eq!((21, 14), font.measure("\nhello", FontRenderOpts::<u8>::None));
+			assert_eq!((0, 0), font.measure("\n", FontRenderOpts::<u8>::None));
+			assert_eq!((21, 7), font.measure("hello\n", FontRenderOpts::<u8>::None));
+			assert_eq!((24, 21), font.measure("hello\n\nthere", FontRenderOpts::<u8>::None));
 		}
 
 		Ok(())

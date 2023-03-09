@@ -3,6 +3,7 @@ use std::path::Path;
 use anyhow::Result;
 
 use ggdt::*;
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 use ggdt::math::*;
 use ggdt::system::*;

@@ -2,6 +2,7 @@ use std::path::Path;
 use std::rc::Rc;
 
 use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
+use ggdt::graphics::*;
 use ggdt::graphics::indexed::*;
 
 fn setup() -> (Bitmap, Palette) {
