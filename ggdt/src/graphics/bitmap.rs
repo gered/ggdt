@@ -13,13 +13,10 @@ use num_traits::{PrimInt, Unsigned};
 use crate::graphics::indexed;
 use crate::math::Rect;
 
-// HACK: enum variant color arguments are sized to the max possible pixel type used across all supported bitmap variants
-//       right now. for some reason, making this enum generic (e.g. `GeneralBlitMethod<PixelType: PrimInt + Unsigned>`)
-//       resulted in some E0308 compile errors when trying to create enum variant values that contained args of the
-//       generic type. i could not find a solution to this. so i'll just do this hack approach for now. ugh.
-pub enum GeneralBlitMethod {
+#[derive(Clone, PartialEq)]
+pub enum GeneralBlitMethod<PixelType: PrimInt + Unsigned> {
 	Solid,
-	Transparent(u32),
+	Transparent(PixelType),
 }
 
 /// Trait that provides "bit-depth-agnostic" access to bitmap drawing operations. This is useful for implementing
@@ -83,14 +80,14 @@ pub trait GeneralBitmap: Sized {
 
 	fn blit_region(
 		&mut self,
-		method: GeneralBlitMethod,
+		method: GeneralBlitMethod<Self::PixelType>,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	);
 
-	fn blit(&mut self, method: GeneralBlitMethod, src: &Self, x: i32, y: i32) {
+	fn blit(&mut self, method: GeneralBlitMethod<Self::PixelType>, src: &Self, x: i32, y: i32) {
 		let src_region = Rect::new(0, 0, src.width(), src.height());
 		self.blit_region(method, src, &src_region, x, y);
 	}
@@ -171,16 +168,15 @@ impl GeneralBitmap for indexed::Bitmap {
 
 	fn blit_region(
 		&mut self,
-		method: GeneralBlitMethod,
+		method: GeneralBlitMethod<Self::PixelType>,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	) {
-		// HACK: pixel/color value downcasting. see "HACK" comment above GeneralBlitMethod type def
 		let blit_method = match method {
 			GeneralBlitMethod::Solid => indexed::BlitMethod::Solid,
-			GeneralBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color as u8),
+			GeneralBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color),
 		};
 		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
 	}

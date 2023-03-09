@@ -13,7 +13,7 @@ pub trait DefaultMouseCursorBitmaps<BitmapType>
 where
 	BitmapType: GeneralBitmap
 {
-	fn get_default() -> BitmapType;
+	fn get_default() -> (BitmapType, BitmapType::PixelType);
 }
 
 /// Provides custom mouse cursor rendering functionality via application provided [`Bitmap`]s (or falling back
@@ -30,6 +30,7 @@ where
 	cursor_hotspot_x: u32,
 	cursor_hotspot_y: u32,
 	cursor_enabled: bool,
+	cursor_transparent_color: BitmapType::PixelType,
 }
 
 impl<BitmapType> CustomMouseCursor<BitmapType>
@@ -38,7 +39,13 @@ where
 	BitmapType: GeneralBitmap
 {
 	pub fn new() -> Self {
-		let (cursor, cursor_background, cursor_hotspot_x, cursor_hotspot_y) = Self::get_default_mouse_cursor();
+		let (
+			cursor,
+			cursor_background,
+			cursor_hotspot_x,
+			cursor_hotspot_y,
+			cursor_transparent_color,
+		) = Self::get_default_mouse_cursor();
 
 		CustomMouseCursor {
 			last_x: 0,
@@ -48,6 +55,7 @@ where
 			cursor_hotspot_x,
 			cursor_hotspot_y,
 			cursor_enabled: false,
+			cursor_transparent_color,
 		}
 	}
 
@@ -89,20 +97,22 @@ where
 	/// * `cursor`: the bitmap to be used to display the mouse cursor on screen
 	/// * `hotspot_x`: the "hotspot" x coordinate
 	/// * `hotspot_y`: the "hotspot" y coordinate.
-	pub fn set_mouse_cursor(&mut self, cursor: BitmapType, hotspot_x: u32, hotspot_y: u32) {
+	pub fn set_mouse_cursor(&mut self, cursor: BitmapType, transparent_color: BitmapType::PixelType, hotspot_x: u32, hotspot_y: u32) {
 		self.cursor = cursor;
 		self.cursor_background = BitmapType::new(self.cursor.width(), self.cursor.height()).unwrap();
 		self.cursor_hotspot_x = hotspot_x;
 		self.cursor_hotspot_y = hotspot_y;
+		self.cursor_transparent_color = transparent_color;
 	}
 
 	/// Resets the mouse cursor bitmap and "hotspot" coordinate back to the default settings.
 	pub fn set_default_mouse_cursor(&mut self) {
-		let (cursor, background, hotspot_x, hotspot_y) = Self::get_default_mouse_cursor();
+		let (cursor, background, hotspot_x, hotspot_y, transparent_color) = Self::get_default_mouse_cursor();
 		self.cursor = cursor;
 		self.cursor_background = background;
 		self.cursor_hotspot_x = hotspot_x;
 		self.cursor_hotspot_y = hotspot_y;
+		self.cursor_transparent_color = transparent_color;
 	}
 
 	#[inline]
@@ -141,8 +151,12 @@ where
 			0,
 		);
 
-		let color = 255;
-		dest.blit(GeneralBlitMethod::Transparent(color), &self.cursor, x, y);
+		dest.blit(
+			GeneralBlitMethod::Transparent(self.cursor_transparent_color),
+			&self.cursor,
+			x,
+			y
+		);
 	}
 
 	/// Restores the original destination bitmap contents where the mouse cursor bitmap was
@@ -175,8 +189,8 @@ where
 		self.last_y = mouse.y;
 	}
 
-	fn get_default_mouse_cursor() -> (BitmapType, BitmapType, u32, u32) {
-		let cursor = Self::get_default();
+	fn get_default_mouse_cursor() -> (BitmapType, BitmapType, u32, u32, BitmapType::PixelType) {
+		let (cursor, transparent_color) = Self::get_default();
 		let cursor_background = BitmapType::new(cursor.width(), cursor.height()).unwrap();
 
 		(
@@ -184,12 +198,13 @@ where
 			cursor_background,
 			DEFAULT_MOUSE_CURSOR_HOTSPOT_X,
 			DEFAULT_MOUSE_CURSOR_HOTSPOT_Y,
+			transparent_color,
 		)
 	}
 }
 
 impl DefaultMouseCursorBitmaps<indexed::Bitmap> for CustomMouseCursor<indexed::Bitmap> {
-	fn get_default() -> Bitmap {
+	fn get_default() -> (Bitmap, u8) {
 		#[rustfmt::skip]
 		const CURSOR_PIXELS: [u8; DEFAULT_MOUSE_CURSOR_WIDTH * DEFAULT_MOUSE_CURSOR_HEIGHT] = [
 			0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -215,7 +230,7 @@ impl DefaultMouseCursorBitmaps<indexed::Bitmap> for CustomMouseCursor<indexed::B
 			DEFAULT_MOUSE_CURSOR_HEIGHT as u32,
 		).unwrap();
 		cursor.pixels_mut().copy_from_slice(&CURSOR_PIXELS);
-		cursor
+		(cursor, 255)
 	}
 }
 
