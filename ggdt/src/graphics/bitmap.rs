@@ -22,7 +22,7 @@ pub enum GeneralBlitMethod<PixelType: PrimInt + Unsigned> {
 /// Trait that provides "bit-depth-agnostic" access to bitmap drawing operations. This is useful for implementing
 /// drawing functionality that is to be made generic across all supported bitmap types and is not specific to
 /// any one pixel-depth. Note that this does not provide cross-bit-depth drawing support.
-pub trait GeneralBitmap: Sized {
+pub trait GeneralBitmap: Sized + Clone {
 	type PixelType: PrimInt + Unsigned;
 	type ErrorType: Error;
 
