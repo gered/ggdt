@@ -11,7 +11,7 @@ const DEFAULT_MOUSE_CURSOR_HEIGHT: usize = 16;
 
 pub trait DefaultMouseCursorBitmaps<BitmapType>
 where
-	BitmapType: BasicImage
+	BitmapType: GeneralBitmap
 {
 	fn get_default() -> BitmapType;
 }
@@ -21,7 +21,7 @@ where
 #[derive(Debug)]
 pub struct CustomMouseCursor<BitmapType>
 where
-	BitmapType: BasicImage
+	BitmapType: GeneralBitmap
 {
 	last_x: i32,
 	last_y: i32,
@@ -35,7 +35,7 @@ where
 impl<BitmapType> CustomMouseCursor<BitmapType>
 where
 	Self: DefaultMouseCursorBitmaps<BitmapType>,
-	BitmapType: BasicImage
+	BitmapType: GeneralBitmap
 {
 	pub fn new() -> Self {
 		let (cursor, cursor_background, cursor_hotspot_x, cursor_hotspot_y) = Self::get_default_mouse_cursor();
@@ -134,7 +134,7 @@ where
 
 		// preserve existing background first
 		self.cursor_background.blit_region(
-			BasicBlitMethod::Solid,
+			GeneralBlitMethod::Solid,
 			&dest,
 			&Rect::new(x, y, self.cursor.width(), self.cursor.height()),
 			0,
@@ -142,7 +142,7 @@ where
 		);
 
 		let color = 255;
-		dest.blit(BasicBlitMethod::Transparent(color), &self.cursor, x, y);
+		dest.blit(GeneralBlitMethod::Transparent(color), &self.cursor, x, y);
 	}
 
 	/// Restores the original destination bitmap contents where the mouse cursor bitmap was
@@ -162,7 +162,7 @@ where
 		}
 
 		let (x, y) = self.get_cursor_render_position();
-		dest.blit(BasicBlitMethod::Solid, &self.cursor_background, x, y);
+		dest.blit(GeneralBlitMethod::Solid, &self.cursor_background, x, y);
 	}
 
 	/// Updates current state from the given [`Mouse`] device's state, ensuring that subsequent calls to render

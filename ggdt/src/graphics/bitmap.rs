@@ -1,7 +1,8 @@
-//! The purpose of this module is to provide "bit-depth-agnostic" Bitmap drawing capabilities.
-//! This isn't intended to be used all the time by applications, but is useful for certain functionality
-//! that we'd like to make generic across all available Bitmap types, where the drawing operations used
-//! aren't actually specific to any specific pixel bit-depth.
+//! The purpose of this module is to provide "bit-depth-agnostic" Bitmap drawing capabilities. Basically access to
+//! drawing operations that are common or shared across all different Bitmap implementations. This isn't intended to be
+//! used all the time by applications, but is useful for certain functionality that we'd like to make generic across
+//! all available Bitmap types, where the drawing operations used aren't actually specific to any specific pixel
+//! bit-depth.
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
@@ -13,10 +14,10 @@ use crate::graphics::indexed;
 use crate::math::Rect;
 
 // HACK: enum variant color arguments are sized to the max possible pixel type used across all supported bitmap variants
-//       right now. for some reason, making this enum generic (e.g. `BasicBlitMethod<PixelType: PrimInt + Unsigned>`)
+//       right now. for some reason, making this enum generic (e.g. `GeneralBlitMethod<PixelType: PrimInt + Unsigned>`)
 //       resulted in some E0308 compile errors when trying to create enum variant values that contained args of the
 //       generic type. i could not find a solution to this. so i'll just do this hack approach for now. ugh.
-pub enum BasicBlitMethod {
+pub enum GeneralBlitMethod {
 	Solid,
 	Transparent(u32),
 }
@@ -24,7 +25,7 @@ pub enum BasicBlitMethod {
 /// Trait that provides "bit-depth-agnostic" access to bitmap drawing operations. This is useful for implementing
 /// drawing functionality that is to be made generic across all supported bitmap types and is not specific to
 /// any one pixel-depth. Note that this does not provide cross-bit-depth drawing support.
-pub trait BasicImage: Sized {
+pub trait GeneralBitmap: Sized {
 	type PixelType: PrimInt + Unsigned;
 	type ErrorType: Error;
 
@@ -82,20 +83,20 @@ pub trait BasicImage: Sized {
 
 	fn blit_region(
 		&mut self,
-		method: BasicBlitMethod,
+		method: GeneralBlitMethod,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	);
 
-	fn blit(&mut self, method: BasicBlitMethod, src: &Self, x: i32, y: i32) {
+	fn blit(&mut self, method: GeneralBlitMethod, src: &Self, x: i32, y: i32) {
 		let src_region = Rect::new(0, 0, src.width(), src.height());
 		self.blit_region(method, src, &src_region, x, y);
 	}
 }
 
-impl BasicImage for indexed::Bitmap {
+impl GeneralBitmap for indexed::Bitmap {
 	type PixelType = u8;
 	type ErrorType = indexed::BitmapError;
 
@@ -170,16 +171,16 @@ impl BasicImage for indexed::Bitmap {
 
 	fn blit_region(
 		&mut self,
-		method: BasicBlitMethod,
+		method: GeneralBlitMethod,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	) {
-		// HACK: pixel/color value downcasting. see "HACK" comment above BasicBlitMethod type def
+		// HACK: pixel/color value downcasting. see "HACK" comment above GeneralBlitMethod type def
 		let blit_method = match method {
-			BasicBlitMethod::Solid => indexed::BlitMethod::Solid,
-			BasicBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color as u8),
+			GeneralBlitMethod::Solid => indexed::BlitMethod::Solid,
+			GeneralBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color as u8),
 		};
 		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
 	}

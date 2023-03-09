@@ -14,7 +14,7 @@ pub enum BitmapAtlasError {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BitmapAtlas<BitmapType>
 where
-	BitmapType: BasicImage
+	BitmapType: GeneralBitmap
 {
 	bitmap: BitmapType,
 	bounds: Rect,
@@ -23,7 +23,7 @@ where
 
 impl<BitmapType> BitmapAtlas<BitmapType>
 where
-	BitmapType: BasicImage
+	BitmapType: GeneralBitmap
 {
 	pub fn new(bitmap: BitmapType) -> Self {
 		let bounds = bitmap.full_bounds();
@@ -121,7 +121,7 @@ where
 
 impl<BitmapType> Index<usize> for BitmapAtlas<BitmapType>
 where
-	BitmapType: BasicImage {
+	BitmapType: GeneralBitmap {
 	type Output = Rect;
 
 	#[inline]
