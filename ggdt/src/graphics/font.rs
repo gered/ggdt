@@ -4,11 +4,9 @@ use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
-use num_traits::{PrimInt, Unsigned};
 use thiserror::Error;
 
 use crate::graphics::*;
-use crate::graphics::indexed::*;
 use crate::math::*;
 
 pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../assets/vga.fnt");
@@ -27,7 +25,7 @@ pub enum FontError {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum FontRenderOpts<PixelType: PrimInt + Unsigned> {
+pub enum FontRenderOpts<PixelType: Pixel> {
 	Color(PixelType),
 	None,
 }
@@ -47,7 +45,7 @@ pub trait Font {
 	fn line_height(&self) -> u8;
 	fn measure<PixelType>(&self, text: &str, opts: FontRenderOpts<PixelType>) -> (u32, u32)
 	where
-		PixelType: PrimInt + Unsigned;
+		PixelType: Pixel;
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -210,7 +208,7 @@ impl Font for BitmaskFont {
 
 	fn measure<PixelType>(&self, text: &str, _opts: FontRenderOpts<PixelType>) -> (u32, u32)
 	where
-		PixelType: PrimInt + Unsigned
+		PixelType: Pixel
 	{
 		if text.is_empty() {
 			return (0, 0);

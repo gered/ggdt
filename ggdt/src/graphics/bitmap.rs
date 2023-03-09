@@ -8,13 +8,11 @@
 
 use std::error::Error;
 
-use num_traits::{PrimInt, Unsigned};
-
-use crate::graphics::indexed;
+use crate::graphics::{indexed, Pixel};
 use crate::math::Rect;
 
 #[derive(Clone, PartialEq)]
-pub enum GeneralBlitMethod<PixelType: PrimInt + Unsigned> {
+pub enum GeneralBlitMethod<PixelType: Pixel> {
 	Solid,
 	Transparent(PixelType),
 }
@@ -23,7 +21,7 @@ pub enum GeneralBlitMethod<PixelType: PrimInt + Unsigned> {
 /// drawing functionality that is to be made generic across all supported bitmap types and is not specific to
 /// any one pixel-depth. Note that this does not provide cross-bit-depth drawing support.
 pub trait GeneralBitmap: Sized + Clone {
-	type PixelType: PrimInt + Unsigned;
+	type PixelType: Pixel;
 	type ErrorType: Error;
 
 	/// Creates a new bitmap with the specified dimensions, in pixels.
