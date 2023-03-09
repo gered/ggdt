@@ -5,22 +5,31 @@
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
+use std::error::Error;
+
 use num_traits::{PrimInt, Unsigned};
 
 use crate::graphics::indexed;
 use crate::math::Rect;
 
-pub enum BasicBlitMethod<PixelType>
-where PixelType: PrimInt + Unsigned {
+// HACK: enum variant color arguments are sized to the max possible pixel type used across all supported bitmap variants
+//       right now. for some reason, making this enum generic (e.g. `BasicBlitMethod<PixelType: PrimInt + Unsigned>`)
+//       resulted in some E0308 compile errors when trying to create enum variant values that contained args of the
+//       generic type. i could not find a solution to this. so i'll just do this hack approach for now. ugh.
+pub enum BasicBlitMethod {
 	Solid,
-	Transparent(PixelType),
+	Transparent(u32),
 }
 
 /// Trait that provides "bit-depth-agnostic" access to bitmap drawing operations. This is useful for implementing
 /// drawing functionality that is to be made generic across all supported bitmap types and is not specific to
 /// any one pixel-depth. Note that this does not provide cross-bit-depth drawing support.
-pub trait BasicImage {
+pub trait BasicImage: Sized {
 	type PixelType: PrimInt + Unsigned;
+	type ErrorType: Error;
+
+	/// Creates a new bitmap with the specified dimensions, in pixels.
+	fn new(width: u32, height: u32) -> Result<Self, Self::ErrorType>;
 
 	/// Returns the width of the bitmap in pixels.
 	fn width(&self) -> u32;
@@ -73,14 +82,14 @@ pub trait BasicImage {
 
 	fn blit_region(
 		&mut self,
-		method: BasicBlitMethod<Self::PixelType>,
+		method: BasicBlitMethod,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	);
 
-	fn blit(&mut self, method: BasicBlitMethod<Self::PixelType>, src: &Self, x: i32, y: i32) {
+	fn blit(&mut self, method: BasicBlitMethod, src: &Self, x: i32, y: i32) {
 		let src_region = Rect::new(0, 0, src.width(), src.height());
 		self.blit_region(method, src, &src_region, x, y);
 	}
@@ -88,6 +97,11 @@ pub trait BasicImage {
 
 impl BasicImage for indexed::Bitmap {
 	type PixelType = u8;
+	type ErrorType = indexed::BitmapError;
+
+	fn new(width: u32, height: u32) -> Result<Self, Self::ErrorType> {
+		Self::new(width, height)
+	}
 
 	#[inline]
 	fn width(&self) -> u32 {
@@ -156,15 +170,16 @@ impl BasicImage for indexed::Bitmap {
 
 	fn blit_region(
 		&mut self,
-		method: BasicBlitMethod<u8>,
+		method: BasicBlitMethod,
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32
 	) {
+		// HACK: pixel/color value downcasting. see "HACK" comment above BasicBlitMethod type def
 		let blit_method = match method {
 			BasicBlitMethod::Solid => indexed::BlitMethod::Solid,
-			BasicBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color),
+			BasicBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color as u8),
 		};
 		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
 	}

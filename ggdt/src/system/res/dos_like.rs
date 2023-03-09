@@ -224,7 +224,7 @@ pub struct DosLike {
 
 	/// Manages custom mouse cursor graphics and state. Use this to set/unset a custom mouse cursor bitmap.
 	/// When set, rendering should occur automatically during calls to [`SystemResources::display`].
-	pub cursor: CustomMouseCursor,
+	pub cursor: CustomMouseCursor<Bitmap>,
 }
 
 impl std::fmt::Debug for DosLike {
