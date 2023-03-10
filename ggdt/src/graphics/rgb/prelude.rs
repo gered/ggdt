@@ -3,6 +3,7 @@
 pub use crate::graphics::{
 	bitmap::*,
 	bitmapatlas::*,
+	color::*,
 	font::*,
 	Pixel,
 	rgb::{

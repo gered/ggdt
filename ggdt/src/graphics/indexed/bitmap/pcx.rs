@@ -5,8 +5,9 @@ use std::path::Path;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
+use crate::graphics::color::from_rgb32;
 use crate::graphics::indexed::bitmap::Bitmap;
-use crate::graphics::indexed::palette::{from_rgb32, Palette, PaletteError, PaletteFormat};
+use crate::graphics::indexed::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::bytes::ReadFixedLengthByteArray;
 
 #[derive(Error, Debug)]

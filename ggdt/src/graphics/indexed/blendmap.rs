@@ -5,7 +5,8 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::palette::{from_rgb32, luminance, Palette};
+use crate::graphics::color::{from_rgb32, luminance};
+use crate::graphics::indexed::palette::Palette;
 use crate::math::lerp;
 use crate::utils::bytes::ReadFixedLengthByteArray;
 

@@ -2,6 +2,7 @@ use num_traits::{PrimInt, Unsigned};
 
 pub mod bitmap;
 pub mod bitmapatlas;
+pub mod color;
 pub mod font;
 pub mod indexed;
 pub mod rgb;
