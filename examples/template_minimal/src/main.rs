@@ -1,10 +1,6 @@
 use anyhow::Result;
 
-use ggdt::{SCREEN_BOTTOM, SCREEN_RIGHT};
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::system::*;
-use ggdt::utils::rnd_value;
+use ggdt::prelude::dos_like::*;
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();

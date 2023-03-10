@@ -1,16 +1,14 @@
-use std::fmt::Formatter;
-
 use sdl2::audio::{AudioFormat, AudioFormatNum, AudioSpecDesired};
 use sdl2::AudioSubsystem;
 use thiserror::Error;
 
-pub use self::buffer::*;
-pub use self::device::*;
-pub use self::queue::*;
+use crate::audio::device::AudioDevice;
 
 pub mod buffer;
 pub mod device;
 pub mod queue;
+
+pub mod prelude;
 
 /// The number of simultaneously playing audio channels supported by this library currently.
 pub const NUM_CHANNELS: usize = 8;
@@ -99,7 +97,7 @@ pub struct Audio {
 }
 
 impl std::fmt::Debug for Audio {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Audio")
 			.field("spec", &self.spec)
 			.finish_non_exhaustive()

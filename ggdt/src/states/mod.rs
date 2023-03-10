@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::fmt::Formatter;
 use std::ops::DerefMut;
 
 use thiserror::Error;
@@ -36,7 +35,7 @@ pub enum StateChange<ContextType> {
 }
 
 impl<ContextType> std::fmt::Debug for StateChange<ContextType> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		use StateChange::*;
 		match *self {
 			Push(..) => write!(f, "Push"),
@@ -71,7 +70,7 @@ struct StateContainer<ContextType> {
 }
 
 impl<ContextType> std::fmt::Debug for StateContainer<ContextType> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("StateContainer")
 			.field("current_state", &self.current_state)
 			.field("pending_state_change", &self.pending_state_change)
@@ -185,7 +184,7 @@ pub struct States<ContextType> {
 }
 
 impl<ContextType> std::fmt::Debug for States<ContextType> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("States")
 			.field("states", &self.states)
 			.field("command", &self.command)

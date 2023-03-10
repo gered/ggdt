@@ -1,6 +1,4 @@
-use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use ggdt::entities::*;
-use ggdt::math::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::{Core, TILE_HEIGHT, TILE_WIDTH};
 use crate::entities::*;
@@ -704,7 +702,7 @@ fn render_system_sprites(context: &mut Core) {
 }
 
 fn render_system_pixels(context: &mut Core) {
-	let pixels = context.entities.components::<Pixel>().unwrap();
+	let pixels = context.entities.components::<crate::entities::Pixel>().unwrap();
 	let positions = context.entities.components::<Position>();
 
 	if let Some((_, camera)) = context.entities.components::<Camera>().single() {

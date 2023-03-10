@@ -1,14 +1,11 @@
 use std::ops::{Add, Div, Mul, Sub};
 
-pub use self::circle::*;
-pub use self::matrix3x3::*;
-pub use self::rect::*;
-pub use self::vector2::*;
-
 pub mod circle;
 pub mod matrix3x3;
 pub mod rect;
 pub mod vector2;
+
+pub mod prelude;
 
 pub const PI: f32 = std::f32::consts::PI;
 // 180 degrees

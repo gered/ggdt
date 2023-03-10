@@ -1,9 +1,7 @@
 use std::path::Path;
 use std::rc::Rc;
 
-use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
+use ggdt::prelude::*;
 
 fn setup() -> (Bitmap, Palette) {
 	let palette = Palette::new_vga_palette().unwrap();

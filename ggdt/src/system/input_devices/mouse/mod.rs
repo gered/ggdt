@@ -1,10 +1,6 @@
-use crate::math::*;
-use crate::system::MouseEvent;
-
-use super::*;
-
-pub use self::buttons::*;
-pub use self::cursor::*;
+use crate::system::event::{MouseEvent, SystemEvent, SystemEventHandler};
+use crate::system::input_devices::{ButtonState, InputDevice};
+use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
 
 pub mod buttons;
 pub mod cursor;

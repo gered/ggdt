@@ -1,10 +1,4 @@
-use ggdt::entities::*;
-use ggdt::events::*;
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
-use ggdt::states::*;
-use ggdt::system::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::*;
 

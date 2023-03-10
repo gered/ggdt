@@ -1,8 +1,7 @@
-use crate::graphics::*;
-use crate::graphics::indexed::*;
-use crate::math::*;
-
-use super::*;
+use crate::graphics::bitmap::{GeneralBitmap, GeneralBlitMethod};
+use crate::graphics::indexed;
+use crate::math::rect::Rect;
+use crate::system::input_devices::mouse::Mouse;
 
 const DEFAULT_MOUSE_CURSOR_HOTSPOT_X: u32 = 0;
 const DEFAULT_MOUSE_CURSOR_HOTSPOT_Y: u32 = 0;
@@ -206,8 +205,8 @@ where
 	}
 }
 
-impl DefaultMouseCursorBitmaps<indexed::Bitmap> for CustomMouseCursor<indexed::Bitmap> {
-	fn get_default() -> MouseCursorBitmap<indexed::Bitmap> {
+impl DefaultMouseCursorBitmaps<indexed::bitmap::Bitmap> for CustomMouseCursor<indexed::bitmap::Bitmap> {
+	fn get_default() -> MouseCursorBitmap<indexed::bitmap::Bitmap> {
 		#[rustfmt::skip]
 		const CURSOR_PIXELS: [u8; DEFAULT_MOUSE_CURSOR_WIDTH * DEFAULT_MOUSE_CURSOR_HEIGHT] = [
 			0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -228,7 +227,7 @@ impl DefaultMouseCursorBitmaps<indexed::Bitmap> for CustomMouseCursor<indexed::B
 			0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 		];
 
-		let mut cursor = Bitmap::new(
+		let mut cursor = indexed::bitmap::Bitmap::new(
 			DEFAULT_MOUSE_CURSOR_WIDTH as u32,
 			DEFAULT_MOUSE_CURSOR_HEIGHT as u32,
 		).unwrap();

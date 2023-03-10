@@ -6,8 +6,9 @@ use std::path::Path;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::*;
-use crate::utils::packbits::*;
+use crate::graphics::indexed::bitmap::Bitmap;
+use crate::graphics::indexed::palette::{Palette, PaletteError, PaletteFormat};
+use crate::utils::packbits::{pack_bits, PackBitsError, unpack_bits};
 
 #[derive(Error, Debug)]
 pub enum IffError {

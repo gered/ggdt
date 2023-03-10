@@ -1,13 +1,6 @@
 use anyhow::{Context, Result};
 
-use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use ggdt::base::*;
-use ggdt::entities::*;
-use ggdt::events::*;
-use ggdt::math::*;
-use ggdt::states::*;
-use ggdt::system::*;
-use ggdt::utils::rnd_value;
+use ggdt::prelude::dos_like::*;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
 

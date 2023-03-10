@@ -2,7 +2,7 @@ use std::io::Cursor;
 
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use ggdt::graphics::indexed::*;
+use ggdt::prelude::dos_like::*;
 
 pub static SMALL_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/test.gif");
 pub static LARGE_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/test_image.gif");

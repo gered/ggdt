@@ -2,8 +2,7 @@ use std::path::Path;
 
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
+use ggdt::prelude::dos_like::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
 	let mut framebuffer = Bitmap::new(320, 240).unwrap();

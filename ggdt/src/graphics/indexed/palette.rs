@@ -7,7 +7,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::*;
+use crate::graphics::indexed::bitmap::Bitmap;
 use crate::NUM_COLORS;
 use crate::utils::abs_diff;
 

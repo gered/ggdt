@@ -11,8 +11,9 @@
 
 use bitflags::bitflags;
 
-use crate::system::{Keycode, MouseButton, MouseButtons, Scancode};
-use crate::system::MouseEvent::MouseButtonUp;
+use crate::system::input_devices::keyboard::codes::Keycode;
+use crate::system::input_devices::keyboard::scancodes::Scancode;
+use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowEvent {
@@ -175,7 +176,7 @@ impl From<sdl2::event::Event> for SystemEvent {
 				})
 			}
 			sdl2::event::Event::MouseButtonUp { mouse_btn, clicks, x, y, .. } => {
-				SystemEvent::Mouse(MouseButtonUp {
+				SystemEvent::Mouse(MouseEvent::MouseButtonUp {
 					x,
 					y,
 					clicks,

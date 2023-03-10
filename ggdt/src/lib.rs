@@ -11,6 +11,8 @@ pub mod states;
 pub mod system;
 pub mod utils;
 
+pub mod prelude;
+
 pub const LOW_RES: bool = if cfg!(feature = "low_res") {
 	true
 } else {

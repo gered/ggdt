@@ -3,7 +3,8 @@ use std::ops::{Index, IndexMut};
 use sdl2::audio::AudioCallback;
 use thiserror::Error;
 
-use crate::audio::*;
+use crate::audio::{AudioGenerator, AudioSpec, NUM_CHANNELS};
+use crate::audio::buffer::AudioBuffer;
 
 /// Represents a "channel" of audio playback that will be mixed together with all of the other
 /// actively playing audio channels to get the final audio playback.
@@ -30,7 +31,7 @@ pub struct AudioChannel {
 }
 
 impl std::fmt::Debug for AudioChannel {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("AudioChannel")
 			.field("playing", &self.playing)
 			.field("loops", &self.loops)

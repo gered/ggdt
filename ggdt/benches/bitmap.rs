@@ -1,7 +1,6 @@
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use ggdt::{SCREEN_HEIGHT, SCREEN_WIDTH};
-use ggdt::graphics::indexed::*;
+use ggdt::prelude::dos_like::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
 	let mut source = Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();

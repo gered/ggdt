@@ -16,14 +16,17 @@
 //! context" grab bag:
 //!
 //! ```
+//! use ggdt::prelude::*;
+//!
 //! pub enum Event { /* .. various events here .. */ }
+//!
 //! struct App {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
-//! 	pub entities: ggdt::entities::Entities,
-//! 	pub component_systems: ggdt::entities::ComponentSystems<App, App>,  // oh no! :'(
-//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
-//! 	pub event_listeners: ggdt::events::EventListeners<Event, App>,  // oh no again! :'(
+//! 	pub system: System<DosLike>,
+//! 	pub entities: Entities,
+//! 	pub component_systems: ComponentSystems<App, App>,  // oh no! :'(
+//! 	pub event_publisher: EventPublisher<Event>,
+//! 	pub event_listeners: EventListeners<Event, App>,  // oh no again! :'(
 //! }
 //! ```
 //!
@@ -37,21 +40,23 @@
 //! initially went with a parent-child split, which seemed logical to me at the time:
 //!
 //! ```
+//! use ggdt::prelude::*;
+//!
 //! pub enum Event { /* .. various events here .. */ }
 //!
 //! // "core" because what the heck else do i call this? "InnerContext"? "InnerApp"? ...
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
-//! 	pub entities: ggdt::entities::Entities,
-//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
+//! 	pub system: System<DosLike>,
+//! 	pub entities: Entities,
+//! 	pub event_publisher: EventPublisher<Event>,
 //! }
 //!
 //! // i guess this is a bit more obvious what to call it, but still ... doesn't sit right with me
 //! struct App {
 //! 	pub core: Core,
-//! 	pub component_systems: ggdt::entities::ComponentSystems<Core, Core>,
-//! 	pub event_listeners: ggdt::events::EventListeners<Event, Core>,
+//! 	pub component_systems: ComponentSystems<Core, Core>,
+//! 	pub event_listeners: EventListeners<Event, Core>,
 //! }
 //! ```
 //!
@@ -75,22 +80,24 @@
 //! But again, better naming still eludes me here!
 //!
 //! ```
+//! use ggdt::prelude::*;
+//!
 //! pub enum Event { /* .. various events here .. */ }
 //!
 //! // "Core" because it contains the things that probably 90% of game/app code will need to work
 //! // with. you'd probably want to put your game/app resources/assets on this struct too.
 //! struct Core {
 //! 	pub delta: f32,
-//! 	pub system: ggdt::system::System<ggdt::system::DosLike>,
-//! 	pub entities: ggdt::entities::Entities,
-//! 	pub event_publisher: ggdt::events::EventPublisher<Event>,
+//! 	pub system: System<DosLike>,
+//! 	pub entities: Entities,
+//! 	pub event_publisher: EventPublisher<Event>,
 //! }
 //!
 //! // "Support" because it contains things that support the main/core game state?
 //! // kinda grasping at straws here maybe ...
 //! struct Support {
-//! 	pub component_systems: ggdt::entities::ComponentSystems<Core, Core>,
-//! 	pub event_listeners: ggdt::events::EventListeners<Event, Core>,
+//! 	pub component_systems: ComponentSystems<Core, Core>,
+//! 	pub event_listeners: EventListeners<Event, Core>,
 //! }
 //!
 //! // better, maybe?
@@ -124,10 +131,11 @@
 
 use thiserror::Error;
 
-use crate::audio::*;
-use crate::events::*;
-use crate::states::*;
-use crate::system::*;
+use crate::audio::device::AudioDeviceError;
+use crate::events::{EventListeners, EventPublisher};
+use crate::states::{AppState, StateError, States};
+use crate::system::{System, SystemError};
+use crate::system::res::SystemResources;
 
 pub trait CoreState<SystemResType>
 where SystemResType: SystemResources {

@@ -6,13 +6,7 @@ use std::rc::Rc;
 
 use anyhow::{Context, Result};
 
-use ggdt::base::*;
-use ggdt::entities::*;
-use ggdt::events::*;
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
-use ggdt::system::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::entities::*;
 use crate::states::*;

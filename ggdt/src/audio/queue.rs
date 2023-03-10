@@ -1,7 +1,9 @@
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use crate::audio::*;
+use crate::audio::{Audio, AudioGenerator, AudioSpec, NUM_CHANNELS};
+use crate::audio::buffer::AudioBuffer;
+use crate::audio::device::{AudioDevice, AudioDeviceError};
 
 pub enum AudioCommand {
 	StopChannel(usize),
@@ -36,7 +38,7 @@ pub enum AudioCommand {
 }
 
 impl std::fmt::Debug for AudioCommand {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		use AudioCommand::*;
 		match self {
 			StopChannel(n) => write!(f, "StopChannel({})", n),

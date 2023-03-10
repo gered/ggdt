@@ -2,11 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use ggdt::audio::*;
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::system::*;
-use ggdt::utils::rnd_value;
+use ggdt::prelude::dos_like::*;
 
 #[derive(Debug, Copy, Clone)]
 struct AudioChannelStatus {

@@ -1,5 +1,3 @@
-use crate::system::{SystemEvent, SystemEventHandler};
-
 pub mod keyboard;
 pub mod mouse;
 

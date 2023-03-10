@@ -1,11 +1,6 @@
 use std::path::Path;
 
-use ggdt::base::*;
-use ggdt::entities::*;
-use ggdt::graphics::font::*;
-use ggdt::graphics::indexed::*;
-use ggdt::states::*;
-use ggdt::system::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::entities::*;
 use crate::Game;

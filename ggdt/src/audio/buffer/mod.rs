@@ -1,6 +1,6 @@
-use crate::audio::*;
+use thiserror::Error;
 
-pub use self::wav::*;
+use crate::audio::AudioSpec;
 
 pub mod wav;
 
@@ -18,7 +18,7 @@ pub struct AudioBuffer {
 }
 
 impl std::fmt::Debug for AudioBuffer {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("AudioBuffer")
 			.field("spec", &self.spec)
 			.field("data.len()", &self.data.len())

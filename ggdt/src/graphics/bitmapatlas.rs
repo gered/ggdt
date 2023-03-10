@@ -2,8 +2,8 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::graphics::*;
-use crate::math::*;
+use crate::graphics::bitmap::GeneralBitmap;
+use crate::math::rect::Rect;
 
 #[derive(Error, Debug)]
 pub enum BitmapAtlasError {
@@ -134,13 +134,13 @@ where
 pub mod tests {
 	use claim::*;
 
-	use super::*;
+	use crate::graphics::indexed::bitmap::Bitmap;
 
-	use crate::graphics::indexed;
+	use super::*;
 
 	#[test]
 	pub fn adding_rects() {
-		let bmp = indexed::Bitmap::new(64, 64).unwrap();
+		let bmp = Bitmap::new(64, 64).unwrap();
 		let mut atlas = BitmapAtlas::new(bmp);
 
 		let rect = Rect::new(0, 0, 16, 16);
@@ -174,7 +174,7 @@ pub mod tests {
 
 	#[test]
 	pub fn adding_grid() {
-		let bmp = indexed::Bitmap::new(64, 64).unwrap();
+		let bmp = Bitmap::new(64, 64).unwrap();
 		let mut atlas = BitmapAtlas::new(bmp);
 
 		assert_eq!(3, atlas.add_custom_grid(0, 0, 8, 8, 2, 2, 0).unwrap());

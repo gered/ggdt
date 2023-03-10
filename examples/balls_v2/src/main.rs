@@ -2,8 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use ggdt::states::*;
-use ggdt::system::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::entities::*;
 use crate::states::*;

@@ -1,6 +1,7 @@
 use std::ops::{Mul, MulAssign};
 
-use crate::math::*;
+use crate::math::nearly_equal;
+use crate::math::vector2::Vector2;
 
 /// Represents a 3x3 column-major matrix and provides common methods for matrix math.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -284,6 +285,8 @@ impl Mul<Vector2> for Matrix3x3 {
 
 #[cfg(test)]
 pub mod tests {
+	use crate::math::*;
+
 	use super::*;
 
 	#[test]

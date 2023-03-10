@@ -2,9 +2,7 @@
 //! instance to provide something resembling an old DOS VGA mode 13h style experience (there are differences, however).
 //!
 //! ```no_run
-//! use ggdt::graphics::*;
-//! use ggdt::graphics::indexed::*;
-//! use ggdt::system::*;
+//! use ggdt::prelude::*;
 //!
 //! let config = DosLikeConfig::new();
 //! let mut system = SystemBuilder::new()
@@ -28,11 +26,20 @@
 //! ```
 //!
 
-use sdl2::video::Window;
+use byte_slice_cast::AsByteSlice;
 
-use crate::system::*;
-use crate::graphics::*;
-use crate::graphics::indexed::*;
+use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
+use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
+use crate::audio::queue::AudioQueue;
+use crate::graphics::font::BitmaskFont;
+use crate::graphics::indexed::bitmap::Bitmap;
+use crate::graphics::indexed::palette::Palette;
+use crate::system::event::{SystemEvent, SystemEventHandler};
+use crate::system::input_devices::InputDevice;
+use crate::system::input_devices::keyboard::Keyboard;
+use crate::system::input_devices::mouse::cursor::CustomMouseCursor;
+use crate::system::input_devices::mouse::Mouse;
+use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
 
 /// Configuration / builder for configuring and constructing an instance of [`DosLike`].
 pub struct DosLikeConfig {
@@ -75,9 +82,9 @@ impl SystemResourcesConfig for DosLikeConfig {
 
 	fn build(
 		self,
-		_video_subsystem: &VideoSubsystem,
-		audio_subsystem: &AudioSubsystem,
-		mut window: Window,
+		_video_subsystem: &sdl2::VideoSubsystem,
+		audio_subsystem: &sdl2::AudioSubsystem,
+		mut window: sdl2::video::Window,
 	) -> Result<Self::SystemResourcesType, SystemResourcesError> {
 		let texture_pixel_size = 4; // 32-bit ARGB format
 
@@ -114,7 +121,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 		// application's framebuffer
 
 		let sdl_texture = match sdl_canvas.create_texture_streaming(
-			Some(PixelFormatEnum::ARGB8888),
+			Some(sdl2::pixels::PixelFormatEnum::ARGB8888),
 			self.screen_width,
 			self.screen_height,
 		) {
@@ -155,7 +162,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 
 		// create audio device and queue
 
-		let audio_spec = AudioSpecDesired {
+		let audio_spec = sdl2::audio::AudioSpecDesired {
 			freq: Some(TARGET_AUDIO_FREQUENCY as i32),
 			channels: Some(TARGET_AUDIO_CHANNELS),
 			samples: None,
@@ -190,8 +197,8 @@ impl SystemResourcesConfig for DosLikeConfig {
 /// A [`SystemResources`] implementation that provides indexed-colour [`Bitmap`]s for graphics, simple 8-bit / 22khz
 /// audio via [`Audio`] and keyboard/mouse input.
 pub struct DosLike {
-	sdl_canvas: WindowCanvas,
-	sdl_texture: Texture,
+	sdl_canvas: sdl2::render::WindowCanvas,
+	sdl_texture: sdl2::render::Texture,
 	sdl_texture_pitch: usize,
 	texture_pixels: Box<[u32]>,
 
@@ -230,7 +237,7 @@ pub struct DosLike {
 }
 
 impl std::fmt::Debug for DosLike {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("DosLike")
             .field("audio", &self.audio)
             .field("audio_queue", &self.audio_queue)

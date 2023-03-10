@@ -1,9 +1,6 @@
-use crate::system::event::{KeyboardEvent, SystemEvent};
-
-use super::*;
-
-pub use self::codes::*;
-pub use self::scancodes::*;
+use crate::system::event::{KeyboardEvent, SystemEvent, SystemEventHandler};
+use crate::system::input_devices::{ButtonState, InputDevice};
+use crate::system::input_devices::keyboard::scancodes::Scancode;
 
 pub mod codes;
 pub mod scancodes;

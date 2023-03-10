@@ -1,8 +1,9 @@
 use std::rc::Rc;
-use crate::graphics::BitmapAtlas;
 
-use crate::graphics::indexed::*;
-use crate::math::*;
+use crate::graphics::bitmapatlas::BitmapAtlas;
+use crate::graphics::indexed::bitmap::Bitmap;
+use crate::graphics::indexed::blendmap::BlendMap;
+use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum BlitMethod {

@@ -1,4 +1,3 @@
-use std::fmt::Formatter;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
@@ -6,8 +5,8 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::*;
-use crate::math::*;
+use crate::graphics::indexed::palette::{from_rgb32, luminance, Palette};
+use crate::math::lerp;
 use crate::utils::bytes::ReadFixedLengthByteArray;
 
 #[derive(Error, Debug)]
@@ -45,7 +44,7 @@ pub struct BlendMap {
 }
 
 impl std::fmt::Debug for BlendMap {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("BlendMap")
 			.field("start_color", &self.start_color)
 			.field("end_color", &self.end_color)

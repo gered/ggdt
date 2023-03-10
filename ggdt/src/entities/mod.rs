@@ -1,7 +1,6 @@
 use std::any::TypeId;
 use std::cell::{Ref, RefCell, RefMut};
 use std::collections::{HashMap, HashSet};
-use std::fmt::Formatter;
 
 use crate::utils::AsAny;
 
@@ -71,7 +70,7 @@ pub struct Entities {
 }
 
 impl std::fmt::Debug for Entities {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Entities")
 			.field("entities.len()", &self.entities.len())
 			.field("component_stores.keys()", &self.component_stores.keys())
@@ -435,7 +434,7 @@ pub struct ComponentSystems<U, R> {
 }
 
 impl<U, R> std::fmt::Debug for ComponentSystems<U, R> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("ComponentSystems")
 			.field("update_systems.len()", &self.update_systems.len())
 			.field("render_systems.len()", &self.render_systems.len())

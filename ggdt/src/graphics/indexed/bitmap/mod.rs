@@ -1,17 +1,10 @@
-use std::fmt::Formatter;
 use std::path::Path;
 use std::slice;
 
 use thiserror::Error;
 
-use crate::graphics::indexed::*;
-use crate::math::*;
-
-pub use self::blit::*;
-pub use self::gif::*;
-pub use self::iff::*;
-pub use self::pcx::*;
-pub use self::primitives::*;
+use crate::graphics::indexed::palette::Palette;
+use crate::math::rect::Rect;
 
 pub mod blit;
 pub mod gif;
@@ -55,7 +48,7 @@ pub struct Bitmap {
 }
 
 impl std::fmt::Debug for Bitmap {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Bitmap")
 			.field("width", &self.width)
 			.field("height", &self.height)

@@ -1,5 +1,4 @@
 use std::collections::VecDeque;
-use std::fmt::Formatter;
 
 /// An event listener/handler function that returns true if it handled the event and no other
 /// listeners/handlers should be called next with the same event, or false if the event was not
@@ -14,7 +13,7 @@ pub struct EventPublisher<EventType> {
 }
 
 impl<EventType> std::fmt::Debug for EventPublisher<EventType> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("EventPublisher")
 			.field("queue.len()", &self.queue.len())
 			.finish_non_exhaustive()
@@ -68,7 +67,7 @@ pub struct EventListeners<EventType, ContextType> {
 }
 
 impl<EventType, ContextType> std::fmt::Debug for EventListeners<EventType, ContextType> {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("EventListeners")
 			.field("listeners.len()", &self.listeners.len())
 			.field("dispatch_queue.len()", &self.dispatch_queue.len())

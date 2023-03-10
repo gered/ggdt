@@ -9,7 +9,7 @@
 use std::error::Error;
 
 use crate::graphics::{indexed, Pixel};
-use crate::math::Rect;
+use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum GeneralBlitMethod<PixelType: Pixel> {
@@ -94,9 +94,9 @@ pub trait GeneralBitmap: Sized + Clone {
 	}
 }
 
-impl GeneralBitmap for indexed::Bitmap {
+impl GeneralBitmap for indexed::bitmap::Bitmap {
 	type PixelType = u8;
-	type ErrorType = indexed::BitmapError;
+	type ErrorType = indexed::bitmap::BitmapError;
 
 	fn new(width: u32, height: u32) -> Result<Self, Self::ErrorType> {
 		Self::new(width, height)
@@ -179,9 +179,11 @@ impl GeneralBitmap for indexed::Bitmap {
 		dest_x: i32,
 		dest_y: i32
 	) {
+		use indexed::bitmap::blit::BlitMethod;
+
 		let blit_method = match method {
-			GeneralBlitMethod::Solid => indexed::BlitMethod::Solid,
-			GeneralBlitMethod::Transparent(color) => indexed::BlitMethod::Transparent(color),
+			GeneralBlitMethod::Solid => BlitMethod::Solid,
+			GeneralBlitMethod::Transparent(color) => BlitMethod::Transparent(color),
 		};
 		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
 	}

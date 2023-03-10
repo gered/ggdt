@@ -1,4 +1,3 @@
-use std::fmt::Formatter;
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
 use std::path::Path;
@@ -6,8 +5,9 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::*;
-use crate::math::*;
+use crate::graphics::bitmap::GeneralBitmap;
+use crate::graphics::Pixel;
+use crate::math::rect::Rect;
 
 pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../assets/vga.fnt");
 
@@ -103,7 +103,7 @@ pub struct BitmaskFont {
 }
 
 impl std::fmt::Debug for BitmaskFont {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("BitmaskFont")
 			.field("line_height", &self.line_height)
 			.field("space_width", &self.space_width)

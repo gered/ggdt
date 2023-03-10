@@ -5,10 +5,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
-use ggdt::utils::rnd_value;
+use ggdt::prelude::dos_like::*;
 
 use crate::{TILE_HEIGHT, TILE_WIDTH};
 

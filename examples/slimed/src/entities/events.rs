@@ -1,5 +1,4 @@
-use ggdt::entities::*;
-use ggdt::events::*;
+use ggdt::prelude::dos_like::*;
 
 use crate::Core;
 use crate::entities::*;

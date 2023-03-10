@@ -2,12 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use ggdt::*;
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
-use ggdt::system::*;
-use ggdt::utils::*;
+use ggdt::prelude::dos_like::*;
 
 const NUM_BALLS: usize = 128;
 const NUM_BALL_SPRITES: usize = 16;

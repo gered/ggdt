@@ -7,7 +7,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
-use crate::audio::*;
+use crate::audio::AudioSpec;
+use crate::audio::buffer::AudioBuffer;
 use crate::utils::io::StreamSize;
 
 #[derive(Error, Debug)]
@@ -298,7 +299,7 @@ impl AudioBuffer {
 
 #[cfg(test)]
 mod tests {
-	use crate::audio::*;
+	use crate::audio::{AUDIO_FREQUENCY_22KHZ, AUDIO_FREQUENCY_44KHZ};
 
 	use super::*;
 

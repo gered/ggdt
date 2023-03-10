@@ -2,11 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use ggdt::entities::*;
-use ggdt::graphics::*;
-use ggdt::graphics::indexed::*;
-use ggdt::math::*;
-use ggdt::utils::rnd_value;
+use ggdt::prelude::dos_like::*;
 
 use crate::{Core, Game, TILE_HEIGHT, TILE_WIDTH, TileMap};
 

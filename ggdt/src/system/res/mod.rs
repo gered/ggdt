@@ -1,7 +1,8 @@
 use thiserror::Error;
 
-use crate::audio::*;
-use crate::system::*;
+use crate::audio::AudioError;
+use crate::audio::device::AudioDeviceError;
+use crate::system::event::SystemEvent;
 
 pub mod dos_like;
 

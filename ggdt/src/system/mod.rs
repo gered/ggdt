@@ -1,25 +1,14 @@
-use std::fmt::Formatter;
-
-use byte_slice_cast::AsByteSlice;
-use sdl2::{AudioSubsystem, Sdl, TimerSubsystem, VideoSubsystem};
-use sdl2::audio::AudioSpecDesired;
-use sdl2::pixels::PixelFormatEnum;
-use sdl2::render::{Texture, WindowCanvas};
 use thiserror::Error;
 
-use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
-use crate::audio::*;
-
-pub use self::event::*;
-pub use self::input_devices::*;
-pub use self::input_devices::keyboard::*;
-pub use self::input_devices::mouse::*;
-pub use self::res::*;
-pub use self::res::dos_like::*;
+use crate::audio::AudioError;
+use crate::system::event::{SystemEvent, SystemEventPump};
+use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
 
 pub mod event;
 pub mod input_devices;
 pub mod res;
+
+pub mod prelude;
 
 fn is_x11_compositor_skipping_problematic() -> bool {
 	/*
@@ -233,10 +222,10 @@ impl SystemBuilder {
 #[allow(dead_code)]
 pub struct System<SystemResType>
 where SystemResType: SystemResources {
-	sdl_context: Sdl,
-	sdl_audio_subsystem: AudioSubsystem,
-	sdl_video_subsystem: VideoSubsystem,
-	sdl_timer_subsystem: TimerSubsystem,
+	sdl_context: sdl2::Sdl,
+	sdl_audio_subsystem: sdl2::AudioSubsystem,
+	sdl_video_subsystem: sdl2::VideoSubsystem,
+	sdl_timer_subsystem: sdl2::TimerSubsystem,
 
 	vsync: bool,
 	target_framerate: Option<u32>,
@@ -250,7 +239,7 @@ where SystemResType: SystemResources {
 
 impl<SystemResType> std::fmt::Debug for System<SystemResType>
 where SystemResType: SystemResources {
-	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("System")
 			.field("res", &self.res)
 			.field("vsync", &self.vsync)
@@ -305,7 +294,7 @@ where SystemResType: SystemResources {
 	/// should quit. Otherwise, returns false.
 	///
 	/// ```no_run
-	/// use ggdt::system::*;
+	/// use ggdt::prelude::*;
 	///
 	/// let config = DosLikeConfig::new();
 	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
@@ -320,7 +309,7 @@ where SystemResType: SystemResources {
 	/// main loop. For example:
 	///
 	/// ```no_run
-	/// use ggdt::system::*;
+	/// use ggdt::prelude::*;
 	///
 	/// let config = DosLikeConfig::new();
 	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
