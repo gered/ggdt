@@ -96,7 +96,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 
 		// turn the window into a canvas (under the hood, an SDL Renderer that owns the window)
 
-		let mut canvas_builder = window.into_canvas();
+		let canvas_builder = window.into_canvas();
 		let mut sdl_canvas = match canvas_builder.build() {
 			Ok(canvas) => canvas,
 			Err(error) => return Err(SystemResourcesError::SDLError(error.to_string())),
