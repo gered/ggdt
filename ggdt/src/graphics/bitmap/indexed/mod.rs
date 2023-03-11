@@ -9,6 +9,17 @@ pub mod primitives;
 pub type IndexedBitmap = Bitmap<u8>;
 
 impl IndexedBitmap {
+	/// Creates a new Bitmap with the specified dimensions.
+	///
+	/// # Arguments
+	///
+	/// * `width`: the width of the bitmap in pixels
+	/// * `height`: the height of the bitmap in pixels
+	///
+	/// returns: `Result<Bitmap, BitmapError>`
+	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
+		Self::internal_new(width, height)
+	}
 
 	pub fn load_file(path: &Path) -> Result<(Self, Palette), BitmapError> {
 		if let Some(extension) = path.extension() {

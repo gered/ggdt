@@ -6,7 +6,7 @@ use ggdt::prelude::*;
 
 fn setup() -> (IndexedBitmap, Palette) {
 	let palette = Palette::new_vga_palette().unwrap();
-	let screen = Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
+	let screen = IndexedBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
 	(screen, palette)
 }
 
@@ -523,7 +523,7 @@ fn generate_bitmap(width: i32, height: i32) -> IndexedBitmap {
 	let x_third = width / 3;
 	let y_third = height / 3;
 
-	let mut bitmap = Bitmap::new(width as u32, height as u32).unwrap();
+	let mut bitmap = IndexedBitmap::new(width as u32, height as u32).unwrap();
 
 	bitmap.filled_rect(0, 0, x_third, y_third, 1);
 	bitmap.filled_rect(x_third * 2 + 1, y_third * 2 + 1, width - 1, height - 1, 2);

@@ -60,15 +60,9 @@ impl<PixelType: Pixel> std::fmt::Debug for Bitmap<PixelType> {
 impl<PixelType: Pixel> Bitmap<PixelType> {
 	pub const PIXEL_SIZE: usize = std::mem::size_of::<PixelType>();
 
-	/// Creates a new Bitmap with the specified dimensions.
-	///
-	/// # Arguments
-	///
-	/// * `width`: the width of the bitmap in pixels
-	/// * `height`: the height of the bitmap in pixels
-	///
-	/// returns: `Result<Bitmap, BitmapError>`
-	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
+	// not public to force creation via one of the concrete types (even though this
+	// would technically work and be fine-ish)
+	fn internal_new(width: u32, height: u32) -> Result<Self, BitmapError> {
 		if width == 0 || height == 0 {
 			return Err(BitmapError::InvalidDimensions);
 		}
@@ -100,7 +94,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			return Err(BitmapError::OutOfBounds);
 		}
 
-		let mut bmp = Self::new(region.width, region.height)?;
+		let mut bmp = Self::internal_new(region.width, region.height)?;
 		unsafe { bmp.solid_blit(source, region, 0, 0) };
 		Ok(bmp)
 	}
