@@ -1,16 +1,16 @@
-use std::path::Path;
-use std::slice;
-
 use thiserror::Error;
 
-use crate::graphics::indexed::palette::Palette;
+use crate::graphics::Pixel;
 use crate::math::rect::Rect;
 
 pub mod blit;
+pub mod general;
 pub mod gif;
 pub mod iff;
+pub mod indexed;
 pub mod pcx;
 pub mod primitives;
+pub mod rgb;
 
 #[derive(Error, Debug)]
 pub enum BitmapError {
@@ -40,14 +40,14 @@ pub enum BitmapError {
 /// here are done with respect to the bitmaps clipping region, where rendering outside of the
 /// clipping region is simply not performed / stops at the clipping boundary.
 #[derive(Clone, Eq, PartialEq)]
-pub struct Bitmap {
+pub struct Bitmap<PixelType: Pixel> {
 	width: u32,
 	height: u32,
-	pixels: Box<[u8]>,
+	pixels: Box<[PixelType]>,
 	clip_region: Rect,
 }
 
-impl std::fmt::Debug for Bitmap {
+impl<PixelType: Pixel> std::fmt::Debug for Bitmap<PixelType> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
 		f.debug_struct("Bitmap")
 			.field("width", &self.width)
@@ -57,7 +57,9 @@ impl std::fmt::Debug for Bitmap {
 	}
 }
 
-impl Bitmap {
+impl<PixelType: Pixel> Bitmap<PixelType> {
+	pub const PIXEL_SIZE: usize = std::mem::size_of::<PixelType>();
+
 	/// Creates a new Bitmap with the specified dimensions.
 	///
 	/// # Arguments
@@ -66,7 +68,7 @@ impl Bitmap {
 	/// * `height`: the height of the bitmap in pixels
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
-	pub fn new(width: u32, height: u32) -> Result<Bitmap, BitmapError> {
+	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
 		if width == 0 || height == 0 {
 			return Err(BitmapError::InvalidDimensions);
 		}
@@ -74,7 +76,7 @@ impl Bitmap {
 		Ok(Bitmap {
 			width,
 			height,
-			pixels: vec![0u8; (width * height) as usize].into_boxed_slice(),
+			pixels: vec![Default::default(); (width * height) as usize].into_boxed_slice(),
 			clip_region: Rect {
 				x: 0,
 				y: 0,
@@ -93,34 +95,14 @@ impl Bitmap {
 	/// * `region`: the region on the source bitmap to copy from
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
-	pub fn from(source: &Bitmap, region: &Rect) -> Result<Bitmap, BitmapError> {
+	pub fn from(source: &Self, region: &Rect) -> Result<Self, BitmapError> {
 		if !source.full_bounds().contains_rect(region) {
 			return Err(BitmapError::OutOfBounds);
 		}
 
-		let mut bmp = Bitmap::new(region.width, region.height)?;
+		let mut bmp = Self::new(region.width, region.height)?;
 		unsafe { bmp.solid_blit(source, region, 0, 0) };
 		Ok(bmp)
-	}
-
-	pub fn load_file(path: &Path) -> Result<(Bitmap, Palette), BitmapError> {
-		if let Some(extension) = path.extension() {
-			let extension = extension.to_ascii_lowercase();
-			match extension.to_str() {
-				Some("pcx") => Ok(Self::load_pcx_file(path)?),
-				Some("gif") => Ok(Self::load_gif_file(path)?),
-				Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => {
-					Ok(Self::load_iff_file(path)?)
-				}
-				_ => Err(BitmapError::UnknownFileType(String::from(
-					"Unrecognized file extension",
-				))),
-			}
-		} else {
-			Err(BitmapError::UnknownFileType(String::from(
-				"No file extension",
-			)))
-		}
 	}
 
 	/// Returns the width of the bitmap in pixels.
@@ -183,13 +165,13 @@ impl Bitmap {
 
 	/// Returns a reference to the raw pixels in this bitmap.
 	#[inline]
-	pub fn pixels(&self) -> &[u8] {
+	pub fn pixels(&self) -> &[PixelType] {
 		&self.pixels
 	}
 
 	/// Returns a mutable reference to the raw pixels in this bitmap.
 	#[inline]
-	pub fn pixels_mut(&mut self) -> &mut [u8] {
+	pub fn pixels_mut(&mut self) -> &mut [PixelType] {
 		&mut self.pixels
 	}
 
@@ -197,7 +179,7 @@ impl Bitmap {
 	/// given coordinates and extending to the end of the bitmap. If the coordinates given are
 	/// outside the bitmap's current clipping region, None is returned.
 	#[inline]
-	pub fn pixels_at(&self, x: i32, y: i32) -> Option<&[u8]> {
+	pub fn pixels_at(&self, x: i32, y: i32) -> Option<&[PixelType]> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
 			Some(&self.pixels[offset..])
@@ -210,7 +192,7 @@ impl Bitmap {
 	/// given coordinates and extending to the end of the bitmap. If the coordinates given are
 	/// outside the bitmap's current clipping region, None is returned.
 	#[inline]
-	pub fn pixels_at_mut(&mut self, x: i32, y: i32) -> Option<&mut [u8]> {
+	pub fn pixels_at_mut(&mut self, x: i32, y: i32) -> Option<&mut [PixelType]> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
 			Some(&mut self.pixels[offset..])
@@ -223,18 +205,18 @@ impl Bitmap {
 	/// given coordinates and extending to the end of the bitmap. The coordinates are not checked
 	/// for validity, so it is up to you to ensure they lie within the bounds of the bitmap.
 	#[inline]
-	pub unsafe fn pixels_at_unchecked(&self, x: i32, y: i32) -> &[u8] {
+	pub unsafe fn pixels_at_unchecked(&self, x: i32, y: i32) -> &[PixelType] {
 		let offset = self.get_offset_to_xy(x, y);
-		slice::from_raw_parts(self.pixels.as_ptr().add(offset), self.pixels.len() - offset)
+		std::slice::from_raw_parts(self.pixels.as_ptr().add(offset), self.pixels.len() - offset)
 	}
 
 	/// Returns a mutable unsafe reference to the subset of the raw pixels in this bitmap beginning
 	/// at the given coordinates and extending to the end of the bitmap. The coordinates are not
 	/// checked for validity, so it is up to you to ensure they lie within the bounds of the bitmap.
 	#[inline]
-	pub unsafe fn pixels_at_mut_unchecked(&mut self, x: i32, y: i32) -> &mut [u8] {
+	pub unsafe fn pixels_at_mut_unchecked(&mut self, x: i32, y: i32) -> &mut [PixelType] {
 		let offset = self.get_offset_to_xy(x, y);
-		slice::from_raw_parts_mut(
+		std::slice::from_raw_parts_mut(
 			self.pixels.as_mut_ptr().add(offset),
 			self.pixels.len() - offset,
 		)
@@ -244,7 +226,7 @@ impl Bitmap {
 	/// coordinates. If the coordinates given are outside the bitmap's current clipping region,
 	/// None is returned.
 	#[inline]
-	pub unsafe fn pixels_at_ptr(&self, x: i32, y: i32) -> Option<*const u8> {
+	pub unsafe fn pixels_at_ptr(&self, x: i32, y: i32) -> Option<*const PixelType> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
 			Some(self.pixels.as_ptr().add(offset))
@@ -257,7 +239,7 @@ impl Bitmap {
 	/// given coordinates. If the coordinates given are outside the bitmap's current clipping
 	/// region, None is returned.
 	#[inline]
-	pub unsafe fn pixels_at_mut_ptr(&mut self, x: i32, y: i32) -> Option<*mut u8> {
+	pub unsafe fn pixels_at_mut_ptr(&mut self, x: i32, y: i32) -> Option<*mut PixelType> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
 			Some(self.pixels.as_mut_ptr().add(offset))
@@ -270,7 +252,7 @@ impl Bitmap {
 	/// given coordinates. The coordinates are not checked for validity, so it is up to you to
 	/// ensure they lie within the bounds of the bitmap.
 	#[inline]
-	pub unsafe fn pixels_at_ptr_unchecked(&self, x: i32, y: i32) -> *const u8 {
+	pub unsafe fn pixels_at_ptr_unchecked(&self, x: i32, y: i32) -> *const PixelType {
 		let offset = self.get_offset_to_xy(x, y);
 		self.pixels.as_ptr().add(offset)
 	}
@@ -279,7 +261,7 @@ impl Bitmap {
 	/// at the given coordinates. The coordinates are not checked for validity, so it is up to you
 	/// to ensure they lie within the bounds of the bitmap.
 	#[inline]
-	pub unsafe fn pixels_at_mut_ptr_unchecked(&mut self, x: i32, y: i32) -> *mut u8 {
+	pub unsafe fn pixels_at_mut_ptr_unchecked(&mut self, x: i32, y: i32) -> *mut PixelType {
 		let offset = self.get_offset_to_xy(x, y);
 		self.pixels.as_mut_ptr().add(offset)
 	}
@@ -299,20 +281,6 @@ impl Bitmap {
 			&& (y >= self.clip_region.y)
 			&& (x <= self.clip_region.right())
 			&& (y <= self.clip_region.bottom())
-	}
-
-	/// Copies and converts the entire pixel data from this bitmap to a destination expecting
-	/// 32-bit ARGB-format pixel data. This can be used to display the contents of the bitmap
-	/// on-screen by using an SDL Surface, OpenGL texture, etc as the destination.
-	///
-	/// # Arguments
-	///
-	/// * `dest`: destination 32-bit ARGB pixel buffer to copy converted pixels to
-	/// * `palette`: the 256 colour palette to use during pixel conversion
-	pub fn copy_as_argb_to(&self, dest: &mut [u32], palette: &Palette) {
-		for (src, dest) in self.pixels().iter().zip(dest.iter_mut()) {
-			*dest = palette[*src];
-		}
 	}
 }
 
@@ -344,10 +312,10 @@ pub mod tests {
 
 	#[test]
 	pub fn creation_and_sizing() {
-		assert_matches!(Bitmap::new(0, 0), Err(BitmapError::InvalidDimensions));
-		assert_matches!(Bitmap::new(16, 0), Err(BitmapError::InvalidDimensions));
-		assert_matches!(Bitmap::new(0, 32), Err(BitmapError::InvalidDimensions));
-		let bmp = Bitmap::new(16, 32).unwrap();
+		assert_matches!(Bitmap::<u8>::new(0, 0), Err(BitmapError::InvalidDimensions));
+		assert_matches!(Bitmap::<u8>::new(16, 0), Err(BitmapError::InvalidDimensions));
+		assert_matches!(Bitmap::<u8>::new(0, 32), Err(BitmapError::InvalidDimensions));
+		let bmp = Bitmap::<u8>::new(16, 32).unwrap();
 		assert_eq!(16, bmp.width());
 		assert_eq!(32, bmp.height());
 		assert_eq!(15, bmp.right());
@@ -374,24 +342,24 @@ pub mod tests {
 
 	#[test]
 	pub fn copy_from() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		assert_matches!(
-            Bitmap::from(&bmp, &Rect::new(0, 0, 16, 16)),
+            Bitmap::<u8>::from(&bmp, &Rect::new(0, 0, 16, 16)),
             Err(BitmapError::OutOfBounds)
         );
 
-		let copy = Bitmap::from(&bmp, &Rect::new(0, 0, 8, 8)).unwrap();
+		let copy = Bitmap::<u8>::from(&bmp, &Rect::new(0, 0, 8, 8)).unwrap();
 		assert_eq!(bmp.pixels(), copy.pixels());
 
-		let copy = Bitmap::from(&bmp, &Rect::new(4, 4, 4, 4)).unwrap();
+		let copy = Bitmap::<u8>::from(&bmp, &Rect::new(4, 4, 4, 4)).unwrap();
 		assert_eq!(RAW_BMP_PIXELS_SUBSET, copy.pixels());
 	}
 
 	#[test]
 	pub fn xy_offset_calculation() {
-		let bmp = Bitmap::new(20, 15).unwrap();
+		let bmp = Bitmap::<u8>::new(20, 15).unwrap();
 		assert_eq!(0, bmp.get_offset_to_xy(0, 0));
 		assert_eq!(19, bmp.get_offset_to_xy(19, 0));
 		assert_eq!(20, bmp.get_offset_to_xy(0, 1));
@@ -402,7 +370,7 @@ pub mod tests {
 
 	#[test]
 	pub fn bounds_testing_and_clip_region() {
-		let mut bmp = Bitmap::new(16, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(16, 8).unwrap();
 		assert!(bmp.is_xy_visible(0, 0));
 		assert!(bmp.is_xy_visible(15, 0));
 		assert!(bmp.is_xy_visible(0, 7));
@@ -452,7 +420,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		assert_eq!(None, bmp.pixels_at(-1, -1));
@@ -472,7 +440,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_mut() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		assert_eq!(None, bmp.pixels_at_mut(-1, -1));
@@ -492,7 +460,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_unchecked() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		let offset = bmp.get_offset_to_xy(1, 1);
@@ -510,7 +478,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_mut_unchecked() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		let offset = bmp.get_offset_to_xy(1, 1);
@@ -528,7 +496,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_ptr() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		assert_eq!(None, unsafe { bmp.pixels_at_ptr(-1, -1) });
@@ -546,7 +514,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_mut_ptr() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		assert_eq!(None, unsafe { bmp.pixels_at_mut_ptr(-1, -1) });
@@ -564,7 +532,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_ptr_unchecked() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		let offset = bmp.get_offset_to_xy(1, 1);
@@ -580,7 +548,7 @@ pub mod tests {
 
 	#[test]
 	pub fn pixels_at_mut_ptr_unchecked() {
-		let mut bmp = Bitmap::new(8, 8).unwrap();
+		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
 		let offset = bmp.get_offset_to_xy(1, 1);

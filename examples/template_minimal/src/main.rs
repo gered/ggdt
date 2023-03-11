@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();

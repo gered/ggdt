@@ -5,8 +5,8 @@ use std::path::Path;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::bitmap::Bitmap;
-use crate::graphics::indexed::palette::{Palette, PaletteError, PaletteFormat};
+use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::lzwgif::{lzw_decode, lzw_encode, LzwError};
 
 const BITS_FOR_256_COLORS: u32 = 7;   // formula is `2 ^ (bits + 1) = num_colors`
@@ -352,7 +352,7 @@ fn load_image_section<T: ReadBytesExt>(
 	reader: &mut T,
 	gif_header: &GifHeader,
 	_graphic_control: &Option<GraphicControlExtension>,
-) -> Result<(Bitmap, Option<Palette>), GifError> {
+) -> Result<(IndexedBitmap, Option<Palette>), GifError> {
 	let descriptor = LocalImageDescriptor::read(reader)?;
 
 	let palette: Option<Palette>;
@@ -367,7 +367,7 @@ fn load_image_section<T: ReadBytesExt>(
 		palette = None; // we expect that there was a global color table previously
 	}
 
-	let mut bitmap = Bitmap::new(gif_header.screen_width as u32, gif_header.screen_height as u32).unwrap();
+	let mut bitmap = IndexedBitmap::new(gif_header.screen_width as u32, gif_header.screen_height as u32).unwrap();
 	let mut writer = bitmap.pixels_mut();
 	lzw_decode(reader, &mut writer)?;
 
@@ -376,7 +376,7 @@ fn load_image_section<T: ReadBytesExt>(
 
 fn save_image_section<T: WriteBytesExt>(
 	writer: &mut T,
-	bitmap: &Bitmap,
+	bitmap: &IndexedBitmap,
 ) -> Result<(), GifError> {
 	writer.write_u8(IMAGE_DESCRIPTOR_SEPARATOR)?;
 	let image_descriptor = LocalImageDescriptor {
@@ -398,10 +398,10 @@ fn save_image_section<T: WriteBytesExt>(
 	Ok(())
 }
 
-impl Bitmap {
+impl IndexedBitmap {
 	pub fn load_gif_bytes<T: ReadBytesExt>(
 		reader: &mut T,
-	) -> Result<(Bitmap, Palette), GifError> {
+	) -> Result<(IndexedBitmap, Palette), GifError> {
 		let header = GifHeader::read(reader)?;
 		if header.signature != *b"GIF" || header.version != *b"89a" {
 			return Err(GifError::BadFile(String::from("Expected GIF89a header signature")));
@@ -420,7 +420,7 @@ impl Bitmap {
 			palette = None; // we expect to find a local color table later
 		}
 
-		let mut bitmap: Option<Bitmap> = None;
+		let mut bitmap: Option<IndexedBitmap> = None;
 		let mut current_graphic_control: Option<GraphicControlExtension> = None;
 
 		loop {
@@ -482,7 +482,7 @@ impl Bitmap {
 		Ok((bitmap.unwrap(), palette.unwrap()))
 	}
 
-	pub fn load_gif_file(path: &Path) -> Result<(Bitmap, Palette), GifError> {
+	pub fn load_gif_file(path: &Path) -> Result<(IndexedBitmap, Palette), GifError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_gif_bytes(&mut reader)
@@ -557,9 +557,9 @@ pub mod tests {
 
 	use super::*;
 
-	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw2.bin");
+	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
 	#[test]
 	fn load_and_save() -> Result<(), GifError> {
@@ -568,7 +568,7 @@ pub mod tests {
 				.unwrap();
 		let tmp_dir = TempDir::new()?;
 
-		let (bmp, palette) = Bitmap::load_gif_file(Path::new("./test-assets/test.gif"))?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(Path::new("./test-assets/test.gif"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -576,7 +576,7 @@ pub mod tests {
 
 		let save_path = tmp_dir.path().join("test_save.gif");
 		bmp.to_gif_file(&save_path, &palette, GifSettings::Default)?;
-		let (reloaded_bmp, reloaded_palette) = Bitmap::load_gif_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_gif_file(&save_path)?;
 		assert_eq!(16, reloaded_bmp.width());
 		assert_eq!(16, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -594,28 +594,28 @@ pub mod tests {
 
 		// first image
 
-		let (bmp, palette) = Bitmap::load_gif_file(Path::new("./test-assets/test_image.gif"))?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(Path::new("./test-assets/test_image.gif"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		let save_path = tmp_dir.path().join("test_save.gif");
 		bmp.to_gif_file(&save_path, &palette, GifSettings::Default)?;
-		let (reloaded_bmp, _) = Bitmap::load_gif_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_gif_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		// second image
 
-		let (bmp, palette) = Bitmap::load_gif_file(Path::new("./test-assets/test_image2.gif"))?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(Path::new("./test-assets/test_image2.gif"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
 		let save_path = tmp_dir.path().join("test_save_2.gif");
 		bmp.to_gif_file(&save_path, &palette, GifSettings::Default)?;
-		let (reloaded_bmp, _) = Bitmap::load_gif_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_gif_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);

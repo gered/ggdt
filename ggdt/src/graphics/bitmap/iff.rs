@@ -6,8 +6,8 @@ use std::path::Path;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::indexed::bitmap::Bitmap;
-use crate::graphics::indexed::palette::{Palette, PaletteError, PaletteFormat};
+use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::packbits::{pack_bits, PackBitsError, unpack_bits};
 
 #[derive(Error, Debug)]
@@ -250,8 +250,8 @@ fn extract_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 	}
 }
 
-fn load_planar_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result<Bitmap, IffError> {
-	let mut bitmap = Bitmap::new(bmhd.width as u32, bmhd.height as u32).unwrap();
+fn load_planar_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result<IndexedBitmap, IffError> {
+	let mut bitmap = IndexedBitmap::new(bmhd.width as u32, bmhd.height as u32).unwrap();
 
 	let row_bytes = (((bmhd.width + 15) >> 4) << 1) as usize;
 	let mut buffer = vec![0u8; row_bytes];
@@ -297,8 +297,8 @@ fn load_planar_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result
 	Ok(bitmap)
 }
 
-fn load_chunky_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result<Bitmap, IffError> {
-	let mut bitmap = Bitmap::new(bmhd.width as u32, bmhd.height as u32).unwrap();
+fn load_chunky_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result<IndexedBitmap, IffError> {
+	let mut bitmap = IndexedBitmap::new(bmhd.width as u32, bmhd.height as u32).unwrap();
 
 	for y in 0..bmhd.height {
 		if bmhd.compress == 1 {
@@ -317,7 +317,7 @@ fn load_chunky_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result
 
 fn write_planar_body<T: WriteBytesExt>(
 	writer: &mut T,
-	bitmap: &Bitmap,
+	bitmap: &IndexedBitmap,
 	bmhd: &BMHDChunk,
 ) -> Result<(), IffError> {
 	let row_bytes = (((bitmap.width() + 15) >> 4) << 1) as usize;
@@ -349,7 +349,7 @@ fn write_planar_body<T: WriteBytesExt>(
 
 fn write_chunky_body<T: WriteBytesExt>(
 	writer: &mut T,
-	bitmap: &Bitmap,
+	bitmap: &IndexedBitmap,
 	bmhd: &BMHDChunk,
 ) -> Result<(), IffError> {
 	for y in 0..bitmap.height() {
@@ -367,10 +367,10 @@ fn write_chunky_body<T: WriteBytesExt>(
 	Ok(())
 }
 
-impl Bitmap {
+impl IndexedBitmap {
 	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(
 		reader: &mut T,
-	) -> Result<(Bitmap, Palette), IffError> {
+	) -> Result<(IndexedBitmap, Palette), IffError> {
 		let form_chunk = FormChunkHeader::read(reader)?;
 		if form_chunk.chunk_id.id != *b"FORM" {
 			return Err(IffError::BadFile(String::from(
@@ -385,7 +385,7 @@ impl Bitmap {
 
 		let mut bmhd: Option<BMHDChunk> = None;
 		let mut palette: Option<Palette> = None;
-		let mut bitmap: Option<Bitmap> = None;
+		let mut bitmap: Option<IndexedBitmap> = None;
 
 		loop {
 			let header = match SubChunkHeader::read(reader) {
@@ -447,7 +447,7 @@ impl Bitmap {
 		Ok((bitmap.unwrap(), palette.unwrap()))
 	}
 
-	pub fn load_iff_file(path: &Path) -> Result<(Bitmap, Palette), IffError> {
+	pub fn load_iff_file(path: &Path) -> Result<(IndexedBitmap, Palette), IffError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_iff_bytes(&mut reader)
@@ -565,9 +565,9 @@ mod tests {
 
 	use super::*;
 
-	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw2.bin");
+	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
 	#[test]
 	pub fn load_and_save() -> Result<(), IffError> {
@@ -578,7 +578,7 @@ mod tests {
 
 		// ILBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_ilbm.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_ilbm.lbm"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -586,7 +586,7 @@ mod tests {
 
 		let save_path = tmp_dir.path().join("test_save_ilbm.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Ilbm)?;
-		let (reloaded_bmp, reloaded_palette) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(16, reloaded_bmp.width());
 		assert_eq!(16, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -594,7 +594,7 @@ mod tests {
 
 		// PBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_pbm.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_pbm.lbm"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -602,7 +602,7 @@ mod tests {
 
 		let save_path = tmp_dir.path().join("test_save_pbm.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Pbm)?;
-		let (reloaded_bmp, reloaded_palette) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(16, reloaded_bmp.width());
 		assert_eq!(16, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -617,56 +617,56 @@ mod tests {
 
 		// first image, PBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_pbm_image.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_pbm_image.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		let save_path = tmp_dir.path().join("test_save_pbm_image.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Pbm)?;
-		let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		// second image, PBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_pbm_image2.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_pbm_image2.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
 		let save_path = tmp_dir.path().join("test_save_pbm_image2.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Pbm)?;
-		let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
 		// first image, ILBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		let save_path = tmp_dir.path().join("test_save_ilbm_image.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Ilbm)?;
-		let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		// second image, ILBM format
 
-		let (bmp, palette) = Bitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image2.lbm"))?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test_ilbm_image2.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
 		let save_path = tmp_dir.path().join("test_save_ilbm_image2.lbm");
 		bmp.to_iff_file(&save_path, &palette, IffFormat::Ilbm)?;
-		let (reloaded_bmp, _) = Bitmap::load_iff_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_iff_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);

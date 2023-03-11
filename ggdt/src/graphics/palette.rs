@@ -7,8 +7,8 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
+use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::color::{from_rgb32, lerp_rgb32, to_rgb32};
-use crate::graphics::indexed::bitmap::Bitmap;
 use crate::NUM_COLORS;
 use crate::utils::abs_diff;
 
@@ -16,7 +16,7 @@ use crate::utils::abs_diff;
 pub trait ColorRange: RangeBounds<u8> + Iterator<Item=u8> {}
 impl<T> ColorRange for T where T: RangeBounds<u8> + Iterator<Item=u8> {}
 
-pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../../assets/vga.pal");
+pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../assets/vga.pal");
 
 // vga bios (0-63) format
 fn read_palette_6bit<T: ReadBytesExt>(
@@ -484,7 +484,7 @@ impl Palette {
 	/// pixel is one of the colors from this palette, in ascending order, left-to-right,
 	/// top-to-bottom. The coordinates given specify the top-left coordinate on the destination
 	/// bitmap to begin drawing the palette at.
-	pub fn draw(&self, dest: &mut Bitmap, x: i32, y: i32) {
+	pub fn draw(&self, dest: &mut IndexedBitmap, x: i32, y: i32) {
 		let mut color = 0;
 		for yd in 0..16 {
 			for xd in 0..16 {

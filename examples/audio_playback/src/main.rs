@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 #[derive(Debug, Copy, Clone)]
 struct AudioChannelStatus {

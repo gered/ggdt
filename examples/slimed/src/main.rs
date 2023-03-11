@@ -6,7 +6,7 @@ use std::rc::Rc;
 
 use anyhow::{Context, Result};
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::entities::*;
 use crate::states::*;
@@ -29,24 +29,24 @@ pub struct Core {
 	pub event_publisher: EventPublisher<Event>,
 	pub palette: Palette,
 	pub fade_out_palette: Palette,
-	pub tiles: Rc<BitmapAtlas<Bitmap>>,
-	pub hero_male: Rc<BitmapAtlas<Bitmap>>,
-	pub hero_female: Rc<BitmapAtlas<Bitmap>>,
-	pub green_slime: Rc<BitmapAtlas<Bitmap>>,
-	pub blue_slime: Rc<BitmapAtlas<Bitmap>>,
-	pub orange_slime: Rc<BitmapAtlas<Bitmap>>,
-	pub fist: Rc<BitmapAtlas<Bitmap>>,
-	pub sword: Rc<BitmapAtlas<Bitmap>>,
-	pub particles: Rc<BitmapAtlas<Bitmap>>,
-	pub items: Rc<BitmapAtlas<Bitmap>>,
-	pub ui: Rc<BitmapAtlas<Bitmap>>,
+	pub tiles: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub hero_male: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub hero_female: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub green_slime: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub blue_slime: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub orange_slime: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub fist: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub sword: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub particles: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub items: Rc<BitmapAtlas<IndexedBitmap>>,
+	pub ui: Rc<BitmapAtlas<IndexedBitmap>>,
 	pub tilemap: TileMap,
 	pub slime_activity_states: Rc<HashMap<EntityActivity, Rc<AnimationDef>>>,
 	pub hero_activity_states: Rc<HashMap<EntityActivity, Rc<AnimationDef>>>,
 	pub poof1_animation_def: Rc<AnimationDef>,
 	pub poof2_animation_def: Rc<AnimationDef>,
 	pub sparkles_animation_def: Rc<AnimationDef>,
-	pub sprite_render_list: Vec<(EntityId, Vector2, BlitMethod)>,
+	pub sprite_render_list: Vec<(EntityId, Vector2, IndexedBlitMethod)>,
 }
 
 impl CoreState<DosLike> for Core {

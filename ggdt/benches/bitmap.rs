@@ -1,9 +1,9 @@
 use criterion::{black_box, Criterion, criterion_group, criterion_main};
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
-	let mut source = Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
+	let mut source = IndexedBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
 	let mut dest = vec![0u32; (SCREEN_WIDTH * SCREEN_HEIGHT * 4) as usize].into_boxed_slice();
 	let palette = Palette::new_vga_palette().unwrap();
 

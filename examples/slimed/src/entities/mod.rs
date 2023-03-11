@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::{Core, Game, TILE_HEIGHT, TILE_WIDTH, TileMap};
 
@@ -218,7 +218,7 @@ pub struct LifeTime(pub f32);
 pub struct Pixel(pub u8);
 
 pub struct Sprite {
-	pub atlas: Rc<BitmapAtlas<Bitmap>>,
+	pub atlas: Rc<BitmapAtlas<IndexedBitmap>>,
 	pub index: usize,
 }
 
@@ -314,7 +314,7 @@ pub struct SpriteIndexByDirection {
 }
 
 pub struct Weapon {
-	pub atlas: Rc<BitmapAtlas<Bitmap>>,
+	pub atlas: Rc<BitmapAtlas<IndexedBitmap>>,
 	pub base_index: usize,
 	pub offsets: [Vector2; 4],
 	pub damage: i32,

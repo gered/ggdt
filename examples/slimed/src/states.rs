@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::entities::*;
 use crate::Game;

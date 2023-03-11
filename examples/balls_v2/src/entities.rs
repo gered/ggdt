@@ -1,4 +1,4 @@
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::states::*;
 
@@ -161,7 +161,7 @@ fn render_system_sprites(context: &mut Context) {
 	for (entity, sprite_index) in sprite_indices.iter() {
 		let position = positions.get(&entity).unwrap();
 		context.system.res.video.blit(
-			BlitMethod::Transparent(0),
+			IndexedBlitMethod::Transparent(0),
 			&context.sprites[sprite_index.0],
 			position.0.x as i32,
 			position.0.y as i32,

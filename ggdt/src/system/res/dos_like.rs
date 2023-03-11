@@ -32,8 +32,8 @@ use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::audio::queue::AudioQueue;
 use crate::graphics::font::BitmaskFont;
-use crate::graphics::indexed::bitmap::Bitmap;
-use crate::graphics::indexed::palette::Palette;
+use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::palette::Palette;
 use crate::system::event::{SystemEvent, SystemEventHandler};
 use crate::system::input_devices::InputDevice;
 use crate::system::input_devices::keyboard::Keyboard;
@@ -140,7 +140,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 		// create the Bitmap object that will be exposed to the application acting as the system
 		// backbuffer
 
-		let framebuffer = match Bitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT) {
+		let framebuffer = match IndexedBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT) {
 			Ok(bmp) => bmp,
 			Err(error) => return Err(SystemResourcesError::SDLError(error.to_string())),
 		};
@@ -218,7 +218,7 @@ pub struct DosLike {
 	/// The primary backbuffer [`Bitmap`] that will be rendered to the screen whenever
 	/// [`System::display`] is called. Regardless of the actual window size, this bitmap is always
 	/// [`SCREEN_WIDTH`]x[`SCREEN_HEIGHT`] pixels in size.
-	pub video: Bitmap,
+	pub video: IndexedBitmap,
 
 	/// A pre-loaded [`Font`] that can be used for text rendering.
 	pub font: BitmaskFont,
@@ -233,7 +233,7 @@ pub struct DosLike {
 
 	/// Manages custom mouse cursor graphics and state. Use this to set/unset a custom mouse cursor bitmap.
 	/// When set, rendering should occur automatically during calls to [`SystemResources::display`].
-	pub cursor: CustomMouseCursor<Bitmap>,
+	pub cursor: CustomMouseCursor<IndexedBitmap>,
 }
 
 impl std::fmt::Debug for DosLike {

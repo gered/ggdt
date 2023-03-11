@@ -5,7 +5,7 @@ use std::path::Path;
 use anyhow::{Context, Result};
 use serde::Deserialize;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::{TILE_HEIGHT, TILE_WIDTH};
 
@@ -61,7 +61,7 @@ impl TileMap {
 		&self.layers[2]
 	}
 
-	pub fn draw(&self, dest: &mut Bitmap, tiles: &BitmapAtlas<Bitmap>, camera_x: i32, camera_y: i32) {
+	pub fn draw(&self, dest: &mut IndexedBitmap, tiles: &BitmapAtlas<IndexedBitmap>, camera_x: i32, camera_y: i32) {
 		let xt = camera_x / TILE_WIDTH as i32;
 		let yt = camera_y / TILE_HEIGHT as i32;
 		let xp = camera_x % TILE_WIDTH as i32;
@@ -75,11 +75,11 @@ impl TileMap {
 
 					let lower = self.layers[0][index];
 					if lower >= 0 {
-						dest.blit_region(BlitMethod::Solid, tiles.bitmap(), &tiles[lower as usize], xd, yd);
+						dest.blit_region(IndexedBlitMethod::Solid, tiles.bitmap(), &tiles[lower as usize], xd, yd);
 					}
 					let upper = self.layers[1][index];
 					if upper >= 0 {
-						dest.blit_region(BlitMethod::Transparent(0), tiles.bitmap(), &tiles[upper as usize], xd, yd);
+						dest.blit_region(IndexedBlitMethod::Transparent(0), tiles.bitmap(), &tiles[upper as usize], xd, yd);
 					}
 				}
 			}

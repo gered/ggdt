@@ -5,9 +5,9 @@ use std::path::Path;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
+use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::color::from_rgb32;
-use crate::graphics::indexed::bitmap::Bitmap;
-use crate::graphics::indexed::palette::{Palette, PaletteError, PaletteFormat};
+use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::bytes::ReadFixedLengthByteArray;
 
 #[derive(Error, Debug)]
@@ -104,10 +104,10 @@ fn write_pcx_data<T: WriteBytesExt>(
 	Ok(())
 }
 
-impl Bitmap {
+impl IndexedBitmap {
 	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(
 		reader: &mut T,
-	) -> Result<(Bitmap, Palette), PcxError> {
+	) -> Result<(IndexedBitmap, Palette), PcxError> {
 		let header = PcxHeader::read(reader)?;
 
 		if header.manufacturer != 10 {
@@ -140,7 +140,7 @@ impl Bitmap {
 
 		let width = (header.x2 + 1) as u32;
 		let height = (header.y2 + 1) as u32;
-		let mut bmp = Bitmap::new(width, height).unwrap();
+		let mut bmp = IndexedBitmap::new(width, height).unwrap();
 		let mut writer = Cursor::new(bmp.pixels_mut());
 
 		for _y in 0..height {
@@ -194,7 +194,7 @@ impl Bitmap {
 		Ok((bmp, palette))
 	}
 
-	pub fn load_pcx_file(path: &Path) -> Result<(Bitmap, Palette), PcxError> {
+	pub fn load_pcx_file(path: &Path) -> Result<(IndexedBitmap, Palette), PcxError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_pcx_bytes(&mut reader)
@@ -286,9 +286,9 @@ pub mod tests {
 
 	use super::*;
 
-	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../../test-assets/test_large_bmp_pixels_raw2.bin");
+	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
+	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
 
 	#[test]
 	pub fn load_and_save() -> Result<(), PcxError> {
@@ -297,7 +297,7 @@ pub mod tests {
 				.unwrap();
 		let tmp_dir = TempDir::new()?;
 
-		let (bmp, palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test.pcx"))?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test.pcx"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -305,7 +305,7 @@ pub mod tests {
 
 		let save_path = tmp_dir.path().join("test_save.pcx");
 		bmp.to_pcx_file(&save_path, &palette)?;
-		let (reloaded_bmp, reloaded_palette) = Bitmap::load_pcx_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(16, reloaded_bmp.width());
 		assert_eq!(16, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_BMP_PIXELS_RAW);
@@ -320,28 +320,28 @@ pub mod tests {
 
 		// first image
 
-		let (bmp, palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test_image.pcx"))?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test_image.pcx"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		let save_path = tmp_dir.path().join("test_save.pcx");
 		bmp.to_pcx_file(&save_path, &palette)?;
-		let (reloaded_bmp, _) = Bitmap::load_pcx_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
 
 		// second image
 
-		let (bmp, palette) = Bitmap::load_pcx_file(Path::new("./test-assets/test_image2.pcx"))?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test_image2.pcx"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
 
 		let save_path = tmp_dir.path().join("test_save_2.pcx");
 		bmp.to_pcx_file(&save_path, &palette)?;
-		let (reloaded_bmp, _) = Bitmap::load_pcx_file(&save_path)?;
+		let (reloaded_bmp, _) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
 		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);

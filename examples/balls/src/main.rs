@@ -2,7 +2,7 @@ use std::path::Path;
 
 use anyhow::Result;
 
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 const NUM_BALLS: usize = 128;
 const NUM_BALL_SPRITES: usize = 16;
@@ -29,13 +29,13 @@ fn main() -> Result<()> {
 	let (balls_bmp, balls_palette) = Bitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
 	system.res.palette = balls_palette.clone();
 
-	let mut sprites = Vec::<Bitmap>::new();
+	let mut sprites = Vec::<IndexedBitmap>::new();
 	let mut balls = Vec::<Ball>::new();
 
 	for i in 0..NUM_BALL_SPRITES {
-		let mut sprite = Bitmap::new(BALL_WIDTH, BALL_HEIGHT)?;
+		let mut sprite = IndexedBitmap::new(BALL_WIDTH, BALL_HEIGHT)?;
 		sprite.blit_region(
-			BlitMethod::Solid,
+			IndexedBlitMethod::Solid,
 			&balls_bmp,
 			&Rect::new(i as i32 * BALL_WIDTH as i32, 0, BALL_WIDTH, BALL_HEIGHT),
 			0,
@@ -100,7 +100,7 @@ fn main() -> Result<()> {
 
 		for i in 0..NUM_BALLS {
 			system.res.video.blit(
-				BlitMethod::Transparent(0),
+				IndexedBlitMethod::Transparent(0),
 				&sprites[balls[i].sprite],
 				balls[i].x,
 				balls[i].y,

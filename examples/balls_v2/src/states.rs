@@ -1,4 +1,4 @@
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::*;
 
@@ -10,7 +10,7 @@ pub struct Context {
 	pub delta: f32,
 	pub system: System<DosLike>,
 	pub font: BitmaskFont,
-	pub sprites: Vec<Bitmap>,
+	pub sprites: Vec<IndexedBitmap>,
 	pub entities: Entities,
 	pub event_publisher: EventPublisher<Event>,
 }
@@ -25,14 +25,14 @@ impl Game {
 	pub fn new(mut system: System<DosLike>) -> Result<Self> {
 		let font = BitmaskFont::new_vga_font()?;
 
-		let (balls_bmp, balls_palette) = Bitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
+		let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
 		system.res.palette = balls_palette.clone();
 
 		let mut sprites = Vec::new();
 		for i in 0..NUM_BALL_SPRITES {
-			let mut sprite = Bitmap::new(BALL_SIZE as u32, BALL_SIZE as u32)?;
+			let mut sprite = IndexedBitmap::new(BALL_SIZE as u32, BALL_SIZE as u32)?;
 			sprite.blit_region(
-				BlitMethod::Solid,
+				IndexedBlitMethod::Solid,
 				&balls_bmp,
 				&Rect::new(i as i32 * BALL_SIZE as i32, 0, BALL_SIZE as u32, BALL_SIZE as u32),
 				0,

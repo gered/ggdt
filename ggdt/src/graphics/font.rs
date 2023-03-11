@@ -5,7 +5,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::GeneralBitmap;
+use crate::graphics::bitmap::Bitmap;
 use crate::graphics::Pixel;
 use crate::math::rect::Rect;
 
@@ -32,9 +32,9 @@ pub enum FontRenderOpts<PixelType: Pixel> {
 
 pub trait Character {
 	fn bounds(&self) -> &Rect;
-	fn draw<BitmapType>(&self, dest: &mut BitmapType, x: i32, y: i32, opts: FontRenderOpts<BitmapType::PixelType>)
+	fn draw<PixelType>(&self, dest: &mut Bitmap<PixelType>, x: i32, y: i32, opts: FontRenderOpts<PixelType>)
 	where
-		BitmapType: GeneralBitmap;
+		PixelType: Pixel;
 }
 
 pub trait Font {
@@ -60,9 +60,9 @@ impl Character for BitmaskCharacter {
 		&self.bounds
 	}
 
-	fn draw<BitmapType>(&self, dest: &mut BitmapType, x: i32, y: i32, opts: FontRenderOpts<BitmapType::PixelType>)
+	fn draw<PixelType>(&self, dest: &mut Bitmap<PixelType>, x: i32, y: i32, opts: FontRenderOpts<PixelType>)
 	where
-		BitmapType: GeneralBitmap
+		PixelType: Pixel
 	{
 		// out of bounds check
 		if ((x + self.bounds.width as i32) < dest.clip_region().x)

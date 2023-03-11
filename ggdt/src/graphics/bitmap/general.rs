@@ -6,9 +6,12 @@
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
-use std::error::Error;
-
-use crate::graphics::{indexed, Pixel};
+use crate::graphics::bitmap::BitmapError;
+use crate::graphics::bitmap::indexed::blit::IndexedBlitMethod;
+use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::bitmap::rgb::blit::RgbaBlitMethod;
+use crate::graphics::bitmap::rgb::RgbaBitmap;
+use crate::graphics::Pixel;
 use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
@@ -22,10 +25,9 @@ pub enum GeneralBlitMethod<PixelType: Pixel> {
 /// any one pixel-depth. Note that this does not provide cross-bit-depth drawing support.
 pub trait GeneralBitmap: Sized + Clone {
 	type PixelType: Pixel;
-	type ErrorType: Error;
 
 	/// Creates a new bitmap with the specified dimensions, in pixels.
-	fn new(width: u32, height: u32) -> Result<Self, Self::ErrorType>;
+	fn new(width: u32, height: u32) -> Result<Self, BitmapError>;
 
 	/// Returns the width of the bitmap in pixels.
 	fn width(&self) -> u32;
@@ -94,20 +96,17 @@ pub trait GeneralBitmap: Sized + Clone {
 	}
 }
 
-impl GeneralBitmap for indexed::bitmap::Bitmap {
+impl GeneralBitmap for IndexedBitmap {
 	type PixelType = u8;
-	type ErrorType = indexed::bitmap::BitmapError;
 
-	fn new(width: u32, height: u32) -> Result<Self, Self::ErrorType> {
+	fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
 		Self::new(width, height)
 	}
 
-	#[inline]
 	fn width(&self) -> u32 {
 		self.width()
 	}
 
-	#[inline]
 	fn height(&self) -> u32 {
 		self.height()
 	}
@@ -116,59 +115,48 @@ impl GeneralBitmap for indexed::bitmap::Bitmap {
 		self.clip_region()
 	}
 
-	#[inline]
 	fn full_bounds(&self) -> Rect {
 		self.full_bounds()
 	}
 
-	#[inline]
-	fn clear(&mut self, color: u8) {
-		self.clear(color);
+	fn clear(&mut self, color: Self::PixelType) {
+		self.clear(color)
 	}
 
-	#[inline]
-	fn set_pixel(&mut self, x: i32, y: i32, color: u8) {
-		self.set_pixel(x, y, color);
+	fn set_pixel(&mut self, x: i32, y: i32, color: Self::PixelType) {
+		self.set_pixel(x, y, color)
 	}
 
-	#[inline]
-	fn get_pixel(&self, x: i32, y: i32) -> Option<u8> {
+	fn get_pixel(&self, x: i32, y: i32) -> Option<Self::PixelType> {
 		self.get_pixel(x, y)
 	}
 
-	#[inline]
-	fn line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8) {
-		self.line(x1, y1, x2, y2, color);
+	fn line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.line(x1, y1, x2, y2, color)
 	}
 
-	#[inline]
-	fn horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: u8) {
-		self.horiz_line(x1, x2, y, color);
+	fn horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: Self::PixelType) {
+		self.horiz_line(x1, x2, y, color)
 	}
 
-	#[inline]
-	fn vert_line(&mut self, x: i32, y1: i32, y2: i32, color: u8) {
-		self.vert_line(x, y1, y2, color);
+	fn vert_line(&mut self, x: i32, y1: i32, y2: i32, color: Self::PixelType) {
+		self.vert_line(x, y1, y2, color)
 	}
 
-	#[inline]
-	fn rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8) {
-		self.rect(x1, y1, x2, y2, color);
+	fn rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.rect(x1, y1, x2, y2, color)
 	}
 
-	#[inline]
-	fn filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8) {
-		self.filled_rect(x1, y1, x2, y2, color);
+	fn filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.filled_rect(x1, y1, x2, y2, color)
 	}
 
-	#[inline]
-	fn circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: u8) {
-		self.circle(center_x, center_y, radius, color);
+	fn circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
+		self.circle(center_x, center_y, radius, color)
 	}
 
-	#[inline]
-	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: u8) {
-		self.filled_circle(center_x, center_y, radius, color);
+	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
+		self.filled_circle(center_x, center_y, radius, color)
 	}
 
 	fn blit_region(
@@ -179,11 +167,88 @@ impl GeneralBitmap for indexed::bitmap::Bitmap {
 		dest_x: i32,
 		dest_y: i32
 	) {
-		use indexed::bitmap::blit::BlitMethod;
-
 		let blit_method = match method {
-			GeneralBlitMethod::Solid => BlitMethod::Solid,
-			GeneralBlitMethod::Transparent(color) => BlitMethod::Transparent(color),
+			GeneralBlitMethod::Solid => IndexedBlitMethod::Solid,
+			GeneralBlitMethod::Transparent(color) => IndexedBlitMethod::Transparent(color),
+		};
+		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
+	}
+}
+
+impl GeneralBitmap for RgbaBitmap {
+	type PixelType = u32;
+
+	fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
+		Self::new(width, height)
+	}
+
+	fn width(&self) -> u32 {
+		self.width()
+	}
+
+	fn height(&self) -> u32 {
+		self.height()
+	}
+
+	fn clip_region(&self) -> &Rect {
+		self.clip_region()
+	}
+
+	fn full_bounds(&self) -> Rect {
+		self.full_bounds()
+	}
+
+	fn clear(&mut self, color: Self::PixelType) {
+		self.clear(color)
+	}
+
+	fn set_pixel(&mut self, x: i32, y: i32, color: Self::PixelType) {
+		self.set_pixel(x, y, color)
+	}
+
+	fn get_pixel(&self, x: i32, y: i32) -> Option<Self::PixelType> {
+		self.get_pixel(x, y)
+	}
+
+	fn line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.line(x1, y1, x2, y2, color)
+	}
+
+	fn horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: Self::PixelType) {
+		self.horiz_line(x1, x2, y, color)
+	}
+
+	fn vert_line(&mut self, x: i32, y1: i32, y2: i32, color: Self::PixelType) {
+		self.vert_line(x, y1, y2, color)
+	}
+
+	fn rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.rect(x1, y1, x2, y2, color)
+	}
+
+	fn filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
+		self.filled_rect(x1, y1, x2, y2, color)
+	}
+
+	fn circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
+		self.circle(center_x, center_y, radius, color)
+	}
+
+	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
+		self.filled_circle(center_x, center_y, radius, color)
+	}
+
+	fn blit_region(
+		&mut self,
+		method: GeneralBlitMethod<Self::PixelType>,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32
+	) {
+		let blit_method = match method {
+			GeneralBlitMethod::Solid => RgbaBlitMethod::Solid,
+			GeneralBlitMethod::Transparent(color) => RgbaBlitMethod::Transparent(color),
 		};
 		self.blit_region(blit_method, src, src_region, dest_x, dest_y)
 	}

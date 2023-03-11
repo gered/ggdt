@@ -1,4 +1,4 @@
-use ggdt::prelude::dos_like::*;
+use ggdt::prelude::*;
 
 use crate::{Core, TILE_HEIGHT, TILE_WIDTH};
 use crate::entities::*;
@@ -662,7 +662,7 @@ fn render_system_sprites(context: &mut Core) {
 		// build up list of entities to be rendered with their positions so we can sort them
 		// and render these entities with a proper y-based sort order
 		for (entity, _) in sprites.iter() {
-			let mut blit_method = BlitMethod::Transparent(0);
+			let mut blit_method = IndexedBlitMethod::Transparent(0);
 
 			// check for flicker effects
 			if let Some(flicker) = timed_flickers.get(entity) {
@@ -673,7 +673,7 @@ fn render_system_sprites(context: &mut Core) {
 							continue;
 						}
 						FlickerMethod::Color(draw_color) => {
-							blit_method = BlitMethod::TransparentSingle {
+							blit_method = IndexedBlitMethod::TransparentSingle {
 								transparent_color: 0,
 								draw_color,
 							};
