@@ -275,9 +275,9 @@ pub unsafe fn per_pixel_rotozoom_blit<PixelType: Pixel>(
 
 impl<PixelType: Pixel> Bitmap<PixelType> {
 	pub unsafe fn solid_blit(&mut self, src: &Self, src_region: &Rect, dest_x: i32, dest_y: i32) {
-		let src_row_length = src_region.width as usize * Self::PIXEL_SIZE;
-		let src_pitch = src.width as usize * Self::PIXEL_SIZE;
-		let dest_pitch = self.width as usize * Self::PIXEL_SIZE;
+		let src_row_length = src_region.width as usize;
+		let src_pitch = src.width as usize;
+		let dest_pitch = self.width as usize;
 		let mut src_pixels = src.pixels_at_ptr_unchecked(src_region.x, src_region.y);
 		let mut dest_pixels = self.pixels_at_mut_ptr_unchecked(dest_x, dest_y);
 
