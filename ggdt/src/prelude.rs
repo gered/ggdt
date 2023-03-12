@@ -11,6 +11,7 @@ pub use crate::{
 		prelude::*,
 		res::{
 			dos_like::*,
+			standard::*,
 		},
 	},
 	utils::prelude::*,

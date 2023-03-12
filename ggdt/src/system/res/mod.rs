@@ -5,6 +5,7 @@ use crate::audio::device::AudioDeviceError;
 use crate::system::event::SystemEvent;
 
 pub mod dos_like;
+pub mod standard;
 
 #[derive(Error, Debug)]
 pub enum SystemResourcesError {
