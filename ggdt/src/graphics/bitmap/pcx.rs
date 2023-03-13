@@ -6,6 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::color::from_rgb32;
 use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::bytes::ReadFixedLengthByteArray;
@@ -277,6 +278,25 @@ impl IndexedBitmap {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_pcx_bytes(&mut writer, palette)
+	}
+}
+
+// wasteful temporary measures until i feel like re-working the above loading process with some kind of
+// multi-pixel-depth support.
+
+impl RgbaBitmap {
+	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(
+		reader: &mut T,
+	) -> Result<(RgbaBitmap, Palette), PcxError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_pcx_bytes(reader)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
+	}
+
+	pub fn load_pcx_file(path: &Path) -> Result<(RgbaBitmap, Palette), PcxError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_pcx_file(path)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
 	}
 }
 

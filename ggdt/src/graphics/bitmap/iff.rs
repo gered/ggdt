@@ -7,6 +7,7 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::packbits::{pack_bits, PackBitsError, unpack_bits};
 
@@ -556,6 +557,25 @@ impl IndexedBitmap {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_iff_bytes(&mut writer, palette, format)
+	}
+}
+
+// wasteful temporary measures until i feel like re-working the above loading process with some kind of
+// multi-pixel-depth support.
+
+impl RgbaBitmap {
+	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(
+		reader: &mut T,
+	) -> Result<(RgbaBitmap, Palette), IffError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_iff_bytes(reader)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
+	}
+
+	pub fn load_iff_file(path: &Path) -> Result<(RgbaBitmap, Palette), IffError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_iff_file(path)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
 	}
 }
 

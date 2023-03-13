@@ -6,6 +6,7 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::lzwgif::{lzw_decode, lzw_encode, LzwError};
 
@@ -548,6 +549,25 @@ impl IndexedBitmap {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_gif_bytes(&mut writer, palette, settings)
+	}
+}
+
+// wasteful temporary measures until i feel like re-working the above loading process with some kind of
+// multi-pixel-depth support.
+
+impl RgbaBitmap {
+	pub fn load_gif_bytes<T: ReadBytesExt>(
+		reader: &mut T,
+	) -> Result<(RgbaBitmap, Palette), GifError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_gif_bytes(reader)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
+	}
+
+	pub fn load_gif_file(path: &Path) -> Result<(RgbaBitmap, Palette), GifError> {
+		let (temp_bitmap, palette) = IndexedBitmap::load_gif_file(path)?;
+		let output = temp_bitmap.to_rgba(&palette);
+		Ok((output, palette))
 	}
 }
 
