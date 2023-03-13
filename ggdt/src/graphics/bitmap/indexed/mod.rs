@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use crate::graphics::bitmap::{Bitmap, BitmapError};
+use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::Palette;
 
 pub mod blit;
@@ -53,5 +54,19 @@ impl IndexedBitmap {
 		for (src, dest) in self.pixels().iter().zip(dest.iter_mut()) {
 			*dest = palette[*src];
 		}
+	}
+
+	/// Makes a [`RgbaBitmap`] copy of this bitmap, using the specified 256 colour palette during
+	/// the pixel format conversion.
+	///
+	/// # Arguments
+	///
+	/// * `palette`: the 256 colour palette to use during pixel conversion
+	///
+	/// returns: `RgbaBitmap`
+	pub fn to_rgba(&self, palette: &Palette) -> RgbaBitmap {
+		let mut output = RgbaBitmap::new(self.width, self.height).unwrap();
+		self.copy_as_argb_to(output.pixels_mut(), palette);
+		output
 	}
 }
