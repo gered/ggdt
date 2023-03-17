@@ -12,6 +12,7 @@ pub use crate::graphics::{
 			primitives::*,
 		},
 		pcx::*,
+		png::*,
 		primitives::*,
 		rgb::{
 			*,

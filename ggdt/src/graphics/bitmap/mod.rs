@@ -9,6 +9,7 @@ pub mod gif;
 pub mod iff;
 pub mod indexed;
 pub mod pcx;
+pub mod png;
 pub mod primitives;
 pub mod rgb;
 
