@@ -638,6 +638,38 @@ pub mod tests {
 			Err(PngError::BadFile(..))
 		);
 
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_alpha_8bit.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_greyscale_8bit.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_indexed_16col.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_rgb_16bit.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_rgba_16bit.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+
+		// also test the extra formats that IndexedBitmap does not support which RgbaBitmap does
+		// (anything not 256-color indexed basically ...)
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("rgb.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+		assert_matches!(
+			IndexedBitmap::load_png_file(path_to_file(Path::new("rgba.png")).as_path()),
+			Err(PngError::BadFile(..))
+		);
+
 		Ok(())
 	}
 }
