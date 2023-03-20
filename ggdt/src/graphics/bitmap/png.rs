@@ -166,55 +166,12 @@ impl Filter {
 	}
 }
 
-trait PixelConversion<PixelType: Pixel> {
-	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, palette: &Option<Palette>) -> Result<PixelType, PngError>;
-}
-
-struct PixelDecoder {
-	pub format: ColorFormat,
-}
-
-impl PixelConversion<u8> for PixelDecoder {
-	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, _palette: &Option<Palette>) -> Result<u8, PngError> {
-		match self.format {
-			ColorFormat::IndexedColor => {
-				Ok(reader.read_u8()?)
-			}
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
-		}
-	}
-}
-
-impl PixelConversion<u32> for PixelDecoder {
-	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, palette: &Option<Palette>) -> Result<u32, PngError> {
-		match self.format {
-			ColorFormat::IndexedColor => {
-				let color = reader.read_u8()?;
-				if let Some(palette) = palette {
-					Ok(palette[color])
-				} else {
-					return Err(PngError::BadFile(String::from("No palette to map indexed-color format pixels to RGBA format destination")));
-				}
-			}
-			ColorFormat::RGB => {
-				let r = reader.read_u8()?;
-				let g = reader.read_u8()?;
-				let b = reader.read_u8()?;
-				Ok(to_rgb32(r, g, b))
-			}
-			ColorFormat::RGBA => {
-				let r = reader.read_u8()?;
-				let g = reader.read_u8()?;
-				let b = reader.read_u8()?;
-				let a = reader.read_u8()?;
-				Ok(to_argb32(a, r, g, b))
-			}
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
-		}
-	}
+trait ScanlinePixelConverter<PixelType: Pixel> {
+	fn read_pixel(&mut self, x: usize, palette: &Option<Palette>) -> Result<PixelType, PngError>;
 }
 
 struct ScanlineBuffer {
+	format: ColorFormat,
 	stride: usize,
 	bpp: usize,
 	y: usize,
@@ -233,6 +190,7 @@ impl ScanlineBuffer {
 		};
 		let stride = ihdr.width as usize * bpp;
 		Ok(ScanlineBuffer {
+			format: ihdr.format,
 			stride,
 			bpp,
 			y: 0,
@@ -275,7 +233,7 @@ impl ScanlineBuffer {
 		}
 	}
 
-	pub fn read_line<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<&[u8], PngError> {
+	pub fn read_line<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<(), PngError> {
 		if self.y >= self.height {
 			return Err(PngError::IOError(io::Error::from(io::ErrorKind::UnexpectedEof)));
 		} else if self.y >= 1 {
@@ -291,9 +249,52 @@ impl ScanlineBuffer {
 			self.current[x] = decoded;
 		}
 
-		Ok(&self.current)
+		Ok(())
 	}
 }
+
+impl ScanlinePixelConverter<u8> for ScanlineBuffer {
+	fn read_pixel(&mut self, x: usize, _palette: &Option<Palette>) -> Result<u8, PngError> {
+		let offset = x * self.bpp;
+		match self.format {
+			ColorFormat::IndexedColor => {
+				Ok(self.current[offset])
+			}
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+		}
+	}
+}
+
+impl ScanlinePixelConverter<u32> for ScanlineBuffer {
+	fn read_pixel(&mut self, x: usize, palette: &Option<Palette>) -> Result<u32, PngError> {
+		let offset = x * self.bpp;
+		match self.format {
+			ColorFormat::IndexedColor => {
+				let color = self.current[offset];
+				if let Some(palette) = palette {
+					Ok(palette[color])
+				} else {
+					return Err(PngError::BadFile(String::from("No palette to map indexed-color format pixels to RGBA format destination")));
+				}
+			}
+			ColorFormat::RGB => {
+				let r = self.current[offset];
+				let g = self.current[offset + 1];
+				let b = self.current[offset + 2];
+				Ok(to_rgb32(r, g, b))
+			}
+			ColorFormat::RGBA => {
+				let r = self.current[offset];
+				let g = self.current[offset + 1];
+				let b = self.current[offset + 2];
+				let a = self.current[offset + 3];
+				Ok(to_argb32(a, r, g, b))
+			}
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+		}
+	}
+}
+
 
 fn load_png_bytes<Reader, PixelType>(
 	reader: &mut Reader
@@ -301,7 +302,7 @@ fn load_png_bytes<Reader, PixelType>(
 where
 	Reader: ReadBytesExt + Seek,
 	PixelType: Pixel,
-	PixelDecoder: PixelConversion<PixelType>
+	ScanlineBuffer: ScanlinePixelConverter<PixelType>
 {
 	let header: [u8; 8] = reader.read_bytes()?;
 	if header != PNG_HEADER {
@@ -380,16 +381,15 @@ where
 		compressed_data.append(&mut read_chunk_data(reader, &chunk_header)?);
 	}
 
-	let mut pixel_decoder = PixelDecoder { format: ihdr.format };
 	let mut scanline_buffer = ScanlineBuffer::new(&ihdr)?;
 
 	let mut output = Bitmap::internal_new(ihdr.width, ihdr.height).unwrap();
 	let mut deflater = flate2::read::ZlibDecoder::<&[u8]>::new(&compressed_data);
 
 	for y in 0..ihdr.height as usize {
-		let mut line = scanline_buffer.read_line(&mut deflater)?;
+		scanline_buffer.read_line(&mut deflater)?;
 		for x in 0..ihdr.width as usize {
-			let pixel = pixel_decoder.read_png_pixel(&mut line, &palette)?;
+			let pixel = scanline_buffer.read_pixel(x, &palette)?;
 			// TODO: we can make this a bit more efficient ...
 			unsafe { output.set_pixel_unchecked(x as i32, y as i32, pixel); }
 		}
