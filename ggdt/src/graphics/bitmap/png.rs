@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::hash::Hasher;
 use std::io;
-use std::io::{BufReader, BufWriter, Cursor, Seek};
+use std::io::{BufReader, BufWriter, Seek};
 use std::path::Path;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
@@ -164,73 +164,33 @@ impl Filter {
 			_ => Err(PngError::UnsupportedFilter(value)),
 		}
 	}
-
-	pub fn decode(&self, x: usize, y: usize, stride: usize, bpp: usize, data: &[u8]) -> u8 {
-		use Filter::*;
-		let index = (y * stride) + x;
-		match self {
-			None => data[index],
-			Sub => data[index].wrapping_add(if x < bpp { 0 } else { data[index - bpp] }), // unsigned arithmetic modulo 256
-			Up => data[index].wrapping_add(if y < 1 { 0 } else { data[index - stride] }), // unsigned arithmetic modulo 256
-			Average => {
-				let a = if x < bpp { 0 } else { data[index - bpp] } as i16;
-				let b = if y < 1 { 0 } else { data[index - stride] } as i16;
-				// unsigned arithmetic modulo 256 *except* for the average calculation itself which must not overflow!
-				let average = (a + b) / 2;
-				data[index].wrapping_add(average as u8)
-			},
-			Paeth => {
-				let a = if x < bpp { 0 } else { data[index - bpp] } as i16;
-				let b = if y < 1 { 0 } else { data[index - stride] } as i16;
-				let c = if x >= bpp && y >= 1 { data[index - stride - bpp] } else { 0 } as i16;
-				let p = a + b - c;
-				let pa = (p - a).abs();
-				let pb = (p - b).abs();
-				let pc = (p - c).abs();
-				let value = if pa <= pb && pa <= pc {
-					a as u8
-				} else if pb <= pc {
-					b as u8
-				} else {
-					c as u8
-				};
-				// all of the above must not overflow. however, this last part is unsigned arithmetic modulo 256
-				data[index].wrapping_add(value)
-			}
-		}
-	}
 }
 
-trait PixelReader<PixelType: Pixel> {
-	fn next_pixel<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<PixelType, PngError>;
+trait PixelConversion<PixelType: Pixel> {
+	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, palette: &Option<Palette>) -> Result<PixelType, PngError>;
 }
 
-struct PixelDecoder<PixelType: Pixel> {
-	bitmap: Bitmap<PixelType>,
-	header: ImageHeaderChunk,
-	palette: Option<Palette>,
-	x: u32,
-	y: u32,
-	num_pixels_read: usize,
+struct PixelDecoder {
+	pub format: ColorFormat,
 }
 
-impl PixelReader<u8> for PixelDecoder<u8> {
-	fn next_pixel<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<u8, PngError> {
-		match self.header.format {
+impl PixelConversion<u8> for PixelDecoder {
+	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, _palette: &Option<Palette>) -> Result<u8, PngError> {
+		match self.format {
 			ColorFormat::IndexedColor => {
 				Ok(reader.read_u8()?)
 			}
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.header.format))),
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 }
 
-impl PixelReader<u32> for PixelDecoder<u32> {
-	fn next_pixel<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<u32, PngError> {
-		match self.header.format {
+impl PixelConversion<u32> for PixelDecoder {
+	fn read_png_pixel<T: ReadBytesExt>(&mut self, reader: &mut T, palette: &Option<Palette>) -> Result<u32, PngError> {
+		match self.format {
 			ColorFormat::IndexedColor => {
 				let color = reader.read_u8()?;
-				if let Some(palette) = &self.palette {
+				if let Some(palette) = palette {
 					Ok(palette[color])
 				} else {
 					return Err(PngError::BadFile(String::from("No palette to map indexed-color format pixels to RGBA format destination")));
@@ -249,75 +209,89 @@ impl PixelReader<u32> for PixelDecoder<u32> {
 				let a = reader.read_u8()?;
 				Ok(to_argb32(a, r, g, b))
 			}
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.header.format))),
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 }
 
-impl<PixelType> PixelDecoder<PixelType>
-where
-	Self: PixelReader<PixelType>,
-	PixelType: Pixel
-{
-	pub fn new(header: ImageHeaderChunk, palette: Option<Palette>) -> Self {
-		PixelDecoder {
-			bitmap: Bitmap::internal_new(header.width, header.height).unwrap(),
-			header,
-			palette,
-			x: 0,
-			y: 0,
-			num_pixels_read: 0,
-		}
-	}
+struct ScanlineBuffer {
+	stride: usize,
+	bpp: usize,
+	y: usize,
+	height: usize,
+	current: Vec<u8>,
+	previous: Vec<u8>,
+}
 
-	pub fn decode(&mut self, data: &[u8]) -> Result<(), PngError> {
-		// TODO: this entire function is kinda gross. bleh. but i just wanted to get it working first
-
-		let mut decoder = flate2::read::ZlibDecoder::new(data);
-
-		let bpp = match self.header.format {
+impl ScanlineBuffer {
+	pub fn new(ihdr: &ImageHeaderChunk) -> Result<Self, PngError> {
+		let bpp = match ihdr.format {
 			ColorFormat::IndexedColor => 1,
 			ColorFormat::RGB => 3,
 			ColorFormat::RGBA => 4,
-			_ => return Err(PngError::BadFile(format!("Unsupported color format: {:?}", self.header.format))),
+			_ => return Err(PngError::BadFile(format!("Unsupported color format: {:?}", ihdr.format))),
 		};
-		let stride = self.header.width as usize * bpp;
-		let mut decoded_bytes = vec![0u8; stride * self.header.height as usize];
-		let mut idx = 0;
-
-		for y in 0..self.bitmap.height as usize {
-			let filter = Filter::from(decoder.read_u8()?)?;
-			for x in 0..stride as usize {
-				decoded_bytes[idx] = decoder.read_u8()?;
-				let decoded = filter.decode(x, y, stride, bpp, &decoded_bytes);
-				decoded_bytes[idx] = decoded;
-				idx += 1;
-			}
-		}
-
-		let mut decoded_reader = Cursor::new(decoded_bytes);
-		while self.y < self.bitmap.height {
-			while self.x < self.bitmap.width {
-				let pixel = self.next_pixel(&mut decoded_reader)?;
-				// TODO: we can make this a bit more efficient ...
-				unsafe { self.bitmap.set_pixel_unchecked(self.x as i32, self.y as i32, pixel); }
-				self.num_pixels_read += 1;
-
-				self.x += 1;
-			}
-			self.x = 0;
-			self.y += 1;
-		}
-
-		Ok(())
+		let stride = ihdr.width as usize * bpp;
+		Ok(ScanlineBuffer {
+			stride,
+			bpp,
+			y: 0,
+			height: ihdr.height as usize,
+			current: vec![0u8; stride],
+			previous: vec![0u8; stride],
+		})
 	}
 
-	pub fn finalize(self) -> Result<(Bitmap<PixelType>, Option<Palette>), PngError> {
-		if self.num_pixels_read != self.bitmap.pixels.len() {
-			return Err(PngError::BadFile(String::from("PNG file did not contain enough pixel data for the full image. Possibly corrupt or truncated?")));
-		} else {
-			Ok((self.bitmap, self.palette))
+	fn decode_byte(&mut self, filter: Filter, byte: u8, x: usize, y: usize) -> u8 {
+		match filter {
+			Filter::None => byte,
+			Filter::Sub => byte.wrapping_add(if x < self.bpp { 0 } else { self.current[x - self.bpp] }), // unsigned arithmetic modulo 256
+			Filter::Up => byte.wrapping_add(if y < 1 { 0 } else { self.previous[x] }), // unsigned arithmetic modulo 256
+			Filter::Average => {
+				let a = if x < self.bpp { 0 } else { self.current[x - self.bpp] } as i16;
+				let b = if y < 1 { 0 } else { self.previous[x] } as i16;
+				// unsigned arithmetic modulo 256 *except* for the average calculation itself which must not overflow!
+				let average = (a + b) / 2;
+				byte.wrapping_add(average as u8)
+			},
+			Filter::Paeth => {
+				let a = if x < self.bpp { 0 } else { self.current[x - self.bpp] } as i16;
+				let b = if y < 1 { 0 } else { self.previous[x] } as i16;
+				let c = if x >= self.bpp && y >= 1 { self.previous[x - self.bpp] } else { 0 } as i16;
+				let p = a + b - c;
+				let pa = (p - a).abs();
+				let pb = (p - b).abs();
+				let pc = (p - c).abs();
+				let value = if pa <= pb && pa <= pc {
+					a as u8
+				} else if pb <= pc {
+					b as u8
+				} else {
+					c as u8
+				};
+				// all of the above must not overflow. however, this last part is unsigned arithmetic modulo 256
+				byte.wrapping_add(value)
+			},
 		}
+	}
+
+	pub fn read_line<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<&[u8], PngError> {
+		if self.y >= self.height {
+			return Err(PngError::IOError(io::Error::from(io::ErrorKind::UnexpectedEof)));
+		} else if self.y >= 1 {
+			self.previous.copy_from_slice(&self.current);
+		}
+		let y = self.y;
+		self.y += 1;
+
+		let filter = Filter::from(reader.read_u8()?)?;
+		for x in 0..self.stride {
+			let byte = reader.read_u8()?;
+			let decoded = self.decode_byte(filter, byte, x, y);
+			self.current[x] = decoded;
+		}
+
+		Ok(&self.current)
 	}
 }
 
@@ -327,7 +301,7 @@ fn load_png_bytes<Reader, PixelType>(
 where
 	Reader: ReadBytesExt + Seek,
 	PixelType: Pixel,
-	PixelDecoder<PixelType>: PixelReader<PixelType>
+	PixelDecoder: PixelConversion<PixelType>
 {
 	let header: [u8; 8] = reader.read_bytes()?;
 	if header != PNG_HEADER {
@@ -395,8 +369,7 @@ where
 	//       with just more data). so we'd need some deflate decompressor that can stream its input
 	//       (compressed) byte stream too ...
 
-	let mut pixel_decoder = PixelDecoder::new(ihdr, palette);
-	let mut buffer = Vec::new();
+	let mut compressed_data = Vec::new();
 	loop {
 		let chunk_header = match find_chunk(reader, *b"IDAT") {
 			Ok(header) => header,
@@ -404,11 +377,25 @@ where
 			Err(err) => return Err(err),
 		};
 
-		buffer.append(&mut read_chunk_data(reader, &chunk_header)?);
+		compressed_data.append(&mut read_chunk_data(reader, &chunk_header)?);
 	}
 
-	pixel_decoder.decode(&buffer)?;
-	Ok(pixel_decoder.finalize()?)
+	let mut pixel_decoder = PixelDecoder { format: ihdr.format };
+	let mut scanline_buffer = ScanlineBuffer::new(&ihdr)?;
+
+	let mut output = Bitmap::internal_new(ihdr.width, ihdr.height).unwrap();
+	let mut deflater = flate2::read::ZlibDecoder::<&[u8]>::new(&compressed_data);
+
+	for y in 0..ihdr.height as usize {
+		let mut line = scanline_buffer.read_line(&mut deflater)?;
+		for x in 0..ihdr.width as usize {
+			let pixel = pixel_decoder.read_png_pixel(&mut line, &palette)?;
+			// TODO: we can make this a bit more efficient ...
+			unsafe { output.set_pixel_unchecked(x as i32, y as i32, pixel); }
+		}
+	}
+
+	Ok((output, palette))
 }
 
 impl IndexedBitmap {
