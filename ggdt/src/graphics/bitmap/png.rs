@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::hash::Hasher;
 use std::io;
-use std::io::{BufReader, BufWriter, Seek};
+use std::io::{BufReader, BufWriter, Cursor, Seek};
 use std::path::Path;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
@@ -27,6 +27,9 @@ pub enum PngError {
 
 	#[error("Unsupported IHDR color format: {0}")]
 	UnsupportedColorType(u8),
+
+	#[error("Unsupported filter: {0}")]
+	UnsupportedFilter(u8),
 
 	#[error("PNG I/O error")]
 	IOError(#[from] std::io::Error),
@@ -140,6 +143,64 @@ fn find_chunk<T: ReadBytesExt>(reader: &mut T, chunk_name: [u8; 4]) -> Result<Ch
 	}
 }
 
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum Filter {
+	None = 0,
+	Sub = 1,
+	Up = 2,
+	Average = 3,
+	Paeth = 4,
+}
+
+impl Filter {
+	pub fn from(value: u8) -> Result<Self, PngError> {
+		use Filter::*;
+		match value {
+			0 => Ok(None),
+			1 => Ok(Sub),
+			2 => Ok(Up),
+			3 => Ok(Average),
+			4 => Ok(Paeth),
+			_ => Err(PngError::UnsupportedFilter(value)),
+		}
+	}
+
+	pub fn decode(&self, x: usize, y: usize, stride: usize, bpp: usize, data: &[u8]) -> u8 {
+		use Filter::*;
+		let index = (y * stride) + x;
+		match self {
+			None => data[index],
+			Sub => data[index].wrapping_add(if x < bpp { 0 } else { data[index - bpp] }), // unsigned arithmetic modulo 256
+			Up => data[index].wrapping_add(if y < 1 { 0 } else { data[index - stride] }), // unsigned arithmetic modulo 256
+			Average => {
+				let a = if x < bpp { 0 } else { data[index - bpp] } as i16;
+				let b = if y < 1 { 0 } else { data[index - stride] } as i16;
+				// unsigned arithmetic modulo 256 *except* for the average calculation itself which must not overflow!
+				let average = (a + b) / 2;
+				data[index].wrapping_add(average as u8)
+			},
+			Paeth => {
+				let a = if x < bpp { 0 } else { data[index - bpp] } as i16;
+				let b = if y < 1 { 0 } else { data[index - stride] } as i16;
+				let c = if x >= bpp && y >= 1 { data[index - stride - bpp] } else { 0 } as i16;
+				let p = a + b - c;
+				let pa = (p - a).abs();
+				let pb = (p - b).abs();
+				let pc = (p - c).abs();
+				let value = if pa <= pb && pa <= pc {
+					a as u8
+				} else if pb <= pc {
+					b as u8
+				} else {
+					c as u8
+				};
+				// all of the above must not overflow. however, this last part is unsigned arithmetic modulo 256
+				data[index].wrapping_add(value)
+			}
+		}
+	}
+}
+
 trait PixelReader<PixelType: Pixel> {
 	fn next_pixel<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<PixelType, PngError>;
 }
@@ -150,7 +211,6 @@ struct PixelDecoder<PixelType: Pixel> {
 	palette: Option<Palette>,
 	x: u32,
 	y: u32,
-	filter: u8,
 	num_pixels_read: usize,
 }
 
@@ -206,23 +266,39 @@ where
 			palette,
 			x: 0,
 			y: 0,
-			filter: 0,
 			num_pixels_read: 0,
 		}
 	}
 
 	pub fn decode(&mut self, data: &[u8]) -> Result<(), PngError> {
+		// TODO: this entire function is kinda gross. bleh. but i just wanted to get it working first
+
 		let mut decoder = flate2::read::ZlibDecoder::new(data);
 
+		let bpp = match self.header.format {
+			ColorFormat::IndexedColor => 1,
+			ColorFormat::RGB => 3,
+			ColorFormat::RGBA => 4,
+			_ => return Err(PngError::BadFile(format!("Unsupported color format: {:?}", self.header.format))),
+		};
+		let stride = self.header.width as usize * bpp;
+		let mut decoded_bytes = vec![0u8; stride * self.header.height as usize];
+		let mut idx = 0;
+
+		for y in 0..self.bitmap.height as usize {
+			let filter = Filter::from(decoder.read_u8()?)?;
+			for x in 0..stride as usize {
+				decoded_bytes[idx] = decoder.read_u8()?;
+				let decoded = filter.decode(x, y, stride, bpp, &decoded_bytes);
+				decoded_bytes[idx] = decoded;
+				idx += 1;
+			}
+		}
+
+		let mut decoded_reader = Cursor::new(decoded_bytes);
 		while self.y < self.bitmap.height {
 			while self.x < self.bitmap.width {
-				if self.x == 0 {
-					self.filter = decoder.read_u8()?;
-				}
-
-				// TODO: handle filters
-
-				let pixel = self.next_pixel(&mut decoder)?;
+				let pixel = self.next_pixel(&mut decoded_reader)?;
 				// TODO: we can make this a bit more efficient ...
 				unsafe { self.bitmap.set_pixel_unchecked(self.x as i32, self.y as i32, pixel); }
 				self.num_pixels_read += 1;
@@ -313,10 +389,11 @@ where
 	};
 
 	// now we're just looking for IDAT chunks. keep reading these chunks only, ignoring all others.
-	// TODO: some way to read and decompress this data on the fly, without needing to read it all in?
-	//       it looks like chunk boundaries just arbitrarily cut off the deflate stream (that is, each
-	//       chunk is not a separate deflate stream with just more data). so we'd need some deflate
-	//       decompressor that can stream its input (compressed) byte stream too ...
+	// TODO: some way to read and decompress this data on the fly chunk-by-chunk, without first needing to
+	//       read in ALL of the chunks into a combined buffer? it looks like chunk boundaries just
+	//       arbitrarily cut off the deflate stream (that is, each chunk is NOT a separate deflate stream
+	//       with just more data). so we'd need some deflate decompressor that can stream its input
+	//       (compressed) byte stream too ...
 
 	let mut pixel_decoder = PixelDecoder::new(ihdr, palette);
 	let mut buffer = Vec::new();
