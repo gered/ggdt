@@ -8,7 +8,7 @@ use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
 use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::color::{from_rgb32, lerp_rgb32, to_rgb32};
+use crate::graphics::color::{from_rgb32, lerp_rgb32, to_argb32, to_rgb32};
 use crate::NUM_COLORS;
 use crate::utils::abs_diff;
 
@@ -26,7 +26,7 @@ fn read_palette_6bit<T: ReadBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [0u32; NUM_COLORS];
+	let mut colors = [to_argb32(255, 0, 0, 0); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
@@ -62,7 +62,7 @@ fn read_palette_8bit<T: ReadBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [0u32; NUM_COLORS];
+	let mut colors = [to_argb32(255, 0, 0, 0); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
