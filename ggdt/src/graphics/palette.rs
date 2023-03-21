@@ -18,6 +18,16 @@ impl<T> ColorRange for T where T: RangeBounds<u8> + Iterator<Item=u8> {}
 
 pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../assets/vga.pal");
 
+#[inline]
+fn from_6bit(value: u8) -> u8 {
+	(value.wrapping_shl(2) | value.wrapping_shr(4)) as u8
+}
+
+#[inline]
+fn to_6bit(value: u8) -> u8 {
+	(value.wrapping_shr(2)) as u8
+}
+
 // vga bios (0-63) format
 fn read_palette_6bit<T: ReadBytesExt>(
 	reader: &mut T,
@@ -31,7 +41,11 @@ fn read_palette_6bit<T: ReadBytesExt>(
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32(r * 4, g * 4, b * 4);
+		let color = to_rgb32(
+			from_6bit(r),
+			from_6bit(g),
+			from_6bit(b)
+		);
 		colors[i as usize] = color;
 	}
 	Ok(colors)
@@ -47,9 +61,9 @@ fn write_palette_6bit<T: WriteBytesExt>(
 	}
 	for i in 0..num_colors {
 		let (r, g, b) = from_rgb32(colors[i as usize]);
-		writer.write_u8(r / 4)?;
-		writer.write_u8(g / 4)?;
-		writer.write_u8(b / 4)?;
+		writer.write_u8(to_6bit(r))?;
+		writer.write_u8(to_6bit(g))?;
+		writer.write_u8(to_6bit(b))?;
 	}
 	Ok(())
 }
@@ -517,7 +531,7 @@ mod tests {
 
 	use tempfile::TempDir;
 
-	use crate::graphics::color::{from_argb32, to_argb32};
+	use crate::graphics::color::*;
 
 	use super::*;
 
@@ -558,22 +572,22 @@ mod tests {
 	}
 
 	fn assert_ega_colors(palette: &Palette) {
-		assert_eq!(0xff000000, palette[0]);
-		assert_eq!(0xff0000a8, palette[1]);
-		assert_eq!(0xff00a800, palette[2]);
-		assert_eq!(0xff00a8a8, palette[3]);
-		assert_eq!(0xffa80000, palette[4]);
-		assert_eq!(0xffa800a8, palette[5]);
-		assert_eq!(0xffa85400, palette[6]);
-		assert_eq!(0xffa8a8a8, palette[7]);
-		assert_eq!(0xff545454, palette[8]);
-		assert_eq!(0xff5454fc, palette[9]);
-		assert_eq!(0xff54fc54, palette[10]);
-		assert_eq!(0xff54fcfc, palette[11]);
-		assert_eq!(0xfffc5454, palette[12]);
-		assert_eq!(0xfffc54fc, palette[13]);
-		assert_eq!(0xfffcfc54, palette[14]);
-		assert_eq!(0xfffcfcfc, palette[15]);
+		assert_eq!(COLOR_BLACK, palette[0]);
+		assert_eq!(COLOR_BLUE, palette[1]);
+		assert_eq!(COLOR_GREEN, palette[2]);
+		assert_eq!(COLOR_CYAN, palette[3]);
+		assert_eq!(COLOR_RED, palette[4]);
+		assert_eq!(COLOR_MAGENTA, palette[5]);
+		assert_eq!(COLOR_BROWN, palette[6]);
+		assert_eq!(COLOR_LIGHT_GRAY, palette[7]);
+		assert_eq!(COLOR_DARK_GRAY, palette[8]);
+		assert_eq!(COLOR_BRIGHT_BLUE, palette[9]);
+		assert_eq!(COLOR_BRIGHT_GREEN, palette[10]);
+		assert_eq!(COLOR_BRIGHT_CYAN, palette[11]);
+		assert_eq!(COLOR_BRIGHT_RED, palette[12]);
+		assert_eq!(COLOR_BRIGHT_MAGENTA, palette[13]);
+		assert_eq!(COLOR_BRIGHT_YELLOW, palette[14]);
+		assert_eq!(COLOR_BRIGHT_WHITE, palette[15]);
 	}
 
 	#[test]
