@@ -66,7 +66,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 
 	// not public to force creation via one of the concrete types (even though this
 	// would technically work and be fine-ish)
-	fn internal_new(width: u32, height: u32) -> Result<Self, BitmapError> {
+	fn internal_new(width: u32, height: u32, color: PixelType) -> Result<Self, BitmapError> {
 		if width == 0 || height == 0 {
 			return Err(BitmapError::InvalidDimensions);
 		}
@@ -74,7 +74,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		Ok(Bitmap {
 			width,
 			height,
-			pixels: vec![Default::default(); (width * height) as usize].into_boxed_slice(),
+			pixels: vec![color; (width * height) as usize].into_boxed_slice(),
 			clip_region: Rect {
 				x: 0,
 				y: 0,
@@ -98,7 +98,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			return Err(BitmapError::OutOfBounds);
 		}
 
-		let mut bmp = Self::internal_new(region.width, region.height)?;
+		let mut bmp = Self::internal_new(region.width, region.height, Default::default())?;
 		unsafe { bmp.solid_blit(source, region, 0, 0) };
 		Ok(bmp)
 	}

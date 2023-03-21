@@ -19,7 +19,7 @@ impl IndexedBitmap {
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
 	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
-		Self::internal_new(width, height)
+		Self::internal_new(width, height, 0)
 	}
 
 	pub fn load_file(path: &Path) -> Result<(Self, Palette), BitmapError> {

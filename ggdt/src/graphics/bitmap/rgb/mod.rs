@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use crate::graphics::bitmap::{Bitmap, BitmapError};
+use crate::graphics::color::to_rgb32;
 use crate::graphics::palette::Palette;
 
 pub mod blit;
@@ -17,7 +18,7 @@ impl RgbaBitmap {
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
 	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
-		Self::internal_new(width, height)
+		Self::internal_new(width, height, to_rgb32(0, 0, 0))
 	}
 
 	pub fn load_file(path: &Path) -> Result<(Self, Option<Palette>), BitmapError> {

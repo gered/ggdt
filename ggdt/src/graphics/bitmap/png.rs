@@ -460,7 +460,7 @@ where
 
 	let mut scanline_buffer = ScanlineBuffer::new(&ihdr)?;
 
-	let mut output = Bitmap::internal_new(ihdr.width, ihdr.height).unwrap();
+	let mut output = Bitmap::internal_new(ihdr.width, ihdr.height, Default::default()).unwrap();
 	let mut deflater = flate2::read::ZlibDecoder::<&[u8]>::new(&compressed_data);
 
 	for y in 0..ihdr.height as usize {
