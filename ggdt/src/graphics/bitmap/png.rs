@@ -618,47 +618,25 @@ impl RgbaBitmap {
 
 #[cfg(test)]
 pub mod tests {
-	use std::io::Read;
 	use std::path::PathBuf;
 
-	use byteorder::LittleEndian;
 	use claim::*;
 	use tempfile::TempDir;
+
+	use crate::tests::{load_raw_argb, load_raw_indexed};
 
 	use super::*;
 
 	const BASE_PATH: &str = "./test-assets/png/";
 
-	fn path_to_file(file: &Path) -> PathBuf {
+	fn test_file(file: &Path) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
-	}
-
-	fn load_raw_indexed(bin_file: &Path) -> Result<Box<[u8]>, io::Error> {
-		let f = File::open(bin_file)?;
-		let mut reader = BufReader::new(f);
-		let mut buffer = Vec::new();
-		reader.read_to_end(&mut buffer)?;
-		Ok(buffer.into_boxed_slice())
-	}
-
-	fn load_raw_argb(bin_file: &Path) -> Result<Box<[u32]>, io::Error> {
-		let f = File::open(bin_file)?;
-		let mut reader = BufReader::new(f);
-		let mut buffer = Vec::new();
-		loop {
-			buffer.push(match reader.read_u32::<LittleEndian>() {
-				Ok(value) => value,
-				Err(err) if err.kind() == io::ErrorKind::UnexpectedEof => break,
-				Err(err) => return Err(err),
-			});
-		}
-		Ok(buffer.into_boxed_slice())
 	}
 
 	#[test]
 	pub fn loads_indexed_256_color() -> Result<(), PngError> {
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("indexed_8.bin")).as_path())?;
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("indexed_8.png")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("indexed_8.bin")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("indexed_8.png")).as_path())?;
 		assert!(palette.is_some());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -666,8 +644,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_indexed_256_color_to_rgba_destination() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("indexed_8_rgba.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("indexed_8.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("indexed_8_rgba.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("indexed_8.png")).as_path())?;
 		assert!(palette.is_some());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -675,8 +653,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_rgb_color() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -684,8 +662,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_rgba_color() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("rgba.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("rgba.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("rgba.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("rgba.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -693,8 +671,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_filter_0() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("filter_0_rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("filter_0_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("filter_0_rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("filter_0_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -702,8 +680,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_filter_1() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("filter_1_rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("filter_1_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("filter_1_rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("filter_1_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -711,8 +689,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_filter_2() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("filter_2_rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("filter_2_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("filter_2_rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("filter_2_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -720,8 +698,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_filter_3() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("filter_3_rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("filter_3_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("filter_3_rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("filter_3_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -729,8 +707,8 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_filter_4() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("filter_4_rgb.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("filter_4_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("filter_4_rgb.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("filter_4_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 		Ok(())
@@ -738,13 +716,13 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_larger_indexed_256color_images() -> Result<(), PngError> {
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_1_indexed.bin")).as_path())?;
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_1_indexed.png")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("large_1_indexed.bin")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("large_1_indexed.png")).as_path())?;
 		assert!(palette.is_some());
 		assert_eq!(ref_bytes, bmp.pixels);
 
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_2_indexed.bin")).as_path())?;
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_2_indexed.png")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("large_2_indexed.bin")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("large_2_indexed.png")).as_path())?;
 		assert!(palette.is_some());
 		assert_eq!(ref_bytes, bmp.pixels);
 
@@ -753,13 +731,13 @@ pub mod tests {
 
 	#[test]
 	pub fn loads_larger_rgb_images() -> Result<(), PngError> {
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_1_rgba.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_1_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("large_1_rgba.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("large_1_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_2_rgba.bin")).as_path())?;
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_2_rgb.png")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("large_2_rgba.bin")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("large_2_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
 
@@ -770,9 +748,9 @@ pub mod tests {
 	pub fn load_and_save_indexed_256_color() -> Result<(), PngError> {
 		let tmp_dir = TempDir::new()?;
 
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("indexed_8.bin")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("indexed_8.bin")).as_path())?;
 
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("indexed_8.png")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("indexed_8.png")).as_path())?;
 		assert_eq!(32, bmp.width());
 		assert_eq!(32, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -795,9 +773,9 @@ pub mod tests {
 
 		// first image
 
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_1_indexed.bin")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("large_1_indexed.bin")).as_path())?;
 
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_1_indexed.png")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("large_1_indexed.png")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -813,9 +791,9 @@ pub mod tests {
 
 		// second image
 
-		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_2_indexed.bin")).as_path())?;
+		let ref_bytes = load_raw_indexed(test_file(Path::new("large_2_indexed.bin")).as_path())?;
 
-		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_2_indexed.png")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_png_file(test_file(Path::new("large_2_indexed.png")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -836,9 +814,9 @@ pub mod tests {
 	pub fn load_and_save_rgb_color() -> Result<(), PngError> {
 		let tmp_dir = TempDir::new()?;
 
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("rgb.bin")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("rgb.bin")).as_path())?;
 
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("rgb.png")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("rgb.png")).as_path())?;
 		assert_eq!(32, bmp.width());
 		assert_eq!(32, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -861,9 +839,9 @@ pub mod tests {
 
 		// first image
 
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_1_rgba.bin")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("large_1_rgba.bin")).as_path())?;
 
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_1_rgb.png")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("large_1_rgb.png")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -879,9 +857,9 @@ pub mod tests {
 
 		// second image
 
-		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_2_rgba.bin")).as_path())?;
+		let ref_bytes = load_raw_argb(test_file(Path::new("large_2_rgba.bin")).as_path())?;
 
-		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_2_rgb.png")).as_path())?;
+		let (bmp, palette) = RgbaBitmap::load_png_file(test_file(Path::new("large_2_rgb.png")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels, ref_bytes);
@@ -901,55 +879,55 @@ pub mod tests {
 	#[test]
 	pub fn load_fails_on_unsupported_formats() -> Result<(), PngError> {
 		assert_matches!(
-			RgbaBitmap::load_png_file(path_to_file(Path::new("unsupported_alpha_8bit.png")).as_path()),
+			RgbaBitmap::load_png_file(test_file(Path::new("unsupported_alpha_8bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			RgbaBitmap::load_png_file(path_to_file(Path::new("unsupported_greyscale_8bit.png")).as_path()),
+			RgbaBitmap::load_png_file(test_file(Path::new("unsupported_greyscale_8bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			RgbaBitmap::load_png_file(path_to_file(Path::new("unsupported_indexed_16col.png")).as_path()),
+			RgbaBitmap::load_png_file(test_file(Path::new("unsupported_indexed_16col.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			RgbaBitmap::load_png_file(path_to_file(Path::new("unsupported_rgb_16bit.png")).as_path()),
+			RgbaBitmap::load_png_file(test_file(Path::new("unsupported_rgb_16bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			RgbaBitmap::load_png_file(path_to_file(Path::new("unsupported_rgba_16bit.png")).as_path()),
+			RgbaBitmap::load_png_file(test_file(Path::new("unsupported_rgba_16bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_alpha_8bit.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("unsupported_alpha_8bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_greyscale_8bit.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("unsupported_greyscale_8bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_indexed_16col.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("unsupported_indexed_16col.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_rgb_16bit.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("unsupported_rgb_16bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("unsupported_rgba_16bit.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("unsupported_rgba_16bit.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 
 		// also test the extra formats that IndexedBitmap does not support which RgbaBitmap does
 		// (anything not 256-color indexed basically ...)
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("rgb.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("rgb.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 		assert_matches!(
-			IndexedBitmap::load_png_file(path_to_file(Path::new("rgba.png")).as_path()),
+			IndexedBitmap::load_png_file(test_file(Path::new("rgba.png")).as_path()),
 			Err(PngError::BadFile(..))
 		);
 

@@ -513,11 +513,19 @@ impl IndexMut<u8> for Palette {
 
 #[cfg(test)]
 mod tests {
+	use std::path::PathBuf;
+
 	use tempfile::TempDir;
 
 	use crate::graphics::color::{from_argb32, to_argb32};
 
 	use super::*;
+
+	const BASE_PATH: &str = "./test-assets/palette/";
+
+	fn test_file(file: &Path) -> PathBuf {
+		PathBuf::from(BASE_PATH).join(file)
+	}
 
 	#[test]
 	fn argb_conversions() {
@@ -574,7 +582,10 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette = Palette::load_from_file(Path::new("./assets/vga.pal"), PaletteFormat::Vga)?;
+		let palette = Palette::load_from_file(
+			test_file(Path::new("vga.pal")).as_path(),
+			PaletteFormat::Vga
+		)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format.pal");
@@ -584,8 +595,10 @@ mod tests {
 
 		// normal rgb format (8-bit)
 
-		let palette =
-			Palette::load_from_file(Path::new("./test-assets/dp2.pal"), PaletteFormat::Normal)?;
+		let palette = Palette::load_from_file(
+			test_file(Path::new("dp2.pal")).as_path(),
+			PaletteFormat::Normal
+		)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format.pal");
 		palette.to_file(&save_path, PaletteFormat::Normal)?;
@@ -601,7 +614,11 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette = Palette::load_num_colors_from_file(Path::new("./test-assets/ega_6bit.pal"), PaletteFormat::Vga, 16)?;
+		let palette = Palette::load_num_colors_from_file(
+			test_file(Path::new("ega_6bit.pal")).as_path(),
+			PaletteFormat::Vga,
+			16
+		)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format_16_colors.pal");
@@ -611,7 +628,11 @@ mod tests {
 
 		// normal rgb format (8-bit)
 
-		let palette = Palette::load_num_colors_from_file(Path::new("./test-assets/ega_8bit.pal"), PaletteFormat::Normal, 16)?;
+		let palette = Palette::load_num_colors_from_file(
+			test_file(Path::new("ega_8bit.pal")).as_path(),
+			PaletteFormat::Normal,
+			16
+		)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format_16_colors.pal");
 		palette.to_file(&save_path, PaletteFormat::Normal)?;

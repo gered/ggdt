@@ -1,8 +1,16 @@
-use std::ops::Add;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 use ggdt::prelude::*;
+use helpers::test_assets_file;
+
+pub mod helpers;
+
+const BASE_PATH: &str = "./tests/ref/indexed/";
+
+fn reference_file(file: &Path) -> PathBuf {
+	PathBuf::from(BASE_PATH).join(file)
+}
 
 fn setup() -> (IndexedBitmap, Palette) {
 	let palette = Palette::new_vga_palette().unwrap();
@@ -11,8 +19,8 @@ fn setup() -> (IndexedBitmap, Palette) {
 }
 
 fn setup_for_blending() -> (IndexedBitmap, Palette, BlendMap) {
-	let (texture, palette) = IndexedBitmap::load_file(Path::new("test-assets/texture.lbm")).unwrap();
-	let blend_map = BlendMap::load_from_file(Path::new("test-assets/test.blendmap")).unwrap();
+	let (texture, palette) = IndexedBitmap::load_file(test_assets_file(Path::new("texture.lbm")).as_path()).unwrap();
+	let blend_map = BlendMap::load_from_file(test_assets_file(Path::new("test.blendmap")).as_path()).unwrap();
 	let mut screen = IndexedBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
 	for y in 0..(SCREEN_HEIGHT as f32 / texture.height() as f32).ceil() as i32 {
 		for x in 0..(SCREEN_WIDTH as f32 / texture.width() as f32).ceil() as i32 {
@@ -25,11 +33,6 @@ fn setup_for_blending() -> (IndexedBitmap, Palette, BlendMap) {
 fn verify_visual(screen: &IndexedBitmap, palette: &Palette, source: &Path) -> bool {
 	let (source_bmp, source_pal) = IndexedBitmap::load_file(source).unwrap();
 	*screen == source_bmp && *palette == source_pal
-}
-
-fn make_ref_path(ref_filename: &str) -> PathBuf {
-	let path = String::from("tests/ref/indexed/").add(ref_filename);
-	PathBuf::from(&path)
 }
 
 #[test]
@@ -73,7 +76,7 @@ fn pixel_addressing() {
 		}
 	}
 
-	let path = make_ref_path("pixel_addressing.pcx");
+	let path = reference_file(Path::new("pixel_addressing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -125,7 +128,7 @@ fn pixel_drawing() {
 		screen.set_pixel(160, i + 234, 15);
 	}
 
-	let path = make_ref_path("pixel_drawing.pcx");
+	let path = reference_file(Path::new("pixel_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -150,7 +153,7 @@ fn blended_pixel_drawing() {
 		screen.set_blended_pixel(160, i + 234, 15, &blend_map);
 	}
 
-	let path = make_ref_path("blended_pixel_drawing.pcx");
+	let path = reference_file(Path::new("blended_pixel_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -171,7 +174,7 @@ fn horiz_line_drawing() {
 	screen.horiz_line(100, 200, -10, 6);
 	screen.horiz_line(20, 80, 250, 7);
 
-	let path = make_ref_path("horiz_line_drawing.pcx");
+	let path = reference_file(Path::new("horiz_line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -191,7 +194,7 @@ fn blended_horiz_line_drawing() {
 	screen.blended_horiz_line(100, 200, -10, 6, &blend_map);
 	screen.blended_horiz_line(20, 80, 250, 7, &blend_map);
 
-	let path = make_ref_path("blended_horiz_line_drawing.pcx");
+	let path = reference_file(Path::new("blended_horiz_line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -211,7 +214,7 @@ fn vert_line_drawing() {
 	screen.vert_line(-17, 10, 20, 6);
 	screen.vert_line(400, 100, 300, 7);
 
-	let path = make_ref_path("vert_line_drawing.pcx");
+	let path = reference_file(Path::new("vert_line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -231,7 +234,7 @@ fn blended_vert_line_drawing() {
 	screen.blended_vert_line(-17, 10, 20, 6, &blend_map);
 	screen.blended_vert_line(400, 100, 300, 7, &blend_map);
 
-	let path = make_ref_path("blended_vert_line_drawing.pcx");
+	let path = reference_file(Path::new("blended_vert_line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -268,7 +271,7 @@ fn line_drawing() {
 	screen.line(-100, 120, -100, 239, 3);
 	screen.line(320, 99, 320, 199, 5);
 
-	let path = make_ref_path("line_drawing.pcx");
+	let path = reference_file(Path::new("line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -305,7 +308,7 @@ fn blended_line_drawing() {
 	screen.blended_line(-100, 120, -100, 239, 3, &blend_map);
 	screen.blended_line(320, 99, 320, 199, 5, &blend_map);
 
-	let path = make_ref_path("blended_line_drawing.pcx");
+	let path = reference_file(Path::new("blended_line_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -333,7 +336,7 @@ fn rect_drawing() {
 	screen.rect(300, 20, 340, -20, 13);
 	screen.rect(20, 220, -20, 260, 14);
 
-	let path = make_ref_path("rect_drawing.pcx");
+	let path = reference_file(Path::new("rect_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -361,7 +364,7 @@ fn blended_rect_drawing() {
 	screen.blended_rect(300, 20, 340, -20, 13, &blend_map);
 	screen.blended_rect(20, 220, -20, 260, 14, &blend_map);
 
-	let path = make_ref_path("blended_rect_drawing.pcx");
+	let path = reference_file(Path::new("blended_rect_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -389,7 +392,7 @@ fn filled_rect_drawing() {
 	screen.filled_rect(300, 20, 340, -20, 13);
 	screen.filled_rect(20, 220, -20, 260, 14);
 
-	let path = make_ref_path("filled_rect_drawing.pcx");
+	let path = reference_file(Path::new("filled_rect_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -417,7 +420,7 @@ fn blended_filled_rect_drawing() {
 	screen.blended_filled_rect(300, 20, 340, -20, 13, &blend_map);
 	screen.blended_filled_rect(20, 220, -20, 260, 14, &blend_map);
 
-	let path = make_ref_path("blended_filled_rect_drawing.pcx");
+	let path = reference_file(Path::new("blended_filled_rect_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -440,7 +443,7 @@ fn circle_drawing() {
 	screen.circle(319, 1, 22, 9);
 	screen.circle(2, 242, 19, 10);
 
-	let path = make_ref_path("circle_drawing.pcx");
+	let path = reference_file(Path::new("circle_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -463,7 +466,7 @@ fn filled_circle_drawing() {
 	screen.filled_circle(319, 1, 22, 9);
 	screen.filled_circle(2, 242, 19, 10);
 
-	let path = make_ref_path("filled_circle_drawing.pcx");
+	let path = reference_file(Path::new("filled_circle_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -473,8 +476,8 @@ fn text_drawing() {
 	let (mut screen, palette) = setup();
 
 	let font = BitmaskFont::new_vga_font().unwrap();
-	let small_font = BitmaskFont::load_from_file(Path::new("./test-assets/small.fnt")).unwrap();
-	let chunky_font = BitmaskFont::load_from_file(Path::new("./test-assets/chunky.fnt")).unwrap();
+	let small_font = BitmaskFont::load_from_file(test_assets_file(Path::new("small.fnt")).as_path()).unwrap();
+	let chunky_font = BitmaskFont::load_from_file(test_assets_file(Path::new("chunky.fnt")).as_path()).unwrap();
 
 	let message = "Hello, world! HELLO, WORLD!\nTesting 123";
 
@@ -514,7 +517,7 @@ fn text_drawing() {
 	screen.print_string(message, 360, 120, FontRenderOpts::Color(7), &font);
 	screen.print_string(message, 200, 250, FontRenderOpts::Color(8), &font);
 
-	let path = make_ref_path("text_drawing.pcx");
+	let path = reference_file(Path::new("text_drawing.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -597,7 +600,7 @@ fn solid_blits() {
 	screen.blit(Solid, &bmp16, 196, 238);
 	screen.blit(Solid, &bmp16, 226, 240);
 
-	let path = make_ref_path("solid_blits.pcx");
+	let path = reference_file(Path::new("solid_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -664,7 +667,7 @@ fn blended_solid_blits() {
 	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 196, 238);
 	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 226, 240);
 
-	let path = make_ref_path("blended_solid_blits.pcx");
+	let path = reference_file(Path::new("blended_solid_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -728,7 +731,7 @@ fn solid_flipped_blits() {
 	screen.blit(SolidFlipped { horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(SolidFlipped { horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = make_ref_path("solid_flipped_blits.pcx");
+	let path = reference_file(Path::new("solid_flipped_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -792,7 +795,7 @@ fn blended_solid_flipped_blits() {
 	screen.blit(SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
 	screen.blit(SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
-	let path = make_ref_path("blended_solid_flipped_blits.pcx");
+	let path = reference_file(Path::new("blended_solid_flipped_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -856,7 +859,7 @@ fn solid_offset_blits() {
 	screen.blit(SolidOffset(22), &bmp, 196, 238);
 	screen.blit(SolidOffset(22), &bmp, 226, 240);
 
-	let path = make_ref_path("solid_offset_blits.pcx");
+	let path = reference_file(Path::new("solid_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -920,7 +923,7 @@ fn solid_flipped_offset_blits() {
 	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = make_ref_path("solid_flipped_offset_blits.pcx");
+	let path = reference_file(Path::new("solid_flipped_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -987,7 +990,7 @@ fn transparent_blits() {
 	screen.blit(Transparent(0), &bmp16, 196, 238);
 	screen.blit(Transparent(0), &bmp16, 226, 240);
 
-	let path = make_ref_path("transparent_blits.pcx");
+	let path = reference_file(Path::new("transparent_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1054,7 +1057,7 @@ fn blended_transparent_blits() {
 	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 196, 238);
 	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 226, 240);
 
-	let path = make_ref_path("blended_transparent_blits.pcx");
+	let path = reference_file(Path::new("blended_transparent_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1118,7 +1121,7 @@ fn transparent_flipped_blits() {
 	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = make_ref_path("transparent_flipped_blits.pcx");
+	let path = reference_file(Path::new("transparent_flipped_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1182,7 +1185,7 @@ fn blended_transparent_flipped_blits() {
 	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
-	let path = make_ref_path("blended_transparent_flipped_blits.pcx");
+	let path = reference_file(Path::new("blended_transparent_flipped_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1246,7 +1249,7 @@ fn transparent_offset_blits() {
 	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 196, 238);
 	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 226, 240);
 
-	let path = make_ref_path("transparent_offset_blits.pcx");
+	let path = reference_file(Path::new("transparent_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1310,7 +1313,7 @@ fn transparent_flipped_offset_blits() {
 	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = make_ref_path("transparent_flipped_offset_blits.pcx");
+	let path = reference_file(Path::new("transparent_flipped_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1374,7 +1377,7 @@ fn transparent_single_blits() {
 	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 196, 238);
 	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 226, 240);
 
-	let path = make_ref_path("transparent_single_blits.pcx");
+	let path = reference_file(Path::new("transparent_single_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1438,7 +1441,7 @@ fn transparent_flipped_single_blits() {
 	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = make_ref_path("transparent_flipped_single_blits.pcx");
+	let path = reference_file(Path::new("transparent_flipped_single_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1502,7 +1505,7 @@ fn rotozoom_blits() {
 	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
 	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
 
-	let path = make_ref_path("rotozoom_blits.pcx");
+	let path = reference_file(Path::new("rotozoom_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1566,7 +1569,7 @@ fn blended_rotozoom_blits() {
 	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
 	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
-	let path = make_ref_path("blended_rotozoom_blits.pcx");
+	let path = reference_file(Path::new("blended_rotozoom_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1630,7 +1633,7 @@ fn rotozoom_offset_blits() {
 	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 196, 238);
 	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 226, 240);
 
-	let path = make_ref_path("rotozoom_offset_blits.pcx");
+	let path = reference_file(Path::new("rotozoom_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1694,7 +1697,7 @@ fn rotozoom_transparent_blits() {
 	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
 	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
 
-	let path = make_ref_path("rotozoom_transparent_blits.pcx");
+	let path = reference_file(Path::new("rotozoom_transparent_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1758,7 +1761,7 @@ fn blended_rotozoom_transparent_blits() {
 	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
 	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
-	let path = make_ref_path("blended_rotozoom_transparent_blits.pcx");
+	let path = reference_file(Path::new("blended_rotozoom_transparent_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1822,7 +1825,7 @@ fn rotozoom_transparent_offset_blits() {
 	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
 	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
 
-	let path = make_ref_path("rotozoom_transparent_offset_blits.pcx");
+	let path = reference_file(Path::new("rotozoom_transparent_offset_blits.pcx"));
 	//screen.to_pcx_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }

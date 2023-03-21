@@ -302,25 +302,34 @@ impl RgbaBitmap {
 
 #[cfg(test)]
 pub mod tests {
+	use std::path::PathBuf;
+
 	use tempfile::TempDir;
+
+	use crate::tests::{load_raw_indexed, test_assets_file};
 
 	use super::*;
 
-	pub static TEST_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw.bin");
-	pub static TEST_LARGE_BMP_PIXELS_RAW_2: &[u8] = include_bytes!("../../../test-assets/test_large_bmp_pixels_raw2.bin");
+	const BASE_PATH: &str = "./test-assets/pcx/";
+
+	fn test_file(file: &Path) -> PathBuf {
+		PathBuf::from(BASE_PATH).join(file)
+	}
 
 	#[test]
 	pub fn load_and_save() -> Result<(), PcxError> {
-		let dp2_palette =
-			Palette::load_from_file(Path::new("./test-assets/dp2.pal"), PaletteFormat::Normal)
-				.unwrap();
 		let tmp_dir = TempDir::new()?;
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test.pcx"))?;
+		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
+		let dp2_palette = Palette::load_from_file(
+			test_assets_file(Path::new("dp2.pal")).as_path(),
+			PaletteFormat::Normal
+		).unwrap();
+
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("small.pcx")).as_path())?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
-		assert_eq!(bmp.pixels(), TEST_BMP_PIXELS_RAW);
+		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
 		assert_eq!(palette, dp2_palette);
 
 		let save_path = tmp_dir.path().join("test_save.pcx");
@@ -328,7 +337,7 @@ pub mod tests {
 		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(16, reloaded_bmp.width());
 		assert_eq!(16, reloaded_bmp.height());
-		assert_eq!(reloaded_bmp.pixels(), TEST_BMP_PIXELS_RAW);
+		assert_eq!(reloaded_bmp.pixels(), ref_pixels.as_ref());
 		assert_eq!(reloaded_palette, dp2_palette);
 
 		Ok(())
@@ -340,31 +349,35 @@ pub mod tests {
 
 		// first image
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test_image.pcx"))?;
+		let ref_pixels = load_raw_indexed(test_file(Path::new("large_1.bin")).as_path())?;
+
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("large_1.pcx")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
-		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
 
 		let save_path = tmp_dir.path().join("test_save.pcx");
 		bmp.to_pcx_file(&save_path, &palette)?;
 		let (reloaded_bmp, _) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
-		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW);
+		assert_eq!(reloaded_bmp.pixels(), ref_pixels.as_ref());
 
 		// second image
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(Path::new("./test-assets/test_image2.pcx"))?;
+		let ref_pixels = load_raw_indexed(test_file(Path::new("large_2.bin")).as_path())?;
+
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("large_2.pcx")).as_path())?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
-		assert_eq!(bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
 
 		let save_path = tmp_dir.path().join("test_save_2.pcx");
 		bmp.to_pcx_file(&save_path, &palette)?;
 		let (reloaded_bmp, _) = IndexedBitmap::load_pcx_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
-		assert_eq!(reloaded_bmp.pixels(), TEST_LARGE_BMP_PIXELS_RAW_2);
+		assert_eq!(reloaded_bmp.pixels(), ref_pixels.as_ref());
 
 		Ok(())
 	}

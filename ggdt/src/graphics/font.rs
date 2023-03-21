@@ -243,11 +243,19 @@ impl Font for BitmaskFont {
 
 #[cfg(test)]
 pub mod tests {
+	use std::path::PathBuf;
+
 	use super::*;
+
+	const BASE_PATH: &str = "./test-assets/font/";
+
+	fn test_file(file: &Path) -> PathBuf {
+		PathBuf::from(BASE_PATH).join(file)
+	}
 
 	#[test]
 	pub fn load_font() -> Result<(), FontError> {
-		let font = BitmaskFont::load_from_file(Path::new("./assets/vga.fnt"))?;
+		let font = BitmaskFont::load_from_file(test_file(Path::new("vga.fnt")).as_path())?;
 		assert_eq!(256, font.characters.len());
 		assert_eq!(CHAR_FIXED_WIDTH as u8, font.space_width);
 		for character in font.characters.iter() {
@@ -261,7 +269,7 @@ pub mod tests {
 	#[test]
 	pub fn measure_text() -> Result<(), FontError> {
 		{
-			let font = BitmaskFont::load_from_file(Path::new("./assets/vga.fnt"))?;
+			let font = BitmaskFont::load_from_file(test_file(Path::new("vga.fnt")).as_path())?;
 
 			assert_eq!((40, 8), font.measure("Hello", FontRenderOpts::<u8>::None));
 			assert_eq!((40, 16), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));
@@ -275,7 +283,7 @@ pub mod tests {
 		}
 
 		{
-			let font = BitmaskFont::load_from_file(Path::new("./test-assets/small.fnt"))?;
+			let font = BitmaskFont::load_from_file(test_file(Path::new("small.fnt")).as_path())?;
 
 			assert_eq!((22, 7), font.measure("Hello", FontRenderOpts::<u8>::None));
 			assert_eq!((24, 14), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));
