@@ -32,6 +32,9 @@ pub enum BitmapError {
 
 	#[error("Bitmap GIF file error")]
 	GifError(#[from] gif::GifError),
+
+	#[error("Bitmap PNG file error")]
+	PngError(#[from] png::PngError),
 }
 
 /// Container for 256 color 2D pixel/image data that can be rendered to the screen. Pixel data

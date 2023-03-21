@@ -26,6 +26,10 @@ impl IndexedBitmap {
 		if let Some(extension) = path.extension() {
 			let extension = extension.to_ascii_lowercase();
 			match extension.to_str() {
+				Some("png") => {
+					let (bmp, palette) = Self::load_png_file(path)?;
+					Ok((bmp, palette.expect("Indexed color PNG loaded and should have returned a Palette")))
+				},
 				Some("pcx") => Ok(Self::load_pcx_file(path)?),
 				Some("gif") => Ok(Self::load_gif_file(path)?),
 				Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => {
