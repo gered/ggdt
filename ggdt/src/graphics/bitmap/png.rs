@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::hash::Hasher;
 use std::io;
-use std::io::{BufReader, BufWriter, Seek};
+use std::io::{BufReader, BufWriter};
 use std::path::Path;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
@@ -12,10 +12,13 @@ use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::Palette;
 use crate::graphics::Pixel;
-use crate::prelude::{PaletteError, PaletteFormat, to_argb32, to_rgb32};
+use crate::prelude::{from_argb32, from_rgb32, PaletteError, PaletteFormat, to_argb32, to_rgb32};
 use crate::utils::bytes::ReadFixedLengthByteArray;
 
 const PNG_HEADER: [u8; 8] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+// this is fairly arbitrary ...
+const PNG_WRITE_IDAT_CHUNK_SIZE: usize = 1024 * 8;
 
 #[derive(Error, Debug)]
 pub enum PngError {
@@ -130,6 +133,19 @@ fn read_chunk_data<T: ReadBytesExt>(reader: &mut T, chunk_header: &ChunkHeader) 
 	Ok(chunk_bytes)
 }
 
+fn write_chunk<T: WriteBytesExt>(writer: &mut T, chunk_header: &ChunkHeader, data: &[u8]) -> Result<(), PngError> {
+	let mut hasher = crc32fast::Hasher::new();
+	hasher.write(&chunk_header.name);
+	hasher.write(&data);
+	let checksum = hasher.finalize();
+
+	chunk_header.write(writer)?;
+	writer.write(data)?;
+	writer.write_u32::<BigEndian>(checksum)?;
+
+	Ok(())
+}
+
 fn find_chunk<T: ReadBytesExt>(reader: &mut T, chunk_name: [u8; 4]) -> Result<ChunkHeader, PngError> {
 	loop {
 		let chunk_header = match ChunkHeader::read(reader) {
@@ -168,6 +184,7 @@ impl Filter {
 
 trait ScanlinePixelConverter<PixelType: Pixel> {
 	fn read_pixel(&mut self, x: usize, palette: &Option<Palette>) -> Result<PixelType, PngError>;
+	fn write_pixel(&mut self, x: usize, pixel: PixelType) -> Result<(), PngError>;
 }
 
 struct ScanlineBuffer {
@@ -233,6 +250,13 @@ impl ScanlineBuffer {
 		}
 	}
 
+	fn encode_byte(&mut self, filter: Filter, byte: u8, x: usize, y: usize) -> u8 {
+		match filter {
+			Filter::None => byte,
+			_ => 0, // leaving out the rest for now. we hardcode usage of Filter::None when saving PNGs currently
+		}
+	}
+
 	pub fn read_line<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<(), PngError> {
 		if self.y >= self.height {
 			return Err(PngError::IOError(io::Error::from(io::ErrorKind::UnexpectedEof)));
@@ -251,6 +275,26 @@ impl ScanlineBuffer {
 
 		Ok(())
 	}
+
+	pub fn write_line<T: WriteBytesExt>(&mut self, filter: Filter, writer: &mut T) -> Result<(), PngError> {
+		if self.y >= self.height {
+			return Err(PngError::IOError(io::Error::from(io::ErrorKind::UnexpectedEof)));
+		} else if self.y >= 1 {
+			self.previous.copy_from_slice(&self.current);
+		}
+		let y = self.y;
+		self.y += 1;
+
+		writer.write_u8(filter as u8)?;
+		for x in 0..self.stride {
+			let byte = self.current[x];
+			let encoded = self.encode_byte(filter, byte, x, y);
+			writer.write_u8(encoded)?;
+			self.current[x] = encoded;
+		}
+
+		Ok(())
+	}
 }
 
 impl ScanlinePixelConverter<u8> for ScanlineBuffer {
@@ -259,7 +303,18 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 		match self.format {
 			ColorFormat::IndexedColor => {
 				Ok(self.current[offset])
-			}
+			},
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+		}
+	}
+
+	fn write_pixel(&mut self, x: usize, pixel: u8) -> Result<(), PngError> {
+		let offset = x * self.bpp;
+		match self.format {
+			ColorFormat::IndexedColor => {
+				self.current[offset] = pixel;
+				Ok(())
+			},
 			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
@@ -276,20 +331,42 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				} else {
 					return Err(PngError::BadFile(String::from("No palette to map indexed-color format pixels to RGBA format destination")));
 				}
-			}
+			},
 			ColorFormat::RGB => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				Ok(to_rgb32(r, g, b))
-			}
+			},
 			ColorFormat::RGBA => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				let a = self.current[offset + 3];
 				Ok(to_argb32(a, r, g, b))
-			}
+			},
+			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+		}
+	}
+
+	fn write_pixel(&mut self, x: usize, pixel: u32) -> Result<(), PngError> {
+		let offset = x * self.bpp;
+		match self.format {
+			ColorFormat::RGB => {
+				let (r, g, b) = from_rgb32(pixel);
+				self.current[offset] = r;
+				self.current[offset + 1] = g;
+				self.current[offset + 2] = b;
+				Ok(())
+			},
+			ColorFormat::RGBA => {
+				let (a, r, g, b) = from_argb32(pixel);
+				self.current[offset] = r;
+				self.current[offset + 1] = g;
+				self.current[offset + 2] = b;
+				self.current[offset + 3] = a;
+				Ok(())
+			},
 			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
@@ -300,7 +377,7 @@ fn load_png_bytes<Reader, PixelType>(
 	reader: &mut Reader
 ) -> Result<(Bitmap<PixelType>, Option<Palette>), PngError>
 where
-	Reader: ReadBytesExt + Seek,
+	Reader: ReadBytesExt,
 	PixelType: Pixel,
 	ScanlineBuffer: ScanlinePixelConverter<PixelType>
 {
@@ -390,7 +467,6 @@ where
 		scanline_buffer.read_line(&mut deflater)?;
 		for x in 0..ihdr.width as usize {
 			let pixel = scanline_buffer.read_pixel(x, &palette)?;
-			// TODO: we can make this a bit more efficient ...
 			unsafe { output.set_pixel_unchecked(x as i32, y as i32, pixel); }
 		}
 	}
@@ -398,8 +474,95 @@ where
 	Ok((output, palette))
 }
 
+fn write_png_bytes<Writer, PixelType>(
+	writer: &mut Writer,
+	bitmap: &Bitmap<PixelType>,
+	palette: Option<&Palette>,
+) -> Result<(), PngError>
+where
+	Writer: WriteBytesExt,
+	PixelType: Pixel,
+	ScanlineBuffer: ScanlinePixelConverter<PixelType>,
+{
+	let format = if Bitmap::<PixelType>::PIXEL_SIZE == 1 {
+		ColorFormat::IndexedColor
+	} else {
+		ColorFormat::RGBA
+	};
+
+	// magic PNG header
+
+	writer.write_all(&PNG_HEADER)?;
+
+	// write IHDR chunk
+
+	let ihdr = ImageHeaderChunk {
+		width: bitmap.width(),
+		height: bitmap.height(),
+		bpp: 8,
+		format,
+		compression: 0,
+		filter: 0,
+		interlace: 0,
+	};
+	let mut chunk_bytes = Vec::new();
+	ihdr.write(&mut chunk_bytes)?;
+	let chunk_header = ChunkHeader { name: *b"IHDR", size: chunk_bytes.len() as u32 };
+	write_chunk(writer, &chunk_header, &chunk_bytes)?;
+
+	// if there is a palette, write it out in a PLTE chunk
+
+	if let Some(palette) = palette {
+		let mut chunk_bytes = Vec::new();
+		palette.to_bytes(&mut chunk_bytes, PaletteFormat::Normal)?;
+		let chunk_header = ChunkHeader { name: *b"PLTE", size: 768 };
+		write_chunk(writer, &chunk_header, &chunk_bytes)?;
+	}
+
+	// now write out the raw pixel data as IDAT chunk(s)
+
+	// convert the bitmap pixels into png scanline format and compress via deflate
+
+	let mut scanline_buffer = ScanlineBuffer::new(&ihdr)?;
+	let mut inflater = flate2::write::ZlibEncoder::new(Vec::new(), flate2::Compression::default());
+
+	for y in 0..ihdr.height as usize {
+		for x in 0..ihdr.width as usize {
+			let pixel = unsafe { bitmap.get_pixel_unchecked(x as i32, y as i32) };
+			scanline_buffer.write_pixel(x, pixel)?;
+		}
+		scanline_buffer.write_line(Filter::None, &mut inflater)?;
+	}
+	let chunk_bytes = inflater.finish()?;
+
+	// write out IDAT chunks, splitting the compressed data to be written into multiple IDAT chunks.
+
+	for sub_chunk_bytes in chunk_bytes.chunks(PNG_WRITE_IDAT_CHUNK_SIZE) {
+		let chunk_header = ChunkHeader { name: *b"IDAT", size: sub_chunk_bytes.len() as u32 };
+
+		let mut hasher = crc32fast::Hasher::new();
+		hasher.write(&chunk_header.name);
+		hasher.write(&sub_chunk_bytes);
+		let checksum = hasher.finalize();
+
+		chunk_header.write(writer)?;
+		writer.write(sub_chunk_bytes)?;
+		writer.write_u32::<BigEndian>(checksum)?;
+	}
+
+	// all done, write the IEND chunk
+
+	let chunk_header = ChunkHeader { name: *b"IEND", size: 0 };
+	let checksum = crc32fast::hash(&chunk_header.name);
+
+	chunk_header.write(writer)?;
+	writer.write_u32::<BigEndian>(checksum)?;
+
+	Ok(())
+}
+
 impl IndexedBitmap {
-	pub fn load_png_bytes<T: ReadBytesExt + Seek>(
+	pub fn load_png_bytes<T: ReadBytesExt>(
 		reader: &mut T,
 	) -> Result<(IndexedBitmap, Option<Palette>), PngError> {
 		load_png_bytes(reader)
@@ -416,7 +579,7 @@ impl IndexedBitmap {
 		writer: &mut T,
 		palette: &Palette,
 	) -> Result<(), PngError> {
-		todo!()
+		write_png_bytes(writer, &self, Some(palette))
 	}
 
 	pub fn to_png_file(&self, path: &Path, palette: &Palette) -> Result<(), PngError> {
@@ -427,7 +590,7 @@ impl IndexedBitmap {
 }
 
 impl RgbaBitmap {
-	pub fn load_png_bytes<T: ReadBytesExt + Seek>(
+	pub fn load_png_bytes<T: ReadBytesExt>(
 		reader: &mut T,
 	) -> Result<(RgbaBitmap, Option<Palette>), PngError> {
 		load_png_bytes(reader)
@@ -443,7 +606,7 @@ impl RgbaBitmap {
 		&self,
 		writer: &mut T,
 	) -> Result<(), PngError> {
-		todo!()
+		write_png_bytes(writer, &self, None)
 	}
 
 	pub fn to_png_file(&self, path: &Path) -> Result<(), PngError> {
