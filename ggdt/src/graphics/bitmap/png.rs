@@ -623,6 +623,7 @@ pub mod tests {
 
 	use byteorder::LittleEndian;
 	use claim::*;
+	use tempfile::TempDir;
 
 	use super::*;
 
@@ -761,6 +762,138 @@ pub mod tests {
 		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_2_rgb.png")).as_path())?;
 		assert!(palette.is_none());
 		assert_eq!(ref_bytes, bmp.pixels);
+
+		Ok(())
+	}
+
+	#[test]
+	pub fn load_and_save_indexed_256_color() -> Result<(), PngError> {
+		let tmp_dir = TempDir::new()?;
+
+		let ref_bytes = load_raw_indexed(path_to_file(Path::new("indexed_8.bin")).as_path())?;
+
+		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("indexed_8.png")).as_path())?;
+		assert_eq!(32, bmp.width());
+		assert_eq!(32, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_some());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path, palette.as_ref().unwrap())?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_png_file(&save_path)?;
+		assert_eq!(32, reloaded_bmp.width());
+		assert_eq!(32, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert_eq!(reloaded_palette, palette);
+
+		Ok(())
+	}
+
+	#[test]
+	pub fn load_and_save_indexed_256_color_larger_image() -> Result<(), PngError> {
+		let tmp_dir = TempDir::new()?;
+
+		// first image
+
+		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_1_indexed.bin")).as_path())?;
+
+		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_1_indexed.png")).as_path())?;
+		assert_eq!(320, bmp.width());
+		assert_eq!(200, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_some());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path, palette.as_ref().unwrap())?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_png_file(&save_path)?;
+		assert_eq!(320, reloaded_bmp.width());
+		assert_eq!(200, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert_eq!(reloaded_palette, palette);
+
+		// second image
+
+		let ref_bytes = load_raw_indexed(path_to_file(Path::new("large_2_indexed.bin")).as_path())?;
+
+		let (bmp, palette) = IndexedBitmap::load_png_file(path_to_file(Path::new("large_2_indexed.png")).as_path())?;
+		assert_eq!(320, bmp.width());
+		assert_eq!(200, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_some());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path, palette.as_ref().unwrap())?;
+		let (reloaded_bmp, reloaded_palette) = IndexedBitmap::load_png_file(&save_path)?;
+		assert_eq!(320, reloaded_bmp.width());
+		assert_eq!(200, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert_eq!(reloaded_palette, palette);
+
+		Ok(())
+	}
+
+	#[test]
+	pub fn load_and_save_rgb_color() -> Result<(), PngError> {
+		let tmp_dir = TempDir::new()?;
+
+		let ref_bytes = load_raw_argb(path_to_file(Path::new("rgb.bin")).as_path())?;
+
+		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("rgb.png")).as_path())?;
+		assert_eq!(32, bmp.width());
+		assert_eq!(32, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_none());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
+		assert_eq!(32, reloaded_bmp.width());
+		assert_eq!(32, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert!(reloaded_palette.is_none());
+
+		Ok(())
+	}
+
+	#[test]
+	pub fn load_and_save_rgb_color_larger_image() -> Result<(), PngError> {
+		let tmp_dir = TempDir::new()?;
+
+		// first image
+
+		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_1_rgba.bin")).as_path())?;
+
+		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_1_rgb.png")).as_path())?;
+		assert_eq!(320, bmp.width());
+		assert_eq!(200, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_none());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
+		assert_eq!(320, reloaded_bmp.width());
+		assert_eq!(200, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert!(reloaded_palette.is_none());
+
+		// second image
+
+		let ref_bytes = load_raw_argb(path_to_file(Path::new("large_2_rgba.bin")).as_path())?;
+
+		let (bmp, palette) = RgbaBitmap::load_png_file(path_to_file(Path::new("large_2_rgb.png")).as_path())?;
+		assert_eq!(320, bmp.width());
+		assert_eq!(200, bmp.height());
+		assert_eq!(bmp.pixels, ref_bytes);
+		assert!(palette.is_none());
+
+		let save_path = tmp_dir.path().join("test_save.png");
+		bmp.to_png_file(&save_path)?;
+		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
+		assert_eq!(320, reloaded_bmp.width());
+		assert_eq!(200, reloaded_bmp.height());
+		assert_eq!(reloaded_bmp.pixels, bmp.pixels);
+		assert!(reloaded_palette.is_none());
 
 		Ok(())
 	}
