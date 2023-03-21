@@ -250,7 +250,7 @@ impl ScanlineBuffer {
 		}
 	}
 
-	fn encode_byte(&mut self, filter: Filter, byte: u8, x: usize, y: usize) -> u8 {
+	fn encode_byte(&mut self, filter: Filter, byte: u8, _x: usize, _y: usize) -> u8 {
 		match filter {
 			Filter::None => byte,
 			_ => 0, // leaving out the rest for now. we hardcode usage of Filter::None when saving PNGs currently
