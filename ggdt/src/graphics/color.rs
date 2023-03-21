@@ -1,3 +1,23 @@
+// these colours are taken from the default VGA palette with a simple conversion from their original
+// 0-63 range to 0-255.
+
+pub const COLOR_BLACK: u32 = 0xff000000;
+pub const COLOR_BLUE: u32 = 0xff0000a8;
+pub const COLOR_GREEN: u32 = 0xff00a800;
+pub const COLOR_CYAN: u32 = 0xff00a8a8;
+pub const COLOR_RED: u32 = 0xffa80000;
+pub const COLOR_MAGENTA: u32 = 0xffa800a8;
+pub const COLOR_BROWN: u32 = 0xffa85400;
+pub const COLOR_LIGHT_GRAY: u32 = 0xffa8a8a8;
+pub const COLOR_DARK_GRAY: u32 = 0xff545454;
+pub const COLOR_BRIGHT_BLUE: u32 = 0xff5454fc;
+pub const COLOR_BRIGHT_GREEN: u32 = 0xff54fc54;
+pub const COLOR_BRIGHT_CYAN: u32 = 0xff54fcfc;
+pub const COLOR_BRIGHT_RED: u32 = 0xfffc5454;
+pub const COLOR_BRIGHT_MAGENTA: u32 = 0xfffc54fc;
+pub const COLOR_BRIGHT_YELLOW: u32 = 0xfffcfc54;
+pub const COLOR_BRIGHT_WHITE: u32 = 0xfffcfcfc;
+
 /// Converts a set of individual ARGB components to a combined 32-bit color value, packed into
 /// the format 0xAARRGGBB
 ///
