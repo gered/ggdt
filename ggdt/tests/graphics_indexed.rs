@@ -1369,13 +1369,13 @@ fn transparent_single_blits() {
 	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 318, 196);
 	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 320, 226);
 
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 46, 227);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 76, 228);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 106, 232);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 136, 236);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 166, 237);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 196, 238);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 22 }, &bmp, 226, 240);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 46, 227);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 76, 228);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 106, 232);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 136, 236);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 166, 237);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 196, 238);
+	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_single_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1433,13 +1433,13 @@ fn transparent_flipped_single_blits() {
 	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
 	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
 
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_single_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
