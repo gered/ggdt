@@ -39,6 +39,12 @@ pub enum PngError {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum PngFormat {
+	RGB,
+	RGBA,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum ColorFormat {
 	Grayscale = 0,
 	RGB = 2,
@@ -477,6 +483,7 @@ where
 fn write_png_bytes<Writer, PixelType>(
 	writer: &mut Writer,
 	bitmap: &Bitmap<PixelType>,
+	format: ColorFormat,
 	palette: Option<&Palette>,
 ) -> Result<(), PngError>
 where
@@ -484,12 +491,6 @@ where
 	PixelType: Pixel,
 	ScanlineBuffer: ScanlinePixelConverter<PixelType>,
 {
-	let format = if Bitmap::<PixelType>::PIXEL_SIZE == 1 {
-		ColorFormat::IndexedColor
-	} else {
-		ColorFormat::RGBA
-	};
-
 	// magic PNG header
 
 	writer.write_all(&PNG_HEADER)?;
@@ -579,7 +580,7 @@ impl IndexedBitmap {
 		writer: &mut T,
 		palette: &Palette,
 	) -> Result<(), PngError> {
-		write_png_bytes(writer, &self, Some(palette))
+		write_png_bytes(writer, &self, ColorFormat::IndexedColor, Some(palette))
 	}
 
 	pub fn to_png_file(&self, path: &Path, palette: &Palette) -> Result<(), PngError> {
@@ -605,14 +606,26 @@ impl RgbaBitmap {
 	pub fn to_png_bytes<T: WriteBytesExt>(
 		&self,
 		writer: &mut T,
+		format: PngFormat,
 	) -> Result<(), PngError> {
-		write_png_bytes(writer, &self, None)
+		write_png_bytes(
+			writer,
+			&self,
+			match format {
+				PngFormat::RGB => ColorFormat::RGB,
+				PngFormat::RGBA => ColorFormat::RGBA,
+			},
+			None,
+		)
 	}
 
-	pub fn to_png_file(&self, path: &Path) -> Result<(), PngError> {
+	pub fn to_png_file(
+		&self, path: &Path,
+		format: PngFormat,
+	) -> Result<(), PngError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
-		self.to_png_bytes(&mut writer)
+		self.to_png_bytes(&mut writer, format)
 	}
 }
 
@@ -823,7 +836,7 @@ pub mod tests {
 		assert!(palette.is_none());
 
 		let save_path = tmp_dir.path().join("test_save.png");
-		bmp.to_png_file(&save_path)?;
+		bmp.to_png_file(&save_path, PngFormat::RGB)?;
 		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
 		assert_eq!(32, reloaded_bmp.width());
 		assert_eq!(32, reloaded_bmp.height());
@@ -848,7 +861,7 @@ pub mod tests {
 		assert!(palette.is_none());
 
 		let save_path = tmp_dir.path().join("test_save.png");
-		bmp.to_png_file(&save_path)?;
+		bmp.to_png_file(&save_path, PngFormat::RGB)?;
 		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
@@ -866,7 +879,7 @@ pub mod tests {
 		assert!(palette.is_none());
 
 		let save_path = tmp_dir.path().join("test_save.png");
-		bmp.to_png_file(&save_path)?;
+		bmp.to_png_file(&save_path, PngFormat::RGB)?;
 		let (reloaded_bmp, reloaded_palette) = RgbaBitmap::load_png_file(&save_path)?;
 		assert_eq!(320, reloaded_bmp.width());
 		assert_eq!(200, reloaded_bmp.height());
