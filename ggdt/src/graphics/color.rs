@@ -17,6 +17,38 @@ pub const COLOR_BRIGHT_MAGENTA: u32 = 0xffff55ff;
 pub const COLOR_BRIGHT_YELLOW: u32 = 0xffffff55;
 pub const COLOR_BRIGHT_WHITE: u32 = 0xffffffff;
 
+// TODO: probably should name these better, after i do much more reading on the subject :-)
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum BlendFunction {
+	Blend,
+	BlendSourceWithAlpha(u8),
+	TintedBlend(u32),
+}
+
+impl BlendFunction {
+	#[inline]
+	/// Blends the source and destination color together using the function associated with
+	/// this enum value. Both colors should be 32-bit packed colors in the format 0xAARRGGBB.
+	///
+	/// # Arguments
+	///
+	/// * `src`: the source color to blend
+	/// * `dest`: the destination color to blend the source color over
+	///
+	/// returns: the blended color
+	pub fn blend(&self, src: u32, dest: u32) -> u32 {
+		use BlendFunction::*;
+		match self {
+			Blend => blend_argb32(src, dest),
+			BlendSourceWithAlpha(opacity) => blend_source_by_value(src, dest, *opacity),
+			TintedBlend(tint) => {
+				let tinted = tint_argb32(src, *tint);
+				blend_argb32(tinted, dest)
+			},
+		}
+	}
+}
+
 /// Converts a set of individual ARGB components to a combined 32-bit color value, packed into
 /// the format 0xAARRGGBB
 ///
@@ -80,6 +112,96 @@ pub fn from_rgb32(rgb: u32) -> (u8, u8, u8) {
 	let g = ((rgb & 0x0000ff00) >> 8) as u8;
 	let b = (rgb & 0x000000ff) as u8;
 	(r, g, b)
+}
+
+/// Blends two color components together using a "strength" factor to control how much of the source
+/// color versus destination color is represented in the result. This is using the formula:
+/// `(source * strength) + (dest * (1 - strength))`
+///
+/// # Arguments
+///
+/// * `strength`: controls how much of the source versus destination is represented in the final output,
+///               where 0 means the source component is 100% present in the output while 255 means the
+///               destination component is 100% present in the output and 128 means 50% of each.
+/// * `src`: the source component to be blended
+/// * `dest`: the destination component to be blended
+///
+/// returns: the blended component result
+#[inline]
+pub fn blend_components(strength: u8, src: u8, dest: u8) -> u8 {
+	(((src as u16 * strength as u16) + (dest as u16 * (255 - strength as u16))) / 255) as u8
+}
+
+/// Alpha blends the components of a source and destination color. Both colors should be 32-bit
+/// packed colors in the format 0xAARRGGBB.
+///
+/// # Arguments
+///
+/// * `src`: the source color that is to be blended onto the destination
+/// * `dest`: the destination color that the source is being blended into
+///
+/// returns: the blended result
+#[inline]
+pub fn blend_argb32(src: u32, dest: u32) -> u32 {
+	let (src_a, src_r, src_g, src_b) = from_argb32(src);
+	let (dest_a, dest_r, dest_g, dest_b) = from_argb32(dest);
+	to_argb32(
+		blend_components(src_a, src_a, dest_a),
+		blend_components(src_a, src_r, dest_r),
+		blend_components(src_a, src_g, dest_g),
+		blend_components(src_a, src_b, dest_b),
+	)
+}
+
+/// Blends the source and destination colors together, where the alpha value used to blend the two
+/// colors is derived from the given alpha value multiplied with the source color's alpha component.
+/// This allows for more flexibility in directly controling how transparent the source
+/// color is overtop of the destination. Both colors should be 32-bit packed colors in the format
+/// 0xAARRGGBB.
+///
+/// # Arguments
+///
+/// * `src`: the source color that is to be blended onto the destination. the alpha component of this
+///          color is used during the blend.
+/// * `dest`: the destination color that the source is being blended into. the alpha component of this
+///           color is ignored.
+/// * `alpha`: the transparency or opacity of the source color over the destination color. this is
+///            multipled together with the source color's alpha component to arrive at the final
+///            alpha value used for blending the source and destination color's RGB components.
+///
+/// returns: the blended result
+pub fn blend_source_by_value(src: u32, dest: u32, alpha: u8) -> u32 {
+	let (src_a, src_r, src_g, src_b) = from_argb32(src);
+	let (dest_r, dest_g, dest_b) = from_rgb32(dest);
+	let alpha = ((alpha as u16 * src_a as u16) / 255) as u8;
+	to_argb32(
+		alpha,
+		blend_components(alpha, src_r, dest_r),
+		blend_components(alpha, src_g, dest_g),
+		blend_components(alpha, src_b, dest_b),
+	)
+}
+
+/// Applies a tint to a color, using the tint color's alpha component as the strength of the tint,
+/// where 0 means no tint and 255 means full tint. The original color's alpha component is preserved in
+/// the result. Both the source color and tint color should be 32-bit packed colors in the format
+/// 0xAARRGGBB.
+///
+/// # Arguments
+///
+/// * `color`: the color to be tinted
+/// * `tint`: the tint to be applied to the color, where the alpha component represents the tint strength
+///
+/// returns: the resulting tinted color
+pub fn tint_argb32(color: u32, tint: u32) -> u32 {
+	let (color_a, color_r, color_g, color_b) = from_argb32(color);
+	let (tint_a, tint_r, tint_g, tint_b) = from_argb32(tint);
+	to_argb32(
+		color_a,
+		blend_components(tint_a, tint_r, color_r),
+		blend_components(tint_a, tint_g, color_g),
+		blend_components(tint_a, tint_b, color_b),
+	)
 }
 
 /// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB.
