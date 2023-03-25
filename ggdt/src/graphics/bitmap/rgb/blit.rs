@@ -1,6 +1,7 @@
-use crate::graphics::bitmap::blit::clip_blit;
+use crate::graphics::bitmap::blit::{clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit};
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::bitmapatlas::BitmapAtlas;
+use crate::graphics::color::BlendFunction;
 use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
@@ -49,9 +50,156 @@ pub enum RgbaBlitMethod {
 		scale_y: f32,
 		transparent_color: u32,
 	},
+	SolidBlended(BlendFunction),
+	SolidFlippedBlended {
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
+	},
+	TransparentBlended {
+		transparent_color: u32,
+		blend: BlendFunction,
+	},
+	TransparentFlippedBlended {
+		transparent_color: u32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
+	},
+	RotoZoomBlended {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		blend: BlendFunction,
+	},
+	RotoZoomTransparentBlended {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		transparent_color: u32,
+		blend: BlendFunction,
+	},
 }
 
 impl RgbaBitmap {
+	pub unsafe fn solid_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		blend: BlendFunction,
+	) {
+		per_pixel_blit(
+			self, src, src_region, dest_x, dest_y,
+			|src_pixels, dest_pixels| {
+				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+			},
+		);
+	}
+
+	pub unsafe fn solid_flipped_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
+	) {
+		per_pixel_flipped_blit(
+			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			|src_pixels, dest_pixels| {
+				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+			},
+		);
+	}
+
+	pub unsafe fn transparent_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		transparent_color: u32,
+		blend: BlendFunction,
+	) {
+		per_pixel_blit(
+			self, src, src_region, dest_x, dest_y,
+			|src_pixels, dest_pixels| {
+				if *src_pixels != transparent_color {
+					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+				}
+			},
+		);
+	}
+
+	pub unsafe fn transparent_flipped_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		transparent_color: u32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
+	) {
+		per_pixel_flipped_blit(
+			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			|src_pixels, dest_pixels| {
+				if *src_pixels != transparent_color {
+					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+				}
+			},
+		);
+	}
+
+	pub unsafe fn rotozoom_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		blend: BlendFunction,
+	) {
+		per_pixel_rotozoom_blit(
+			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			|src_pixel, dest_bitmap, draw_x, draw_y| {
+				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
+					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
+				}
+			},
+		);
+	}
+
+	pub unsafe fn rotozoom_transparent_blended_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		transparent_color: u32,
+		blend: BlendFunction,
+	) {
+		per_pixel_rotozoom_blit(
+			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			|src_pixel, dest_bitmap, draw_x, draw_y| {
+				if transparent_color != src_pixel {
+					if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
+						dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
+					}
+				}
+			},
+		);
+	}
 	pub fn blit_region(
 		&mut self,
 		method: RgbaBlitMethod,
@@ -71,12 +219,16 @@ impl RgbaBitmap {
 		match method {
 			// rotozoom blits internally clip per-pixel right now ... and regardless, the normal
 			// clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
-			RotoZoom { .. } => {}
-			RotoZoomTransparent { .. } => {}
+			RotoZoom { .. } => {},
+			RotoZoomBlended { .. } => {},
+			RotoZoomTransparent { .. } => {},
+			RotoZoomTransparentBlended { .. } => {},
 
 			// set axis flip arguments
 			SolidFlipped { horizontal_flip, vertical_flip, .. } |
+			SolidFlippedBlended { horizontal_flip, vertical_flip, .. } |
 			TransparentFlipped { horizontal_flip, vertical_flip, .. } |
+			TransparentFlippedBlended { horizontal_flip, vertical_flip, .. } |
 			TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } => {
 				if !clip_blit(
 					self.clip_region(),
@@ -144,6 +296,22 @@ impl RgbaBitmap {
 			RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
 				self.rotozoom_transparent_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color)
 			}
+			SolidBlended(blend) => self.solid_blended_blit(src, src_region, dest_x, dest_y, blend),
+			SolidFlippedBlended { horizontal_flip, vertical_flip, blend } => {
+				self.solid_flipped_blended_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, blend)
+			},
+			TransparentBlended { transparent_color, blend } => {
+				self.transparent_blended_blit(src, src_region, dest_x, dest_y, transparent_color, blend)
+			},
+			TransparentFlippedBlended { transparent_color, horizontal_flip, vertical_flip, blend } => {
+				self.transparent_flipped_blended_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, blend)
+			},
+			RotoZoomBlended { angle, scale_x, scale_y, blend } => {
+				self.rotozoom_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, blend)
+			},
+			RotoZoomTransparentBlended { angle, scale_x, scale_y, transparent_color, blend } => {
+				self.rotozoom_transparent_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, blend)
+			},
 		}
 	}
 
