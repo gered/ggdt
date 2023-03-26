@@ -1601,34 +1601,34 @@ fn blend_function_tinted_blend() {
 	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
 	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 5);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 5);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 5);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 40);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 40);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 40);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 75);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 75);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 75);
 
 	//////
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 125);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 125);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 125);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 160);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 160);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 160);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 255, 0, 0)));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 155, 242, 21)));
 	screen.blit(method.clone(), &bmp_solid, 10, 195);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
