@@ -1,19 +1,25 @@
 use crate::graphics::bitmap::blit::{clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit};
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::bitmapatlas::BitmapAtlas;
-use crate::graphics::color::BlendFunction;
+use crate::graphics::color::{BlendFunction, tint_argb32};
 use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum RgbaBlitMethod {
 	/// Solid blit, no transparency or other per-pixel adjustments.
 	Solid,
+	SolidTinted(u32),
 	SolidBlended(BlendFunction),
 	/// Same as [RgbaBlitMethod::Solid] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	SolidFlipped {
 		horizontal_flip: bool,
 		vertical_flip: bool,
+	},
+	SolidFlippedTinted {
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		tint_color: u32,
 	},
 	SolidFlippedBlended {
 		horizontal_flip: bool,
@@ -22,6 +28,10 @@ pub enum RgbaBlitMethod {
 	},
 	/// Transparent blit, the specified source color pixels are skipped.
 	Transparent(u32),
+	TransparentTinted {
+		transparent_color: u32,
+		tint_color: u32,
+	},
 	TransparentBlended {
 		transparent_color: u32,
 		blend: BlendFunction,
@@ -32,6 +42,12 @@ pub enum RgbaBlitMethod {
 		transparent_color: u32,
 		horizontal_flip: bool,
 		vertical_flip: bool,
+	},
+	TransparentFlippedTinted {
+		transparent_color: u32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		tint_color: u32,
 	},
 	TransparentFlippedBlended {
 		transparent_color: u32,
@@ -59,6 +75,12 @@ pub enum RgbaBlitMethod {
 		scale_x: f32,
 		scale_y: f32,
 	},
+	RotoZoomTinted {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		tint_color: u32,
+	},
 	RotoZoomBlended {
 		angle: f32,
 		scale_x: f32,
@@ -72,6 +94,13 @@ pub enum RgbaBlitMethod {
 		scale_y: f32,
 		transparent_color: u32,
 	},
+	RotoZoomTransparentTinted {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		transparent_color: u32,
+		tint_color: u32,
+	},
 	RotoZoomTransparentBlended {
 		angle: f32,
 		scale_x: f32,
@@ -82,6 +111,22 @@ pub enum RgbaBlitMethod {
 }
 
 impl RgbaBitmap {
+	pub unsafe fn solid_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		tint_color: u32,
+	) {
+		per_pixel_blit(
+			self, src, src_region, dest_x, dest_y,
+			|src_pixels, dest_pixels| {
+				*dest_pixels = tint_argb32(*src_pixels, tint_color);
+			},
+		);
+	}
+
 	pub unsafe fn solid_blended_blit(
 		&mut self,
 		src: &Self,
@@ -116,6 +161,43 @@ impl RgbaBitmap {
 		);
 	}
 
+	pub unsafe fn solid_flipped_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		tint_color: u32,
+	) {
+		per_pixel_flipped_blit(
+			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			|src_pixels, dest_pixels| {
+				*dest_pixels = tint_argb32(*src_pixels, tint_color);
+			},
+		);
+	}
+
+	pub unsafe fn transparent_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		transparent_color: u32,
+		tint_color: u32,
+	) {
+		per_pixel_blit(
+			self, src, src_region, dest_x, dest_y,
+			|src_pixels, dest_pixels| {
+				if *src_pixels != transparent_color {
+					*dest_pixels = tint_argb32(*src_pixels, tint_color);
+				}
+			},
+		);
+	}
+
 	pub unsafe fn transparent_blended_blit(
 		&mut self,
 		src: &Self,
@@ -130,6 +212,27 @@ impl RgbaBitmap {
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+				}
+			},
+		);
+	}
+
+	pub unsafe fn transparent_flipped_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		transparent_color: u32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		tint_color: u32,
+	) {
+		per_pixel_flipped_blit(
+			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			|src_pixels, dest_pixels| {
+				if *src_pixels != transparent_color {
+					*dest_pixels = tint_argb32(*src_pixels, tint_color);
 				}
 			},
 		);
@@ -156,6 +259,25 @@ impl RgbaBitmap {
 		);
 	}
 
+	pub unsafe fn rotozoom_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		tint_color: u32,
+	) {
+		per_pixel_rotozoom_blit(
+			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			|src_pixel, dest_bitmap, draw_x, draw_y| {
+				dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
+			},
+		);
+	}
+
 	pub unsafe fn rotozoom_blended_blit(
 		&mut self,
 		src: &Self,
@@ -172,6 +294,28 @@ impl RgbaBitmap {
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
 					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
+				}
+			},
+		);
+	}
+
+	pub unsafe fn rotozoom_transparent_tinted_blit(
+		&mut self,
+		src: &Self,
+		src_region: &Rect,
+		dest_x: i32,
+		dest_y: i32,
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		transparent_color: u32,
+		tint_color: u32,
+	) {
+		per_pixel_rotozoom_blit(
+			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			|src_pixel, dest_bitmap, draw_x, draw_y| {
+				if transparent_color != src_pixel {
+					dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
 				}
 			},
 		);
@@ -200,6 +344,7 @@ impl RgbaBitmap {
 			},
 		);
 	}
+
 	pub fn blit_region(
 		&mut self,
 		method: RgbaBlitMethod,
@@ -220,14 +365,18 @@ impl RgbaBitmap {
 			// rotozoom blits internally clip per-pixel right now ... and regardless, the normal
 			// clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
 			RotoZoom { .. } => {},
+			RotoZoomTinted { .. } => {},
 			RotoZoomBlended { .. } => {},
 			RotoZoomTransparent { .. } => {},
+			RotoZoomTransparentTinted { .. } => {},
 			RotoZoomTransparentBlended { .. } => {},
 
 			// set axis flip arguments
 			SolidFlipped { horizontal_flip, vertical_flip, .. } |
+			SolidFlippedTinted { horizontal_flip, vertical_flip, .. } |
 			SolidFlippedBlended { horizontal_flip, vertical_flip, .. } |
 			TransparentFlipped { horizontal_flip, vertical_flip, .. } |
+			TransparentFlippedTinted { horizontal_flip, vertical_flip, .. } |
 			TransparentFlippedBlended { horizontal_flip, vertical_flip, .. } |
 			TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } => {
 				if !clip_blit(
@@ -275,39 +424,55 @@ impl RgbaBitmap {
 		use RgbaBlitMethod::*;
 		match method {
 			Solid => self.solid_blit(src, src_region, dest_x, dest_y),
+			SolidTinted(tint_color) => self.solid_tinted_blit(src, src_region, dest_x, dest_y, tint_color),
+			SolidBlended(blend) => self.solid_blended_blit(src, src_region, dest_x, dest_y, blend),
 			SolidFlipped { horizontal_flip, vertical_flip } => {
 				self.solid_flipped_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip)
-			}
-			Transparent(transparent_color) => {
-				self.transparent_blit(src, src_region, dest_x, dest_y, transparent_color)
-			}
-			TransparentFlipped { transparent_color, horizontal_flip, vertical_flip } => {
-				self.transparent_flipped_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip)
-			}
-			TransparentSingle { transparent_color, draw_color } => {
-				self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, draw_color)
-			}
-			TransparentFlippedSingle { transparent_color, horizontal_flip, vertical_flip, draw_color } => {
-				self.transparent_flipped_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, draw_color)
-			}
-			RotoZoom { angle, scale_x, scale_y } => {
-				self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y)
-			}
-			RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
-				self.rotozoom_transparent_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color)
-			}
-			SolidBlended(blend) => self.solid_blended_blit(src, src_region, dest_x, dest_y, blend),
+			},
+			SolidFlippedTinted { horizontal_flip, vertical_flip, tint_color } => {
+				self.solid_flipped_tinted_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, tint_color)
+			},
 			SolidFlippedBlended { horizontal_flip, vertical_flip, blend } => {
 				self.solid_flipped_blended_blit(src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip, blend)
+			},
+			Transparent(transparent_color) => {
+				self.transparent_blit(src, src_region, dest_x, dest_y, transparent_color)
+			},
+			TransparentTinted { transparent_color, tint_color } => {
+				self.transparent_tinted_blit(src, src_region, dest_x, dest_y, transparent_color, tint_color)
 			},
 			TransparentBlended { transparent_color, blend } => {
 				self.transparent_blended_blit(src, src_region, dest_x, dest_y, transparent_color, blend)
 			},
+			TransparentFlipped { transparent_color, horizontal_flip, vertical_flip } => {
+				self.transparent_flipped_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip)
+			},
+			TransparentFlippedTinted { transparent_color, horizontal_flip, vertical_flip, tint_color } => {
+				self.transparent_flipped_tinted_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, tint_color)
+			},
 			TransparentFlippedBlended { transparent_color, horizontal_flip, vertical_flip, blend } => {
 				self.transparent_flipped_blended_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, blend)
 			},
+			TransparentSingle { transparent_color, draw_color } => {
+				self.transparent_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, draw_color)
+			},
+			TransparentFlippedSingle { transparent_color, horizontal_flip, vertical_flip, draw_color } => {
+				self.transparent_flipped_single_color_blit(src, src_region, dest_x, dest_y, transparent_color, horizontal_flip, vertical_flip, draw_color)
+			},
+			RotoZoom { angle, scale_x, scale_y } => {
+				self.rotozoom_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y)
+			},
+			RotoZoomTinted { angle, scale_x, scale_y, tint_color } => {
+				self.rotozoom_tinted_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, tint_color)
+			},
 			RotoZoomBlended { angle, scale_x, scale_y, blend } => {
 				self.rotozoom_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, blend)
+			},
+			RotoZoomTransparent { angle, scale_x, scale_y, transparent_color } => {
+				self.rotozoom_transparent_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color)
+			},
+			RotoZoomTransparentTinted { angle, scale_x, scale_y, transparent_color, tint_color } => {
+				self.rotozoom_transparent_tinted_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, tint_color)
 			},
 			RotoZoomTransparentBlended { angle, scale_x, scale_y, transparent_color, blend } => {
 				self.rotozoom_transparent_blended_blit(src, src_region, dest_x, dest_y, angle, scale_x, scale_y, transparent_color, blend)
