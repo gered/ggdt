@@ -5,6 +5,7 @@ use crate::graphics::color::to_rgb32;
 use crate::graphics::palette::Palette;
 
 pub mod blit;
+pub mod primitives;
 
 pub type RgbaBitmap = Bitmap<u32>;
 

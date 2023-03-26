@@ -17,6 +17,7 @@ pub use crate::graphics::{
 		rgb::{
 			*,
 			blit::*,
+			primitives::*,
 		},
 	},
 	bitmapatlas::*,
