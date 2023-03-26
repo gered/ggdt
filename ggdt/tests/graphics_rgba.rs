@@ -7,6 +7,23 @@ pub mod helpers;
 
 const LIGHTER_BACKGROUND: u32 = 0xff2c3041;
 
+pub const COLOR_BLACK_HALF_ALPHA: u32 = 0x7f000000;
+pub const COLOR_BLUE_HALF_ALPHA: u32 = 0x7f0000aa;
+pub const COLOR_GREEN_HALF_ALPHA: u32 = 0x7f00aa00;
+pub const COLOR_CYAN_HALF_ALPHA: u32 = 0x7f00aaaa;
+pub const COLOR_RED_HALF_ALPHA: u32 = 0x7faa0000;
+pub const COLOR_MAGENTA_HALF_ALPHA: u32 = 0x7faa00aa;
+pub const COLOR_BROWN_HALF_ALPHA: u32 = 0x7faa5500;
+pub const COLOR_LIGHT_GRAY_HALF_ALPHA: u32 = 0x7faaaaaa;
+pub const COLOR_DARK_GRAY_HALF_ALPHA: u32 = 0x7f555555;
+pub const COLOR_BRIGHT_BLUE_HALF_ALPHA: u32 = 0x7f5555ff;
+pub const COLOR_BRIGHT_GREEN_HALF_ALPHA: u32 = 0x7f55ff55;
+pub const COLOR_BRIGHT_CYAN_HALF_ALPHA: u32 = 0x7f55ffff;
+pub const COLOR_BRIGHT_RED_HALF_ALPHA: u32 = 0x7fff5555;
+pub const COLOR_BRIGHT_MAGENTA_HALF_ALPHA: u32 = 0x7fff55ff;
+pub const COLOR_BRIGHT_YELLOW_HALF_ALPHA: u32 = 0x7fffff55;
+pub const COLOR_BRIGHT_WHITE_HALF_ALPHA: u32 = 0x7fffffff;
+
 const BASE_PATH: &str = "./tests/ref/rgba/";
 
 fn reference_file(file: &Path) -> PathBuf {
@@ -133,6 +150,42 @@ fn pixel_drawing() {
 }
 
 #[test]
+fn blended_pixel_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	for i in 0..10 {
+		screen.set_blended_pixel(0 + i, 0 + i, COLOR_BLUE_HALF_ALPHA, blend);
+		screen.set_blended_pixel(319 - i, 0 + i, COLOR_GREEN_HALF_ALPHA, blend);
+		screen.set_blended_pixel(0 + i, 239 - i, COLOR_CYAN_HALF_ALPHA, blend);
+		screen.set_blended_pixel(319 - i, 239 - i, COLOR_RED_HALF_ALPHA, blend);
+	}
+
+	unsafe {
+		for i in 0..10 {
+			screen.set_blended_pixel_unchecked(5 + i, 0 + i, COLOR_BLUE_HALF_ALPHA, blend);
+			screen.set_blended_pixel_unchecked(314 - i, 0 + i, COLOR_GREEN_HALF_ALPHA, blend);
+			screen.set_blended_pixel_unchecked(5 + i, 239 - i, COLOR_CYAN_HALF_ALPHA, blend);
+			screen.set_blended_pixel_unchecked(314 - i, 239 - i, COLOR_RED_HALF_ALPHA, blend);
+		}
+	}
+
+	//////
+
+	for i in 0..10 {
+		screen.set_blended_pixel(5 - i, 100, COLOR_BRIGHT_WHITE_HALF_ALPHA, blend);
+		screen.set_blended_pixel(i + 314, 100, COLOR_BRIGHT_WHITE_HALF_ALPHA, blend);
+		screen.set_blended_pixel(160, 5 - i, COLOR_BRIGHT_WHITE_HALF_ALPHA, blend);
+		screen.set_blended_pixel(160, i + 234, COLOR_BRIGHT_WHITE_HALF_ALPHA, blend);
+	}
+
+	let path = reference_file(Path::new("blended_pixel_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn horiz_line_drawing() {
 	let mut screen = setup();
 
@@ -153,6 +206,28 @@ fn horiz_line_drawing() {
 }
 
 #[test]
+fn blended_horiz_line_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	screen.blended_horiz_line(10, 100, 20, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_horiz_line(10, 100, 30, COLOR_GREEN_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_horiz_line(-50, 50, 6, COLOR_CYAN_HALF_ALPHA, blend);
+	screen.blended_horiz_line(300, 340, 130, COLOR_MAGENTA_HALF_ALPHA, blend);
+
+	screen.blended_horiz_line(100, 200, -10, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_horiz_line(20, 80, 250, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+
+	let path = reference_file(Path::new("blended_horiz_line_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn vert_line_drawing() {
 	let mut screen = setup();
 
@@ -168,6 +243,28 @@ fn vert_line_drawing() {
 	screen.vert_line(400, 100, 300, COLOR_LIGHT_GRAY);
 
 	let path = reference_file(Path::new("vert_line_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_vert_line_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	screen.blended_vert_line(50, 10, 200, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_vert_line(60, 10, 200, COLOR_GREEN_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_vert_line(20, -32, 32, COLOR_CYAN_HALF_ALPHA, blend);
+	screen.blended_vert_line(270, 245, 165, COLOR_MAGENTA_HALF_ALPHA, blend);
+
+	screen.blended_vert_line(-17, 10, 20, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_vert_line(400, 100, 300, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+
+	let path = reference_file(Path::new("blended_vert_line_drawing.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -210,6 +307,45 @@ fn line_drawing() {
 }
 
 #[test]
+fn blended_line_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	screen.blended_line(10, 10, 20, 20, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_line(10, 100, 20, 150, COLOR_GREEN_HALF_ALPHA, blend);
+	screen.blended_line(60, 150, 50, 100, COLOR_CYAN_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_line(50, 10, 100, 10, COLOR_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_line(100, 50, 20, 50, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_line(290, 10, 290, 100, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+	screen.blended_line(310, 100, 310, 10, COLOR_DARK_GRAY_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_line(50, 200, -50, 200, COLOR_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_line(300, 210, 340, 210, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_line(120, -30, 120, 30, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+	screen.blended_line(130, 200, 130, 270, COLOR_DARK_GRAY_HALF_ALPHA, blend);
+
+	screen.blended_line(250, 260, 190, 200, COLOR_BRIGHT_BLUE_HALF_ALPHA, blend);
+	screen.blended_line(180, 30, 240, -30, COLOR_BRIGHT_GREEN_HALF_ALPHA, blend);
+	screen.blended_line(-20, 140, 20, 180, COLOR_BRIGHT_CYAN_HALF_ALPHA, blend);
+	screen.blended_line(300, 130, 340, 170, COLOR_BRIGHT_RED_HALF_ALPHA, blend);
+
+	screen.blended_line(10, -30, 100, -30, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_line(70, 250, 170, 250, COLOR_GREEN_HALF_ALPHA, blend);
+	screen.blended_line(-100, 120, -100, 239, COLOR_CYAN_HALF_ALPHA, blend);
+	screen.blended_line(320, 99, 320, 199, COLOR_MAGENTA_HALF_ALPHA, blend);
+
+	let path = reference_file(Path::new("blended_line_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn rect_drawing() {
 	let mut screen = setup();
 
@@ -238,6 +374,36 @@ fn rect_drawing() {
 }
 
 #[test]
+fn blended_rect_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	screen.blended_rect(10, 10, 90, 90, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_rect(10, 110, 90, 190, COLOR_GREEN_HALF_ALPHA, blend);
+	screen.blended_rect(190, 90, 110, 10, COLOR_CYAN_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_rect(-8, 10, 7, 25, COLOR_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_rect(20, -8, 35, 7, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_rect(313, 170, 328, 185, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+	screen.blended_rect(285, 233, 300, 248, COLOR_DARK_GRAY_HALF_ALPHA, blend);
+
+	screen.blended_rect(-16, 30, -1, 46, COLOR_BRIGHT_BLUE_HALF_ALPHA, blend);
+	screen.blended_rect(40, -16, 55, -1, COLOR_BRIGHT_GREEN_HALF_ALPHA, blend);
+	screen.blended_rect(320, 150, 335, 165, COLOR_BRIGHT_CYAN_HALF_ALPHA, blend);
+	screen.blended_rect(265, 240, 280, 255, COLOR_BRIGHT_RED_HALF_ALPHA, blend);
+
+	screen.blended_rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW_HALF_ALPHA, blend);
+
+	let path = reference_file(Path::new("blended_rect_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn filled_rect_drawing() {
 	let mut screen = setup();
 
@@ -261,6 +427,36 @@ fn filled_rect_drawing() {
 	screen.filled_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW);
 
 	let path = reference_file(Path::new("filled_rect_drawing.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blended_filled_rect_drawing() {
+	let mut screen = setup_for_blending();
+
+	let blend = BlendFunction::Blend;
+
+	screen.blended_filled_rect(10, 10, 90, 90, COLOR_BLUE_HALF_ALPHA, blend);
+	screen.blended_filled_rect(10, 110, 90, 190, COLOR_GREEN_HALF_ALPHA, blend);
+	screen.blended_filled_rect(190, 90, 110, 10, COLOR_CYAN_HALF_ALPHA, blend);
+
+	//////
+
+	screen.blended_filled_rect(-8, 10, 7, 25, COLOR_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_filled_rect(20, -8, 35, 7, COLOR_BROWN_HALF_ALPHA, blend);
+	screen.blended_filled_rect(313, 170, 328, 185, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
+	screen.blended_filled_rect(285, 233, 300, 248, COLOR_DARK_GRAY_HALF_ALPHA, blend);
+
+	screen.blended_filled_rect(-16, 30, -1, 46, COLOR_BRIGHT_BLUE_HALF_ALPHA, blend);
+	screen.blended_filled_rect(40, -16, 55, -1, COLOR_BRIGHT_GREEN_HALF_ALPHA, blend);
+	screen.blended_filled_rect(320, 150, 335, 165, COLOR_BRIGHT_CYAN_HALF_ALPHA, blend);
+	screen.blended_filled_rect(265, 240, 280, 255, COLOR_BRIGHT_RED_HALF_ALPHA, blend);
+
+	screen.blended_filled_rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA_HALF_ALPHA, blend);
+	screen.blended_filled_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW_HALF_ALPHA, blend);
+
+	let path = reference_file(Path::new("blended_filled_rect_drawing.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
