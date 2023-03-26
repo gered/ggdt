@@ -8,20 +8,36 @@ use crate::math::rect::Rect;
 pub enum RgbaBlitMethod {
 	/// Solid blit, no transparency or other per-pixel adjustments.
 	Solid,
+	SolidBlended(BlendFunction),
 	/// Same as [RgbaBlitMethod::Solid] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	SolidFlipped {
 		horizontal_flip: bool,
 		vertical_flip: bool,
 	},
+	SolidFlippedBlended {
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
+	},
 	/// Transparent blit, the specified source color pixels are skipped.
 	Transparent(u32),
+	TransparentBlended {
+		transparent_color: u32,
+		blend: BlendFunction,
+	},
 	/// Same as [RgbaBlitMethod::Transparent] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	TransparentFlipped {
 		transparent_color: u32,
 		horizontal_flip: bool,
 		vertical_flip: bool,
+	},
+	TransparentFlippedBlended {
+		transparent_color: u32,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend: BlendFunction,
 	},
 	/// Same as [RgbaBlitMethod::Transparent] except that the visible pixels on the destination are all
 	/// drawn using the same color.
@@ -43,34 +59,18 @@ pub enum RgbaBlitMethod {
 		scale_x: f32,
 		scale_y: f32,
 	},
+	RotoZoomBlended {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		blend: BlendFunction,
+	},
 	/// Same as [RgbaBlitMethod::RotoZoom] except that the specified source color pixels are skipped.
 	RotoZoomTransparent {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
 		transparent_color: u32,
-	},
-	SolidBlended(BlendFunction),
-	SolidFlippedBlended {
-		horizontal_flip: bool,
-		vertical_flip: bool,
-		blend: BlendFunction,
-	},
-	TransparentBlended {
-		transparent_color: u32,
-		blend: BlendFunction,
-	},
-	TransparentFlippedBlended {
-		transparent_color: u32,
-		horizontal_flip: bool,
-		vertical_flip: bool,
-		blend: BlendFunction,
-	},
-	RotoZoomBlended {
-		angle: f32,
-		scale_x: f32,
-		scale_y: f32,
-		blend: BlendFunction,
 	},
 	RotoZoomTransparentBlended {
 		angle: f32,

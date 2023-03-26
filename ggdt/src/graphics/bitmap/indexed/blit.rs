@@ -10,20 +10,47 @@ use crate::math::rect::Rect;
 pub enum IndexedBlitMethod {
 	/// Solid blit, no transparency or other per-pixel adjustments.
 	Solid,
+	SolidBlended {
+		blend_map: Rc<BlendMap>,
+	},
 	/// Same as [IndexedBlitMethod::Solid] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	SolidFlipped {
 		horizontal_flip: bool,
 		vertical_flip: bool,
 	},
+	SolidFlippedBlended {
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend_map: Rc<BlendMap>,
+	},
+	/// Same as [IndexedBlitMethod::Solid] except that the drawn pixels have their color indices offset
+	/// by the amount given.
+	SolidOffset(u8),
+	/// Combination of [IndexedBlitMethod::SolidFlipped] and [IndexedBlitMethod::SolidOffset].
+	SolidFlippedOffset {
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		offset: u8,
+	},
 	/// Transparent blit, the specified source color pixels are skipped.
 	Transparent(u8),
+	TransparentBlended {
+		transparent_color: u8,
+		blend_map: Rc<BlendMap>,
+	},
 	/// Same as [IndexedBlitMethod::Transparent] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	TransparentFlipped {
 		transparent_color: u8,
 		horizontal_flip: bool,
 		vertical_flip: bool,
+	},
+	TransparentFlippedBlended {
+		transparent_color: u8,
+		horizontal_flip: bool,
+		vertical_flip: bool,
+		blend_map: Rc<BlendMap>,
 	},
 	/// Same as [IndexedBlitMethod::Transparent] except that the visible pixels on the destination are all
 	/// drawn using the same color.
@@ -37,15 +64,6 @@ pub enum IndexedBlitMethod {
 		horizontal_flip: bool,
 		vertical_flip: bool,
 		draw_color: u8,
-	},
-	/// Same as [IndexedBlitMethod::Solid] except that the drawn pixels have their color indices offset
-	/// by the amount given.
-	SolidOffset(u8),
-	/// Combination of [IndexedBlitMethod::SolidFlipped] and [IndexedBlitMethod::SolidOffset].
-	SolidFlippedOffset {
-		horizontal_flip: bool,
-		vertical_flip: bool,
-		offset: u8,
 	},
 	/// Same as [IndexedBlitMethod::Transparent] except that the drawn pixels have their color indices
 	/// offset by the amount given. The transparent color check is not affected by the offset and
@@ -65,12 +83,25 @@ pub enum IndexedBlitMethod {
 		scale_x: f32,
 		scale_y: f32,
 	},
+	RotoZoomBlended {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		blend_map: Rc<BlendMap>,
+	},
 	/// Same as [IndexedBlitMethod::RotoZoom] except that the specified source color pixels are skipped.
 	RotoZoomTransparent {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
 		transparent_color: u8,
+	},
+	RotoZoomTransparentBlended {
+		angle: f32,
+		scale_x: f32,
+		scale_y: f32,
+		transparent_color: u8,
+		blend_map: Rc<BlendMap>,
 	},
 	/// Same as [IndexedBlitMethod::RotoZoom] except that the drawn pixels have their color indices
 	/// offset by the amount given.
@@ -89,37 +120,6 @@ pub enum IndexedBlitMethod {
 		scale_y: f32,
 		transparent_color: u8,
 		offset: u8,
-	},
-	SolidBlended {
-		blend_map: Rc<BlendMap>,
-	},
-	SolidFlippedBlended {
-		horizontal_flip: bool,
-		vertical_flip: bool,
-		blend_map: Rc<BlendMap>,
-	},
-	TransparentBlended {
-		transparent_color: u8,
-		blend_map: Rc<BlendMap>,
-	},
-	TransparentFlippedBlended {
-		transparent_color: u8,
-		horizontal_flip: bool,
-		vertical_flip: bool,
-		blend_map: Rc<BlendMap>,
-	},
-	RotoZoomBlended {
-		angle: f32,
-		scale_x: f32,
-		scale_y: f32,
-		blend_map: Rc<BlendMap>,
-	},
-	RotoZoomTransparentBlended {
-		angle: f32,
-		scale_x: f32,
-		scale_y: f32,
-		transparent_color: u8,
-		blend_map: Rc<BlendMap>,
 	},
 }
 
