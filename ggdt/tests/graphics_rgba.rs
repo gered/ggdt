@@ -698,6 +698,75 @@ fn solid_blits() {
 }
 
 #[test]
+fn solid_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let bmp16 = generate_bitmap(16, 16);
+	let bmp12 = generate_bitmap(12, 12);
+	let bmp21 = generate_bitmap(21, 21);
+	let bmp3 = generate_bitmap(3, 3);
+
+	let method = SolidTinted(to_argb32(127, 155, 242, 21));
+
+	let x = 40;
+	let y = 20;
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
+	}
+
+	//////
+
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
+
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
+
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
+
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
+
+	let path = reference_file(Path::new("solid_tinted_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn blended_solid_blits() {
 	use RgbaBlitMethod::*;
 
@@ -825,6 +894,72 @@ fn solid_flipped_blits() {
 	screen.blit(SolidFlipped { horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_flipped_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn solid_flipped_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let bmp = generate_bitmap(16, 16);
+
+	let tint_color = to_argb32(127, 155, 242, 21);
+
+	let x = 40;
+	let y = 20;
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+	}
+
+	//////
+
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+
+	let path = reference_file(Path::new("solid_flipped_tinted_blits.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -964,6 +1099,78 @@ fn transparent_blits() {
 }
 
 #[test]
+fn transparent_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let bmp16 = generate_bitmap(16, 16);
+	let bmp12 = generate_bitmap(12, 12);
+	let bmp21 = generate_bitmap(21, 21);
+	let bmp3 = generate_bitmap(3, 3);
+
+	let method = TransparentTinted {
+		transparent_color: to_rgb32(0, 0, 0),
+		tint_color: to_argb32(127, 155, 242, 21)
+	};
+
+	let x = 40;
+	let y = 20;
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
+	}
+
+	//////
+
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
+
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
+
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
+
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
+
+	let path = reference_file(Path::new("transparent_tinted_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn blended_transparent_blits() {
 	use RgbaBlitMethod::*;
 
@@ -1093,6 +1300,73 @@ fn transparent_flipped_blits() {
 	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn transparent_flipped_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let transparent_color = to_rgb32(0, 0, 0);
+	let tint_color = to_argb32(127, 155, 242, 21);
+
+	let bmp = generate_bitmap(16, 16);
+
+	let x = 40;
+	let y = 20;
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+	}
+
+	//////
+
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+
+	let path = reference_file(Path::new("transparent_flipped_tinted_blits.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
@@ -1366,6 +1640,74 @@ fn rotozoom_blits() {
 }
 
 #[test]
+fn rotozoom_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let bmp = generate_bitmap(16, 16);
+
+	let tint_color = to_argb32(127, 155, 242, 21);
+
+	let x = 40;
+	let y = 20;
+	screen.blit(RotoZoomTinted { tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+	screen.blit(RotoZoomTinted { tint_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+	screen.blit(RotoZoomTinted { tint_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+	screen.blit(RotoZoomTinted { tint_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(RotoZoomTinted { tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(RotoZoomTinted { tint_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(RotoZoomTinted { tint_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(RotoZoomTinted { tint_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+	}
+
+	//////
+
+	let method = RotoZoomTinted { tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
+
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
+
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
+
+	let path = reference_file(Path::new("rotozoom_tinted_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
 fn blended_rotozoom_blits() {
 	use RgbaBlitMethod::*;
 
@@ -1496,6 +1838,75 @@ fn rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_transparent_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn rotozoom_transparent_tinted_blits() {
+	use RgbaBlitMethod::*;
+
+	let mut screen = setup();
+	screen.clear(LIGHTER_BACKGROUND);
+
+	let transparent_color = to_rgb32(0, 0, 0);
+	let tint_color = to_argb32(127, 155, 242, 21);
+
+	let bmp = generate_bitmap(16, 16);
+
+	let x = 40;
+	let y = 20;
+	screen.blit(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+	screen.blit(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+	screen.blit(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+	screen.blit(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+
+	let x = 40;
+	let y = 110;
+	unsafe {
+		screen.blit_unchecked(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentTinted { transparent_color, tint_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+	}
+
+	//////
+
+	let method = RotoZoomTransparentTinted { transparent_color, tint_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
+
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
+
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
+
+	let path = reference_file(Path::new("rotozoom_transparent_tinted_blits.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
