@@ -37,10 +37,30 @@ fn setup() -> RgbaBitmap {
 fn setup_for_blending() -> RgbaBitmap {
 	let (texture, _) = RgbaBitmap::load_file(test_assets_file(Path::new("texture.lbm")).as_path()).unwrap();
 	let mut screen = RgbaBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
-	//screen.clear(LIGHTER_BACKGROUND);
 	for y in 0..(SCREEN_HEIGHT as f32 / texture.height() as f32).ceil() as i32 {
 		for x in 0..(SCREEN_WIDTH as f32 / texture.width() as f32).ceil() as i32 {
 			screen.blit(RgbaBlitMethod::Solid, &texture, x * texture.width() as i32, y * texture.height() as i32);
+		}
+	}
+	screen
+}
+
+fn setup_for_blending_half_solid_half_semi_transparent() -> RgbaBitmap {
+	let (texture, _) = RgbaBitmap::load_file(test_assets_file(Path::new("texture.lbm")).as_path()).unwrap();
+	let mut screen = RgbaBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
+	for y in 0..(screen.height() as f32 / texture.height() as f32).ceil() as i32 {
+		for x in 0..(screen.width() as f32 / texture.width() as f32).ceil() as i32 {
+			screen.blit(RgbaBlitMethod::Solid, &texture, x * texture.width() as i32, y * texture.height() as i32);
+		}
+	}
+	// change the alpha value for all the pixels in the lower half of the screen to be half alpha
+	for y in (screen.height() / 2)..screen.height() {
+		for x in 0..screen.width() {
+			unsafe {
+				let pixel = screen.get_pixel_unchecked(x as i32, y as i32);
+				let (r, g, b) = from_rgb32(pixel);
+				screen.set_pixel_unchecked(x as i32, y as i32, to_argb32(127, r, g, b));
+			}
 		}
 	}
 	screen
@@ -1544,6 +1564,121 @@ fn blended_rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_rotozoom_transparent_blits.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blend_function_blend() {
+	let mut screen = setup_for_blending_half_solid_half_semi_transparent();
+
+	let bmp_solid = generate_bitmap(32, 32);
+	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
+	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::Blend);
+
+	screen.blit(method.clone(), &bmp_solid, 10, 10);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 10);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 10);
+
+	//////
+
+	screen.blit(method.clone(), &bmp_solid, 10, 130);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 130);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 130);
+
+	let path = reference_file(Path::new("blend_function_blend.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blend_function_tinted_blend() {
+	let mut screen = setup_for_blending_half_solid_half_semi_transparent();
+
+	let bmp_solid = generate_bitmap(32, 32);
+	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
+	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 5);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 5);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 5);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 40);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 40);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 40);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 75);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 75);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 75);
+
+	//////
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(255, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 125);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 125);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 125);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(127, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 160);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 160);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 160);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(to_argb32(0, 255, 0, 0)));
+	screen.blit(method.clone(), &bmp_solid, 10, 195);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
+
+	let path = reference_file(Path::new("blend_function_tinted_blend.png"));
+	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[test]
+fn blend_function_blend_source_with_alpha() {
+	let mut screen = setup_for_blending_half_solid_half_semi_transparent();
+
+	let bmp_solid = generate_bitmap(32, 32);
+	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
+	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(255));
+	screen.blit(method.clone(), &bmp_solid, 10, 5);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 5);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 5);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(127));
+	screen.blit(method.clone(), &bmp_solid, 10, 40);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 40);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 40);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(0));
+	screen.blit(method.clone(), &bmp_solid, 10, 75);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 75);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 75);
+
+	//////
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(255));
+	screen.blit(method.clone(), &bmp_solid, 10, 125);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 125);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 125);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(127));
+	screen.blit(method.clone(), &bmp_solid, 10, 160);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 160);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 160);
+
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::BlendSourceWithAlpha(0));
+	screen.blit(method.clone(), &bmp_solid, 10, 195);
+	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
+	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
+
+	let path = reference_file(Path::new("blend_function_blend_source_with_alpha.png"));
 	//screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
