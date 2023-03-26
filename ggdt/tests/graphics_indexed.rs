@@ -144,6 +144,15 @@ fn blended_pixel_drawing() {
 		screen.set_blended_pixel(319 - i, 239 - i, 4, &blend_map);
 	}
 
+	unsafe {
+		for i in 0..10 {
+			screen.set_blended_pixel_unchecked(5 + i, 0 + i, 1, &blend_map);
+			screen.set_blended_pixel_unchecked(314 - i, 0 + i, 2, &blend_map);
+			screen.set_blended_pixel_unchecked(5 + i, 239 - i, 3, &blend_map);
+			screen.set_blended_pixel_unchecked(314 - i, 239 - i, 4, &blend_map);
+		}
+	}
+
 	//////
 
 	for i in 0..10 {
