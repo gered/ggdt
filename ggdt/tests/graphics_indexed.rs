@@ -550,55 +550,57 @@ fn solid_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
+	let method = Solid;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(Solid, &bmp16, x + 16, y + 48);
-	screen.blit(Solid, &bmp12, x + 80, y + 48);
-	screen.blit(Solid, &bmp21, x + 144, y + 48);
-	screen.blit(Solid, &bmp3, x + 208, y + 48);
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(Solid, &bmp16, x + 16, y + 48);
-		screen.blit_unchecked(Solid, &bmp12, x + 80, y + 48);
-		screen.blit_unchecked(Solid, &bmp21, x + 144, y + 48);
-		screen.blit_unchecked(Solid, &bmp3, x + 208, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(Solid, &bmp16, -3, 46);
-	screen.blit(Solid, &bmp16, -4, 76);
-	screen.blit(Solid, &bmp16, -8, 106);
-	screen.blit(Solid, &bmp16, -12, 136);
-	screen.blit(Solid, &bmp16, -13, 166);
-	screen.blit(Solid, &bmp16, -14, 196);
-	screen.blit(Solid, &bmp16, -16, 226);
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
 
-	screen.blit(Solid, &bmp16, 46, -3);
-	screen.blit(Solid, &bmp16, 76, -4);
-	screen.blit(Solid, &bmp16, 106, -8);
-	screen.blit(Solid, &bmp16, 136, -12);
-	screen.blit(Solid, &bmp16, 166, -13);
-	screen.blit(Solid, &bmp16, 196, -14);
-	screen.blit(Solid, &bmp16, 226, -16);
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
 
-	screen.blit(Solid, &bmp16, 307, 46);
-	screen.blit(Solid, &bmp16, 308, 76);
-	screen.blit(Solid, &bmp16, 312, 106);
-	screen.blit(Solid, &bmp16, 316, 136);
-	screen.blit(Solid, &bmp16, 317, 166);
-	screen.blit(Solid, &bmp16, 318, 196);
-	screen.blit(Solid, &bmp16, 320, 226);
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
 
-	screen.blit(Solid, &bmp16, 46, 227);
-	screen.blit(Solid, &bmp16, 76, 228);
-	screen.blit(Solid, &bmp16, 106, 232);
-	screen.blit(Solid, &bmp16, 136, 236);
-	screen.blit(Solid, &bmp16, 166, 237);
-	screen.blit(Solid, &bmp16, 196, 238);
-	screen.blit(Solid, &bmp16, 226, 240);
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("solid_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -617,55 +619,57 @@ fn blended_solid_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
+	let method = SolidBlended { blend_map: blend_map.clone() };
+
 	let x = 40;
 	let y = 20;
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, x + 16, y + 48);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp12, x + 80, y + 48);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp21, x + 144, y + 48);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp3, x + 208, y + 48);
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(SolidBlended { blend_map: blend_map.clone() }, &bmp16, x + 16, y + 48);
-		screen.blit_unchecked(SolidBlended { blend_map: blend_map.clone() }, &bmp12, x + 80, y + 48);
-		screen.blit_unchecked(SolidBlended { blend_map: blend_map.clone() }, &bmp21, x + 144, y + 48);
-		screen.blit_unchecked(SolidBlended { blend_map: blend_map.clone() }, &bmp3, x + 208, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -3, 46);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -4, 76);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -8, 106);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -12, 136);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -13, 166);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -14, 196);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, -16, 226);
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
 
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 46, -3);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 76, -4);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 106, -8);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 136, -12);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 166, -13);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 196, -14);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 226, -16);
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
 
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 307, 46);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 308, 76);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 312, 106);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 316, 136);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 317, 166);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 318, 196);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 320, 226);
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
 
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 46, 227);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 76, 228);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 106, 232);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 136, 236);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 166, 237);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 196, 238);
-	screen.blit(SolidBlended { blend_map: blend_map.clone() }, &bmp16, 226, 240);
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("blended_solid_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -827,37 +831,41 @@ fn solid_offset_blits() {
 
 	//////
 
-	screen.blit(SolidOffset(3), &bmp, -3, 46);
-	screen.blit(SolidOffset(3), &bmp, -4, 76);
-	screen.blit(SolidOffset(3), &bmp, -8, 106);
-	screen.blit(SolidOffset(3), &bmp, -12, 136);
-	screen.blit(SolidOffset(3), &bmp, -13, 166);
-	screen.blit(SolidOffset(3), &bmp, -14, 196);
-	screen.blit(SolidOffset(3), &bmp, -16, 226);
+	let method = SolidOffset(3);
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(SolidOffset(8), &bmp, 46, -3);
-	screen.blit(SolidOffset(8), &bmp, 76, -4);
-	screen.blit(SolidOffset(8), &bmp, 106, -8);
-	screen.blit(SolidOffset(8), &bmp, 136, -12);
-	screen.blit(SolidOffset(8), &bmp, 166, -13);
-	screen.blit(SolidOffset(8), &bmp, 196, -14);
-	screen.blit(SolidOffset(8), &bmp, 226, -16);
+	let method = SolidOffset(8);
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(SolidOffset(15), &bmp, 307, 46);
-	screen.blit(SolidOffset(15), &bmp, 308, 76);
-	screen.blit(SolidOffset(15), &bmp, 312, 106);
-	screen.blit(SolidOffset(15), &bmp, 316, 136);
-	screen.blit(SolidOffset(15), &bmp, 317, 166);
-	screen.blit(SolidOffset(15), &bmp, 318, 196);
-	screen.blit(SolidOffset(15), &bmp, 320, 226);
+	let method = SolidOffset(15);
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
 
-	screen.blit(SolidOffset(22), &bmp, 46, 227);
-	screen.blit(SolidOffset(22), &bmp, 76, 228);
-	screen.blit(SolidOffset(22), &bmp, 106, 232);
-	screen.blit(SolidOffset(22), &bmp, 136, 236);
-	screen.blit(SolidOffset(22), &bmp, 166, 237);
-	screen.blit(SolidOffset(22), &bmp, 196, 238);
-	screen.blit(SolidOffset(22), &bmp, 226, 240);
+	let method = SolidOffset(22);
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -891,37 +899,41 @@ fn solid_flipped_offset_blits() {
 
 	//////
 
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
-	screen.blit(SolidFlippedOffset { offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+	let offset = 3;
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
 
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
-	screen.blit(SolidFlippedOffset { offset: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+	let offset = 8;
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
 
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
-	screen.blit(SolidFlippedOffset { offset: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+	let offset = 15;
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
 
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
-	screen.blit(SolidFlippedOffset { offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+	let offset = 22;
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_flipped_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -940,55 +952,57 @@ fn transparent_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
+	let method = Transparent(0);
+
 	let x = 40;
 	let y = 20;
-	screen.blit(Transparent(0), &bmp16, x + 16, y + 48);
-	screen.blit(Transparent(0), &bmp12, x + 80, y + 48);
-	screen.blit(Transparent(0), &bmp21, x + 144, y + 48);
-	screen.blit(Transparent(0), &bmp3, x + 208, y + 48);
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(Transparent(0), &bmp16, x + 16, y + 48);
-		screen.blit_unchecked(Transparent(0), &bmp12, x + 80, y + 48);
-		screen.blit_unchecked(Transparent(0), &bmp21, x + 144, y + 48);
-		screen.blit_unchecked(Transparent(0), &bmp3, x + 208, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(Transparent(0), &bmp16, -3, 46);
-	screen.blit(Transparent(0), &bmp16, -4, 76);
-	screen.blit(Transparent(0), &bmp16, -8, 106);
-	screen.blit(Transparent(0), &bmp16, -12, 136);
-	screen.blit(Transparent(0), &bmp16, -13, 166);
-	screen.blit(Transparent(0), &bmp16, -14, 196);
-	screen.blit(Transparent(0), &bmp16, -16, 226);
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
 
-	screen.blit(Transparent(0), &bmp16, 46, -3);
-	screen.blit(Transparent(0), &bmp16, 76, -4);
-	screen.blit(Transparent(0), &bmp16, 106, -8);
-	screen.blit(Transparent(0), &bmp16, 136, -12);
-	screen.blit(Transparent(0), &bmp16, 166, -13);
-	screen.blit(Transparent(0), &bmp16, 196, -14);
-	screen.blit(Transparent(0), &bmp16, 226, -16);
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
 
-	screen.blit(Transparent(0), &bmp16, 307, 46);
-	screen.blit(Transparent(0), &bmp16, 308, 76);
-	screen.blit(Transparent(0), &bmp16, 312, 106);
-	screen.blit(Transparent(0), &bmp16, 316, 136);
-	screen.blit(Transparent(0), &bmp16, 317, 166);
-	screen.blit(Transparent(0), &bmp16, 318, 196);
-	screen.blit(Transparent(0), &bmp16, 320, 226);
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
 
-	screen.blit(Transparent(0), &bmp16, 46, 227);
-	screen.blit(Transparent(0), &bmp16, 76, 228);
-	screen.blit(Transparent(0), &bmp16, 106, 232);
-	screen.blit(Transparent(0), &bmp16, 136, 236);
-	screen.blit(Transparent(0), &bmp16, 166, 237);
-	screen.blit(Transparent(0), &bmp16, 196, 238);
-	screen.blit(Transparent(0), &bmp16, 226, 240);
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("transparent_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1007,55 +1021,57 @@ fn blended_transparent_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
+	let method = TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() };
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, x + 16, y + 48);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp12, x + 80, y + 48);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp21, x + 144, y + 48);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp3, x + 208, y + 48);
+	screen.blit(method.clone(), &bmp16, x + 16, y + 48);
+	screen.blit(method.clone(), &bmp12, x + 80, y + 48);
+	screen.blit(method.clone(), &bmp21, x + 144, y + 48);
+	screen.blit(method.clone(), &bmp3, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, x + 16, y + 48);
-		screen.blit_unchecked(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp12, x + 80, y + 48);
-		screen.blit_unchecked(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp21, x + 144, y + 48);
-		screen.blit_unchecked(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp3, x + 208, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp16, x + 16, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp12, x + 80, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp21, x + 144, y + 48);
+		screen.blit_unchecked(method.clone(), &bmp3, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -3, 46);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -4, 76);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -8, 106);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -12, 136);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -13, 166);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -14, 196);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, -16, 226);
+	screen.blit(method.clone(), &bmp16, -3, 46);
+	screen.blit(method.clone(), &bmp16, -4, 76);
+	screen.blit(method.clone(), &bmp16, -8, 106);
+	screen.blit(method.clone(), &bmp16, -12, 136);
+	screen.blit(method.clone(), &bmp16, -13, 166);
+	screen.blit(method.clone(), &bmp16, -14, 196);
+	screen.blit(method.clone(), &bmp16, -16, 226);
 
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 46, -3);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 76, -4);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 106, -8);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 136, -12);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 166, -13);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 196, -14);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 226, -16);
+	screen.blit(method.clone(), &bmp16, 46, -3);
+	screen.blit(method.clone(), &bmp16, 76, -4);
+	screen.blit(method.clone(), &bmp16, 106, -8);
+	screen.blit(method.clone(), &bmp16, 136, -12);
+	screen.blit(method.clone(), &bmp16, 166, -13);
+	screen.blit(method.clone(), &bmp16, 196, -14);
+	screen.blit(method.clone(), &bmp16, 226, -16);
 
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 307, 46);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 308, 76);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 312, 106);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 316, 136);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 317, 166);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 318, 196);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 320, 226);
+	screen.blit(method.clone(), &bmp16, 307, 46);
+	screen.blit(method.clone(), &bmp16, 308, 76);
+	screen.blit(method.clone(), &bmp16, 312, 106);
+	screen.blit(method.clone(), &bmp16, 316, 136);
+	screen.blit(method.clone(), &bmp16, 317, 166);
+	screen.blit(method.clone(), &bmp16, 318, 196);
+	screen.blit(method.clone(), &bmp16, 320, 226);
 
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 46, 227);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 76, 228);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 106, 232);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 136, 236);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 166, 237);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 196, 238);
-	screen.blit(TransparentBlended { transparent_color: 0, blend_map: blend_map.clone() }, &bmp16, 226, 240);
+	screen.blit(method.clone(), &bmp16, 46, 227);
+	screen.blit(method.clone(), &bmp16, 76, 228);
+	screen.blit(method.clone(), &bmp16, 106, 232);
+	screen.blit(method.clone(), &bmp16, 136, 236);
+	screen.blit(method.clone(), &bmp16, 166, 237);
+	screen.blit(method.clone(), &bmp16, 196, 238);
+	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("blended_transparent_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1071,55 +1087,57 @@ fn transparent_flipped_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
 
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
 
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
 
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
-	screen.blit(TransparentFlipped { transparent_color: 0, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1135,55 +1153,57 @@ fn blended_transparent_flipped_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -3, 46);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -4, 76);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -8, 106);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -12, 136);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -13, 166);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -14, 196);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -16, 226);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -3, 46);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -4, 76);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -8, 106);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -12, 136);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -13, 166);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, -14, 196);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, -16, 226);
 
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, -3);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, -4);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, -8);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, -12);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, -13);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, -14);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, -16);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, -3);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, -4);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, -8);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, -12);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, -13);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, -14);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, -16);
 
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 307, 46);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 308, 76);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 312, 106);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 316, 136);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 317, 166);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 318, 196);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 320, 226);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 307, 46);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 308, 76);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 312, 106);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 316, 136);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 317, 166);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 318, 196);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 320, 226);
 
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, 227);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, 228);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, 232);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, 236);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, 237);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
-	screen.blit(TransparentFlippedBlended { transparent_color: 0, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 46, 227);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 76, 228);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 106, 232);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 136, 236);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 166, 237);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend_map: blend_map.clone() }, &bmp, 196, 238);
+	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_transparent_flipped_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1199,55 +1219,61 @@ fn transparent_offset_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 0 }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 4 }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 7 }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 13 }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentOffset { transparent_color, offset: 0 }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentOffset { transparent_color, offset: 4 }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentOffset { transparent_color, offset: 7 }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentOffset { transparent_color, offset: 13 }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentOffset { transparent_color: 0, offset: 0 }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentOffset { transparent_color: 0, offset: 4 }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentOffset { transparent_color: 0, offset: 7 }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentOffset { transparent_color: 0, offset: 13 }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentOffset { transparent_color, offset: 0 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentOffset { transparent_color, offset: 4 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentOffset { transparent_color, offset: 7 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentOffset { transparent_color, offset: 13 }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -3, 46);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -4, 76);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -8, 106);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -12, 136);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -13, 166);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -14, 196);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 3 }, &bmp, -16, 226);
+	let method = TransparentOffset { transparent_color, offset: 3 };
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 46, -3);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 76, -4);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 106, -8);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 136, -12);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 166, -13);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 196, -14);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 8 }, &bmp, 226, -16);
+	let method = TransparentOffset { transparent_color, offset: 8 };
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 307, 46);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 308, 76);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 312, 106);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 316, 136);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 317, 166);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 318, 196);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 15 }, &bmp, 320, 226);
+	let method = TransparentOffset { transparent_color, offset: 15 };
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
 
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 46, 227);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 76, 228);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 106, 232);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 136, 236);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 166, 237);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 196, 238);
-	screen.blit(TransparentOffset { transparent_color: 0, offset: 22 }, &bmp, 226, 240);
+	let method = TransparentOffset { transparent_color, offset: 22 };
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1263,55 +1289,61 @@ fn transparent_flipped_offset_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentFlippedOffset { transparent_color: 0, offset: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentFlippedOffset { transparent_color: 0, offset: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentFlippedOffset { transparent_color: 0, offset: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentFlippedOffset { transparent_color: 0, offset: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentFlippedOffset { transparent_color, offset: 0, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentFlippedOffset { transparent_color, offset: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentFlippedOffset { transparent_color, offset: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentFlippedOffset { transparent_color, offset: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+	let offset = 3;
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
 
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+	let offset = 8;
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
 
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+	let offset = 15;
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
 
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
-	screen.blit(TransparentFlippedOffset { transparent_color: 0, offset: 22, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+	let offset = 22;
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1327,55 +1359,61 @@ fn transparent_single_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 1 }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 4 }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 7 }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 13 }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentSingle { transparent_color, draw_color: 1 }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentSingle { transparent_color, draw_color: 4 }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentSingle { transparent_color, draw_color: 7 }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentSingle { transparent_color, draw_color: 13 }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentSingle { transparent_color: 0, draw_color: 1 }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentSingle { transparent_color: 0, draw_color: 4 }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentSingle { transparent_color: 0, draw_color: 7 }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentSingle { transparent_color: 0, draw_color: 13 }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentSingle { transparent_color, draw_color: 1 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentSingle { transparent_color, draw_color: 4 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentSingle { transparent_color, draw_color: 7 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentSingle { transparent_color, draw_color: 13 }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -3, 46);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -4, 76);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -8, 106);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -12, 136);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -13, 166);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -14, 196);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 3 }, &bmp, -16, 226);
+	let method = TransparentSingle { transparent_color, draw_color: 3 };
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 46, -3);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 76, -4);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 106, -8);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 136, -12);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 166, -13);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 196, -14);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 8 }, &bmp, 226, -16);
+	let method = TransparentSingle { transparent_color, draw_color: 8 };
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 307, 46);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 308, 76);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 312, 106);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 316, 136);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 317, 166);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 318, 196);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 15 }, &bmp, 320, 226);
+	let method = TransparentSingle { transparent_color, draw_color: 15 };
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
 
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 46, 227);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 76, 228);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 106, 232);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 136, 236);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 166, 237);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 196, 238);
-	screen.blit(TransparentSingle { transparent_color: 0, draw_color: 10 }, &bmp, 226, 240);
+	let method = TransparentSingle { transparent_color, draw_color: 10 };
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_single_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1391,55 +1429,61 @@ fn transparent_flipped_single_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 1, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: 1, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(TransparentFlippedSingle { transparent_color: 0, draw_color: 1, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(TransparentFlippedSingle { transparent_color: 0, draw_color: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(TransparentFlippedSingle { transparent_color: 0, draw_color: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(TransparentFlippedSingle { transparent_color: 0, draw_color: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(TransparentFlippedSingle { transparent_color, draw_color: 1, horizontal_flip: false, vertical_flip: false }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(TransparentFlippedSingle { transparent_color, draw_color: 4, horizontal_flip: true, vertical_flip: false }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(TransparentFlippedSingle { transparent_color, draw_color: 7, horizontal_flip: false, vertical_flip: true }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(TransparentFlippedSingle { transparent_color, draw_color: 13, horizontal_flip: true, vertical_flip: true }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 3, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
+	let draw_color = 3;
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, -3, 46);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, -4, 76);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, -8, 106);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: true }, &bmp, -12, 136);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, -13, 166);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, -14, 196);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, -16, 226);
 
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 8, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
+	let draw_color = 8;
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, -3);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, -4);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, -8);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, -12);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, -13);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, -14);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, -16);
 
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 15, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
+	let draw_color = 15;
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 307, 46);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 308, 76);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 312, 106);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: true }, &bmp, 316, 136);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 317, 166);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 318, 196);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 320, 226);
 
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
-	screen.blit(TransparentFlippedSingle { transparent_color: 0, draw_color: 10, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
+	let draw_color = 10;
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 46, 227);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 76, 228);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 106, 232);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: true }, &bmp, 136, 236);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: false }, &bmp, 166, 237);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
+	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_single_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1473,37 +1517,39 @@ fn rotozoom_blits() {
 
 	//////
 
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -3, 46);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -4, 76);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -8, 106);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -12, 136);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -13, 166);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -14, 196);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -16, 226);
+	let method = RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
 
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, -3);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, -4);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, -8);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, -12);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, -13);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, -14);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, -16);
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 307, 46);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 308, 76);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 312, 106);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 316, 136);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 317, 166);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 318, 196);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 320, 226);
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, 227);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, 228);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, 232);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, 236);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, 237);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
-	screen.blit(RotoZoom { angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1537,37 +1583,39 @@ fn blended_rotozoom_blits() {
 
 	//////
 
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -3, 46);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -4, 76);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -8, 106);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -12, 136);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -13, 166);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -14, 196);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -16, 226);
+	let method = RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() };
 
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, -3);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, -4);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, -8);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, -12);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, -13);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, -14);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, -16);
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 307, 46);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 308, 76);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 312, 106);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 316, 136);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 317, 166);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 318, 196);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 320, 226);
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, 227);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, 228);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, 232);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, 236);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, 237);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
-	screen.blit(RotoZoomBlended { angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_rotozoom_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1601,37 +1649,41 @@ fn rotozoom_offset_blits() {
 
 	//////
 
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -3, 46);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -4, 76);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -8, 106);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -12, 136);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -13, 166);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -14, 196);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 }, &bmp, -16, 226);
+	let method = RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 3 };
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 46, -3);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 76, -4);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 106, -8);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 136, -12);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 166, -13);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 196, -14);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 }, &bmp, 226, -16);
+	let method = RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 8 };
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 307, 46);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 308, 76);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 312, 106);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 316, 136);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 317, 166);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 318, 196);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 }, &bmp, 320, 226);
+	let method = RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 15 };
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
 
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 46, 227);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 76, 228);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 106, 232);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 136, 236);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 166, 237);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 196, 238);
-	screen.blit(RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 }, &bmp, 226, 240);
+	let method = RotoZoomOffset { angle: 1.3, scale_x: 1.0, scale_y: 1.0, offset: 22 };
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1647,55 +1699,59 @@ fn rotozoom_transparent_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+	screen.blit(RotoZoomTransparent { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+	screen.blit(RotoZoomTransparent { transparent_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+	screen.blit(RotoZoomTransparent { transparent_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+	screen.blit(RotoZoomTransparent { transparent_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(RotoZoomTransparent { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(RotoZoomTransparent { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(RotoZoomTransparent { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(RotoZoomTransparent { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(RotoZoomTransparent { transparent_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(RotoZoomTransparent { transparent_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(RotoZoomTransparent { transparent_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -3, 46);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -4, 76);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -8, 106);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -12, 136);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -13, 166);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -14, 196);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -16, 226);
+	let method = RotoZoomTransparent { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
 
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, -3);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, -4);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, -8);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, -12);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, -13);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, -14);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, -16);
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 307, 46);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 308, 76);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 312, 106);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 316, 136);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 317, 166);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 318, 196);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 320, 226);
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, 227);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, 228);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, 232);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, 236);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, 237);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
-	screen.blit(RotoZoomTransparent { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_transparent_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1711,55 +1767,59 @@ fn blended_rotozoom_transparent_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
+	screen.blit(RotoZoomTransparentBlended { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
+	screen.blit(RotoZoomTransparentBlended { transparent_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
+	screen.blit(RotoZoomTransparentBlended { transparent_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
+	screen.blit(RotoZoomTransparentBlended { transparent_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color: 0, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color: 0, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color: 0, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color, angle: 0.3, scale_x: 1.5, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color, angle: 0.6, scale_x: 1.0, scale_y: 1.5, blend_map: blend_map.clone() }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentBlended { transparent_color, angle: 2.0, scale_x: 0.7, scale_y: 0.7, blend_map: blend_map.clone() }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -3, 46);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -4, 76);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -8, 106);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -12, 136);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -13, 166);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -14, 196);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, -16, 226);
+	let method = RotoZoomTransparentBlended { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() };
 
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, -3);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, -4);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, -8);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, -12);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, -13);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, -14);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, -16);
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 307, 46);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 308, 76);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 312, 106);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 316, 136);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 317, 166);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 318, 196);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 320, 226);
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 46, 227);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 76, 228);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 106, 232);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 136, 236);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 166, 237);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 196, 238);
-	screen.blit(RotoZoomTransparentBlended { transparent_color: 0, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() }, &bmp, 226, 240);
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
+
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_rotozoom_transparent_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
@@ -1775,59 +1835,63 @@ fn rotozoom_transparent_offset_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
+	let transparent_color = 0;
+
 	let x = 40;
 	let y = 20;
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 1, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 4, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 7, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 13, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+	screen.blit(RotoZoomTransparentOffset { transparent_color, offset: 1, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+	screen.blit(RotoZoomTransparentOffset { transparent_color, offset: 4, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+	screen.blit(RotoZoomTransparentOffset { transparent_color, offset: 7, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+	screen.blit(RotoZoomTransparentOffset { transparent_color, offset: 13, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
 
 	let x = 40;
 	let y = 110;
 	unsafe {
-		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color: 0, offset: 1, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color: 0, offset: 4, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color: 0, offset: 7, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
-		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color: 0, offset: 13, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color, offset: 1, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, x + 16, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color, offset: 4, angle: 0.3, scale_x: 1.5, scale_y: 1.0 }, &bmp, x + 80, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color, offset: 7, angle: 0.6, scale_x: 1.0, scale_y: 1.5 }, &bmp, x + 144, y + 48);
+		screen.blit_unchecked(RotoZoomTransparentOffset { transparent_color, offset: 13, angle: 2.0, scale_x: 0.7, scale_y: 0.7 }, &bmp, x + 208, y + 48);
 	}
 
 	//////
 
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -3, 46);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -4, 76);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -8, 106);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -12, 136);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -13, 166);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -14, 196);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, -16, 226);
+	let method = RotoZoomTransparentOffset { transparent_color, offset: 3, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+	screen.blit(method.clone(), &bmp, -3, 46);
+	screen.blit(method.clone(), &bmp, -4, 76);
+	screen.blit(method.clone(), &bmp, -8, 106);
+	screen.blit(method.clone(), &bmp, -12, 136);
+	screen.blit(method.clone(), &bmp, -13, 166);
+	screen.blit(method.clone(), &bmp, -14, 196);
+	screen.blit(method.clone(), &bmp, -16, 226);
 
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, -3);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, -4);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, -8);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, -12);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, -13);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, -14);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, -16);
+	let method = RotoZoomTransparentOffset { transparent_color, offset: 8, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+	screen.blit(method.clone(), &bmp, 46, -3);
+	screen.blit(method.clone(), &bmp, 76, -4);
+	screen.blit(method.clone(), &bmp, 106, -8);
+	screen.blit(method.clone(), &bmp, 136, -12);
+	screen.blit(method.clone(), &bmp, 166, -13);
+	screen.blit(method.clone(), &bmp, 196, -14);
+	screen.blit(method.clone(), &bmp, 226, -16);
 
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 307, 46);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 308, 76);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 312, 106);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 316, 136);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 317, 166);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 318, 196);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 320, 226);
+	let method = RotoZoomTransparentOffset { transparent_color, offset: 15, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+	screen.blit(method.clone(), &bmp, 307, 46);
+	screen.blit(method.clone(), &bmp, 308, 76);
+	screen.blit(method.clone(), &bmp, 312, 106);
+	screen.blit(method.clone(), &bmp, 316, 136);
+	screen.blit(method.clone(), &bmp, 317, 166);
+	screen.blit(method.clone(), &bmp, 318, 196);
+	screen.blit(method.clone(), &bmp, 320, 226);
 
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 46, 227);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 76, 228);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 106, 232);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 136, 236);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 166, 237);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 196, 238);
-	screen.blit(RotoZoomTransparentOffset { transparent_color: 0, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 }, &bmp, 226, 240);
+	let method = RotoZoomTransparentOffset { transparent_color, offset: 22, angle: 1.3, scale_x: 1.0, scale_y: 1.0 };
+	screen.blit(method.clone(), &bmp, 46, 227);
+	screen.blit(method.clone(), &bmp, 76, 228);
+	screen.blit(method.clone(), &bmp, 106, 232);
+	screen.blit(method.clone(), &bmp, 136, 236);
+	screen.blit(method.clone(), &bmp, 166, 237);
+	screen.blit(method.clone(), &bmp, 196, 238);
+	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_transparent_offset_blits.png"));
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
-
-
