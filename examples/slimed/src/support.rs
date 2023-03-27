@@ -15,14 +15,14 @@ pub fn load_font(path: &Path) -> Result<BitmaskFont> {
 }
 
 pub fn load_bitmap_atlas_autogrid(path: &Path) -> Result<BitmapAtlas<IndexedBitmap>> {
-	let (bmp, _) = Bitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
+	let (bmp, _) = IndexedBitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
 	let mut atlas = BitmapAtlas::new(bmp);
 	atlas.add_grid(TILE_WIDTH, TILE_HEIGHT)?;
 	Ok(atlas)
 }
 
 pub fn load_bitmap_atlas(path: &Path) -> Result<BitmapAtlas<IndexedBitmap>> {
-	let (bmp, _) = Bitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
+	let (bmp, _) = IndexedBitmap::load_file(path).context(format!("Loading bitmap atlas: {:?}", path))?;
 	let atlas = BitmapAtlas::new(bmp);
 	Ok(atlas)
 }
