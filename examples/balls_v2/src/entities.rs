@@ -73,8 +73,8 @@ fn new_bounce_particles(entities: &mut Entities, x: f32, y: f32) {
 fn new_ball_entity(entities: &mut Entities) {
 	let id = entities.new_entity();
 
-	let x: i32 = rnd_value(SCREEN_LEFT as i32 + 1, SCREEN_RIGHT as i32 - BALL_SIZE - 1);
-	let y: i32 = rnd_value(SCREEN_TOP as i32 + 1, SCREEN_BOTTOM as i32 - BALL_SIZE - 1);
+	let x: i32 = rnd_value(1, 319 - BALL_SIZE - 1);
+	let y: i32 = rnd_value(1, 239 - BALL_SIZE - 1);
 
 	let speed = rnd_value(1, 3) * BALL_BASE_SPEED;
 	let vx = if rnd_value(0, 1) == 0 { -speed } else { speed };
@@ -110,12 +110,12 @@ fn update_system_collision(context: &mut Context) {
 		let mut velocity = velocities.get_mut(&entity).unwrap();
 
 		let mut bounced = false;
-		if position.0.x as i32 <= SCREEN_LEFT as i32 || position.0.x as i32 + BALL_SIZE >= SCREEN_RIGHT as i32 {
+		if position.0.x as i32 <= 0 || position.0.x as i32 + BALL_SIZE >= context.system.res.video.right() as i32 {
 			position.0.x -= velocity.0.x * context.delta;
 			velocity.0.x = -velocity.0.x;
 			bounced = true;
 		}
-		if position.0.y as i32 <= SCREEN_TOP as i32 || position.0.y as i32 + BALL_SIZE >= SCREEN_BOTTOM as i32 {
+		if position.0.y as i32 <= 0 || position.0.y as i32 + BALL_SIZE >= context.system.res.video.bottom() as i32 {
 			position.0.y -= velocity.0.y * context.delta;
 			velocity.0.y = -velocity.0.y;
 			bounced = true;

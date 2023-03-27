@@ -9,8 +9,9 @@ use thiserror::Error;
 
 use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::color::{from_rgb32, lerp_rgb32, to_argb32, to_rgb32};
-use crate::NUM_COLORS;
 use crate::utils::abs_diff;
+
+const NUM_COLORS: usize = 256;
 
 /// Common trait to represent a range of indexed colour values.
 pub trait ColorRange: RangeBounds<u8> + Iterator<Item=u8> {}

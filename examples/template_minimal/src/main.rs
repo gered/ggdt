@@ -19,8 +19,8 @@ fn main() -> Result<()> {
 
 		system.update()?;
 
-		let x = rnd_value(0, SCREEN_RIGHT) as i32;
-		let y = rnd_value(0, SCREEN_BOTTOM) as i32;
+		let x = rnd_value(0, system.res.video.right()) as i32;
+		let y = rnd_value(0, system.res.video.bottom()) as i32;
 		let color = rnd_value(0, 255);
 		system.res.video.set_pixel(x, y, color);
 

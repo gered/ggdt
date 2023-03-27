@@ -18,8 +18,8 @@ pub fn event_listener(event: &Event, context: &mut Core) -> bool {
 		Event::SpawnPixel => {
 			let speed = rnd_value(1, 10) as f32 * 10.0;
 			let angle = (rnd_value(0, 359) as f32).to_radians();
-			let x = (SCREEN_WIDTH / 2) as f32;
-			let y = (SCREEN_HEIGHT / 2) as f32;
+			let x = (context.system.res.video.width() / 2) as f32;
+			let y = (context.system.res.video.height() / 2) as f32;
 			let color = rnd_value(0, 255);
 			let id = context.entities.new_entity();
 			context.entities.add_component(id, Position(Vector2::new(x, y)));

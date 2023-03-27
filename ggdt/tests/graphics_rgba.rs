@@ -24,6 +24,9 @@ pub const COLOR_BRIGHT_MAGENTA_HALF_ALPHA: u32 = 0x7fff55ff;
 pub const COLOR_BRIGHT_YELLOW_HALF_ALPHA: u32 = 0x7fffff55;
 pub const COLOR_BRIGHT_WHITE_HALF_ALPHA: u32 = 0x7fffffff;
 
+const SCREEN_WIDTH: u32 = 320;
+const SCREEN_HEIGHT: u32 = 240;
+
 const BASE_PATH: &str = "./tests/ref/rgba/";
 
 fn reference_file(file: &Path) -> PathBuf {

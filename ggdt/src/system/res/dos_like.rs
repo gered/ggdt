@@ -28,7 +28,6 @@
 
 use byte_slice_cast::AsByteSlice;
 
-use crate::{DEFAULT_SCALE_FACTOR, SCREEN_HEIGHT, SCREEN_WIDTH};
 use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::audio::queue::AudioQueue;
 use crate::graphics::font::BitmaskFont;
@@ -40,6 +39,10 @@ use crate::system::input_devices::keyboard::Keyboard;
 use crate::system::input_devices::mouse::cursor::CustomMouseCursor;
 use crate::system::input_devices::mouse::Mouse;
 use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
+
+const DEFAULT_SCREEN_WIDTH: u32 = 320;
+const DEFAULT_SCREEN_HEIGHT: u32 = 240;
+const DEFAULT_SCALE_FACTOR: u32 = 3;
 
 /// Configuration / builder for configuring and constructing an instance of [`DosLike`].
 pub struct DosLikeConfig {
@@ -53,8 +56,8 @@ impl DosLikeConfig {
 	/// Returns a new [`DosLikeConfig`] with a default configuration.
 	pub fn new() -> Self {
 		DosLikeConfig {
-			screen_width: SCREEN_WIDTH,
-			screen_height: SCREEN_HEIGHT,
+			screen_width: DEFAULT_SCREEN_WIDTH,
+			screen_height: DEFAULT_SCREEN_HEIGHT,
 			initial_scale_factor: DEFAULT_SCALE_FACTOR,
 			integer_scaling: false,
 		}
@@ -140,7 +143,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 		// create the Bitmap object that will be exposed to the application acting as the system
 		// backbuffer
 
-		let framebuffer = match IndexedBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT) {
+		let framebuffer = match IndexedBitmap::new(self.screen_width, self.screen_height) {
 			Ok(bmp) => bmp,
 			Err(error) => return Err(SystemResourcesError::SDLError(error.to_string())),
 		};

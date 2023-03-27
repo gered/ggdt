@@ -529,14 +529,14 @@ fn update_system_camera_follows_player(context: &mut Core) {
 			let positions = context.entities.components::<Position>().unwrap();
 			let position = positions.get(player_entity).unwrap();
 
-			let camera_x = position.0.x as i32 - (SCREEN_WIDTH as i32 / 2) + 8;
-			let camera_y = position.0.y as i32 - (SCREEN_HEIGHT as i32 / 2) + 8;
+			let camera_x = position.0.x as i32 - (context.system.res.video.width() as i32 / 2) + 8;
+			let camera_y = position.0.y as i32 - (context.system.res.video.height() as i32 / 2) + 8;
 
 			// clamp camera position to the map boundaries
 			let map_pixel_width = context.tilemap.width() * TILE_WIDTH;
 			let map_pixel_height = context.tilemap.height() * TILE_HEIGHT;
-			let max_camera_x = map_pixel_width - SCREEN_WIDTH;
-			let max_camera_y = map_pixel_height - SCREEN_HEIGHT;
+			let max_camera_x = map_pixel_width - context.system.res.video.width();
+			let max_camera_y = map_pixel_height - context.system.res.video.height();
 
 			camera.x = camera_x.clamp(0, max_camera_x as i32);
 			camera.y = camera_y.clamp(0, max_camera_y as i32);

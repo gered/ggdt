@@ -47,8 +47,8 @@ fn main() -> Result<()> {
 	for _ in 0..NUM_BALLS {
 		let speed = rnd_value(1, 3);
 		let ball = Ball {
-			x: rnd_value(0, SCREEN_WIDTH as i32 - 1),
-			y: rnd_value(0, SCREEN_HEIGHT as i32 - 1),
+			x: rnd_value(0, system.res.video.width() as i32 - 1),
+			y: rnd_value(0, system.res.video.height() as i32 - 1),
 			dir_x: if rnd_value(0, 1) == 0 { -speed } else { speed },
 			dir_y: if rnd_value(0, 1) == 0 { -speed } else { speed },
 			sprite: rnd_value(0, NUM_BALL_SPRITES - 1),
@@ -73,9 +73,9 @@ fn main() -> Result<()> {
 						ball.x = 0;
 					}
 				} else {
-					if ball.x >= (SCREEN_WIDTH - BALL_WIDTH) as i32 {
+					if ball.x >= (system.res.video.width() - BALL_WIDTH) as i32 {
 						ball.dir_x = -ball.dir_x;
-						ball.x = (SCREEN_WIDTH - BALL_WIDTH) as i32;
+						ball.x = (system.res.video.width() - BALL_WIDTH) as i32;
 					}
 				}
 
@@ -85,9 +85,9 @@ fn main() -> Result<()> {
 						ball.y = 0;
 					}
 				} else {
-					if ball.y >= (SCREEN_HEIGHT - BALL_HEIGHT) as i32 {
+					if ball.y >= (system.res.video.height() - BALL_HEIGHT) as i32 {
 						ball.dir_y = -ball.dir_y;
-						ball.y = (SCREEN_HEIGHT - BALL_HEIGHT) as i32;
+						ball.y = (system.res.video.height() - BALL_HEIGHT) as i32;
 					}
 				}
 			}

@@ -6,6 +6,9 @@ use helpers::test_assets_file;
 
 pub mod helpers;
 
+const SCREEN_WIDTH: u32 = 320;
+const SCREEN_HEIGHT: u32 = 240;
+
 const BASE_PATH: &str = "./tests/ref/indexed/";
 
 fn reference_file(file: &Path) -> PathBuf {
