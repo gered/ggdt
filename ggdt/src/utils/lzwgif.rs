@@ -199,11 +199,7 @@ impl LzwBytesWriter {
 		Ok(())
 	}
 
-	pub fn write_code<T: WriteBytesExt>(
-		&mut self,
-		writer: &mut T,
-		code: LzwCode,
-	) -> Result<(), LzwError> {
+	pub fn write_code<T: WriteBytesExt>(&mut self, writer: &mut T, code: LzwCode) -> Result<(), LzwError> {
 		self.packer.push_code(code)?;
 
 		while let Some(byte) = self.packer.take_byte() {
@@ -345,10 +341,7 @@ impl LzwBytesReader {
 		Ok(Some(reader.read_u8()?))
 	}
 
-	pub fn read_code<T: ReadBytesExt>(
-		&mut self,
-		reader: &mut T,
-	) -> Result<Option<LzwCode>, LzwError> {
+	pub fn read_code<T: ReadBytesExt>(&mut self, reader: &mut T) -> Result<Option<LzwCode>, LzwError> {
 		loop {
 			if let Some(code) = self.unpacker.take_code() {
 				return Ok(Some(code));
@@ -368,14 +361,10 @@ impl LzwBytesReader {
 
 /// Encodes data read from the `src` using LZW (GIF-variant) compression, writing the encoded
 /// data out to `dest`. The LZW minimum code bit size is specified via `min_code_size`.
-pub fn lzw_encode<S, D>(
-	src: &mut S,
-	dest: &mut D,
-	min_code_size: usize,
-) -> Result<(), LzwError>
-	where
-		S: ReadBytesExt,
-		D: WriteBytesExt
+pub fn lzw_encode<S, D>(src: &mut S, dest: &mut D, min_code_size: usize) -> Result<(), LzwError>
+where
+	S: ReadBytesExt,
+	D: WriteBytesExt,
 {
 	if !is_valid_gif_min_code_size_bits(min_code_size) {
 		return Err(LzwError::UnsupportedCodeSizeBits(min_code_size));
@@ -414,7 +403,7 @@ pub fn lzw_encode<S, D>(
 			writer.flush(dest)?;
 			return Ok(());
 		}
-		Err(error) => return Err(LzwError::IOError(error))
+		Err(error) => return Err(LzwError::IOError(error)),
 	};
 
 	let mut buffer = vec![byte];
@@ -424,7 +413,7 @@ pub fn lzw_encode<S, D>(
 		let byte = match src.read_u8() {
 			Ok(byte) => byte,
 			Err(ref error) if error.kind() == std::io::ErrorKind::UnexpectedEof => break,
-			Err(error) => return Err(LzwError::IOError(error))
+			Err(error) => return Err(LzwError::IOError(error)),
 		};
 
 		// check if the table currently contains a string composed of the current buffer plus
@@ -447,7 +436,10 @@ pub fn lzw_encode<S, D>(
 			if let Some(code) = table.get(&buffer) {
 				writer.write_code(dest, *code)?;
 			} else {
-				return Err(LzwError::EncodingError(format!("Expected to find code in table for buffer {:?} but none was found", buffer)));
+				return Err(LzwError::EncodingError(format!(
+					"Expected to find code in table for buffer {:?} but none was found",
+					buffer
+				)));
 			}
 
 			// bump up to the next bit size once we've seen enough codes to necessitate it ...
@@ -485,7 +477,10 @@ pub fn lzw_encode<S, D>(
 	if let Some(code) = table.get(&buffer) {
 		writer.write_code(dest, *code)?;
 	} else {
-		return Err(LzwError::EncodingError(format!("No matching code for buffer {:?} at end of input stream", buffer)));
+		return Err(LzwError::EncodingError(format!(
+			"No matching code for buffer {:?} at end of input stream",
+			buffer
+		)));
 	}
 
 	writer.write_code(dest, end_of_info_code)?;
@@ -496,13 +491,10 @@ pub fn lzw_encode<S, D>(
 
 /// Decodes data read from the `src` using LZW (GIF-variant) decompression, writing the decoded
 /// data out to `dest`.
-pub fn lzw_decode<S, D>(
-	src: &mut S,
-	dest: &mut D,
-) -> Result<(), LzwError>
-	where
-		S: ReadBytesExt,
-		D: WriteBytesExt
+pub fn lzw_decode<S, D>(src: &mut S, dest: &mut D) -> Result<(), LzwError>
+where
+	S: ReadBytesExt,
+	D: WriteBytesExt,
 {
 	let min_code_size = src.read_u8()? as usize;
 
@@ -525,7 +517,7 @@ pub fn lzw_decode<S, D>(
 	// are no codes to read (kind of a weird situation, but no real reason to error ...?)
 	let mut code = match reader.read_code(src)? {
 		Some(code) => code,
-		None => return Ok(())
+		None => return Ok(()),
 	};
 
 	// the first code in the stream SHOULD be a clear code ... which we can just ignore because
@@ -553,7 +545,9 @@ pub fn lzw_decode<S, D>(
 
 		// read the next code which should actually be the first "interesting" value of the code stream
 		code = match reader.read_code(src)? {
-			Some(code) if code > MAX_CODE_VALUE => return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code))),
+			Some(code) if code > MAX_CODE_VALUE => {
+				return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code)))
+			}
 			Some(code) if code == end_of_info_code => return Ok(()),
 			Some(code) => code,
 			None => return Err(LzwError::EncodingError(String::from("Unexpected end of code stream"))),
@@ -573,7 +567,9 @@ pub fn lzw_decode<S, D>(
 		'inner: loop {
 			// grab the next code
 			code = match reader.read_code(src)? {
-				Some(code) if code > MAX_CODE_VALUE => return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code))),
+				Some(code) if code > MAX_CODE_VALUE => {
+					return Err(LzwError::EncodingError(format!("Encountered code that is too large: {}", code)))
+				}
 				Some(code) if code == end_of_info_code => break 'outer,
 				Some(code) if code == clear_code => {
 					// reset the bit size and reader and then loop back to the outer loop which
@@ -645,19 +641,35 @@ mod tests {
 	static LZW_TEST_DATA: &[LzwTestData] = &[
 		LzwTestData {
 			min_code_size: 2,
-			packed: &[0x02, 0x16, 0x8c, 0x2d, 0x99, 0x87, 0x2a, 0x1c, 0xdc, 0x33, 0xa0, 0x02, 0x75, 0xec, 0x95, 0xfa, 0xa8, 0xde, 0x60, 0x8c, 0x04, 0x91, 0x4c, 0x01, 0x00],
-			unpacked: &[1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1],
+			packed: &[
+				0x02, 0x16, 0x8c, 0x2d, 0x99, 0x87, 0x2a, 0x1c, 0xdc, 0x33, 0xa0, 0x02, 0x75, 0xec, 0x95, 0xfa, 0xa8,
+				0xde, 0x60, 0x8c, 0x04, 0x91, 0x4c, 0x01, 0x00,
+			],
+			unpacked: &[
+				1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 0,
+				0, 0, 0, 2, 2, 2, 1, 1, 1, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 1, 1, 1, 2, 2, 2, 0, 0, 0, 0, 1,
+				1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1,
+			],
 		},
 		LzwTestData {
 			min_code_size: 4,
-			packed: &[0x04, 0x21, 0x70, 0x49, 0x79, 0x6a, 0x9d, 0xcb, 0x39, 0x7b, 0xa6, 0xd6, 0x96, 0xa4, 0x3d, 0x0f, 0xd8, 0x8d, 0x64, 0xb9, 0x1d, 0x28, 0xa9, 0x2d, 0x15, 0xfa, 0xc2, 0xf1, 0x37, 0x71, 0x33, 0xc5, 0x61, 0x4b, 0x04, 0x00],
-			unpacked: &[11, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 14, 14, 7, 7, 7, 7, 11, 11, 11, 14, 14, 14, 14, 7, 7, 7, 11, 11, 14, 14, 15, 15, 14, 14, 7, 7, 11, 14, 14, 15, 15, 15, 15, 14, 14, 7, 7, 14, 14, 15, 15, 15, 15, 14, 14, 11, 7, 7, 14, 14, 15, 15, 14, 14, 11, 11, 7, 7, 7, 14, 14, 14, 14, 11, 11, 11, 7, 7, 7, 7, 14, 14, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 11],
+			packed: &[
+				0x04, 0x21, 0x70, 0x49, 0x79, 0x6a, 0x9d, 0xcb, 0x39, 0x7b, 0xa6, 0xd6, 0x96, 0xa4, 0x3d, 0x0f, 0xd8,
+				0x8d, 0x64, 0xb9, 0x1d, 0x28, 0xa9, 0x2d, 0x15, 0xfa, 0xc2, 0xf1, 0x37, 0x71, 0x33, 0xc5, 0x61, 0x4b,
+				0x04, 0x00,
+			],
+			unpacked: &[
+				11, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 14, 14, 7, 7, 7, 7, 11, 11, 11, 14, 14, 14, 14, 7,
+				7, 7, 11, 11, 14, 14, 15, 15, 14, 14, 7, 7, 11, 14, 14, 15, 15, 15, 15, 14, 14, 7, 7, 14, 14, 15, 15,
+				15, 15, 14, 14, 11, 7, 7, 14, 14, 15, 15, 14, 14, 11, 11, 7, 7, 7, 14, 14, 14, 14, 11, 11, 11, 7, 7, 7,
+				7, 14, 14, 11, 11, 11, 11, 7, 7, 7, 7, 7, 11, 11, 11, 11, 11,
+			],
 		},
 		LzwTestData {
 			min_code_size: 8,
 			packed: &[0x08, 0x0b, 0x00, 0x51, 0xfc, 0x1b, 0x28, 0x70, 0xa0, 0xc1, 0x83, 0x01, 0x01, 0x00],
 			unpacked: &[0x28, 0xff, 0xff, 0xff, 0x28, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],
-		}
+		},
 	];
 
 	#[test]

@@ -14,7 +14,7 @@ pub enum BitmapAtlasError {
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct BitmapAtlas<BitmapType>
 where
-	BitmapType: GeneralBitmap
+	BitmapType: GeneralBitmap,
 {
 	bitmap: BitmapType,
 	bounds: Rect,
@@ -23,12 +23,12 @@ where
 
 impl<BitmapType> BitmapAtlas<BitmapType>
 where
-	BitmapType: GeneralBitmap
+	BitmapType: GeneralBitmap,
 {
 	pub fn new(bitmap: BitmapType) -> Self {
 		let bounds = bitmap.full_bounds();
 		BitmapAtlas {
-			bitmap,
+			bitmap, //
 			bounds,
 			tiles: Vec::new(),
 		}
@@ -43,11 +43,7 @@ where
 		Ok(self.tiles.len() - 1)
 	}
 
-	pub fn add_grid(
-		&mut self,
-		tile_width: u32,
-		tile_height: u32,
-	) -> Result<usize, BitmapAtlasError> {
+	pub fn add_grid(&mut self, tile_width: u32, tile_height: u32) -> Result<usize, BitmapAtlasError> {
 		if self.bounds.width < tile_width || self.bounds.height < tile_height {
 			return Err(BitmapAtlasError::OutOfBounds);
 		}
@@ -121,7 +117,8 @@ where
 
 impl<BitmapType> Index<usize> for BitmapAtlas<BitmapType>
 where
-	BitmapType: GeneralBitmap {
+	BitmapType: GeneralBitmap,
+{
 	type Output = Rect;
 
 	#[inline]
@@ -153,22 +150,13 @@ pub mod tests {
 		assert_eq!(rect, atlas[1]);
 		assert_eq!(2, atlas.len());
 
-		assert_matches!(
-            atlas.add(Rect::new(56, 0, 16, 16)),
-            Err(BitmapAtlasError::OutOfBounds)
-        );
+		assert_matches!(atlas.add(Rect::new(56, 0, 16, 16)), Err(BitmapAtlasError::OutOfBounds));
 		assert_eq!(2, atlas.len());
 
-		assert_matches!(
-            atlas.add(Rect::new(-8, 4, 16, 16)),
-            Err(BitmapAtlasError::OutOfBounds)
-        );
+		assert_matches!(atlas.add(Rect::new(-8, 4, 16, 16)), Err(BitmapAtlasError::OutOfBounds));
 		assert_eq!(2, atlas.len());
 
-		assert_matches!(
-            atlas.add(Rect::new(0, 0, 128, 128)),
-            Err(BitmapAtlasError::OutOfBounds)
-        );
+		assert_matches!(atlas.add(Rect::new(0, 0, 128, 128)), Err(BitmapAtlasError::OutOfBounds));
 		assert_eq!(2, atlas.len());
 	}
 

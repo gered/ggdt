@@ -8,14 +8,15 @@ impl IndexedBitmap {
 	#[inline]
 	pub fn set_blended_pixel(&mut self, x: i32, y: i32, color: u8, blend_map: &BlendMap) {
 		self.set_custom_pixel(
-			x, y,
+			x, //
+			y,
 			|dest_color| {
 				if let Some(blended_color) = blend_map.blend(color, dest_color) {
 					blended_color
 				} else {
 					color
 				}
-			}
+			},
 		);
 	}
 
@@ -26,14 +27,15 @@ impl IndexedBitmap {
 	#[inline]
 	pub unsafe fn set_blended_pixel_unchecked(&mut self, x: i32, y: i32, color: u8, blend_map: &BlendMap) {
 		self.set_custom_pixel_unchecked(
-			x, y,
+			x, //
+			y,
 			|dest_color| {
 				if let Some(blended_color) = blend_map.blend(color, dest_color) {
 					blended_color
 				} else {
 					color
 				}
-			}
+			},
 		);
 	}
 
@@ -42,10 +44,11 @@ impl IndexedBitmap {
 	pub fn blended_line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8, blend_map: &BlendMap) {
 		if let Some(blend_mapping) = blend_map.get_mapping(color) {
 			self.line_custom(
-				x1, y1, x2, y2,
-				|dest_color| {
-					blend_mapping[dest_color as usize]
-				}
+				x1, //
+				y1,
+				x2,
+				y2,
+				|dest_color| blend_mapping[dest_color as usize],
 			);
 		} else {
 			self.line(x1, y1, x2, y2, color);
@@ -57,10 +60,10 @@ impl IndexedBitmap {
 	pub fn blended_horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: u8, blend_map: &BlendMap) {
 		if let Some(blend_mapping) = blend_map.get_mapping(color) {
 			self.horiz_line_custom(
-				x1, x2, y,
-				|dest_color| {
-					blend_mapping[dest_color as usize]
-				}
+				x1, //
+				x2,
+				y,
+				|dest_color| blend_mapping[dest_color as usize],
 			);
 		} else {
 			self.horiz_line(x1, x2, y, color);
@@ -72,10 +75,10 @@ impl IndexedBitmap {
 	pub fn blended_vert_line(&mut self, x: i32, y1: i32, y2: i32, color: u8, blend_map: &BlendMap) {
 		if let Some(blend_mapping) = blend_map.get_mapping(color) {
 			self.vert_line_custom(
-				x, y1, y2,
-				|dest_color| {
-					blend_mapping[dest_color as usize]
-				}
+				x, //
+				y1,
+				y2,
+				|dest_color| blend_mapping[dest_color as usize],
 			);
 		} else {
 			self.vert_line(x, y1, y2, color);
@@ -89,10 +92,11 @@ impl IndexedBitmap {
 	pub fn blended_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8, blend_map: &BlendMap) {
 		if let Some(blend_mapping) = blend_map.get_mapping(color) {
 			self.rect_custom(
-				x1, y1, x2, y2,
-				|dest_color| {
-					blend_mapping[dest_color as usize]
-				}
+				x1, //
+				y1,
+				x2,
+				y2,
+				|dest_color| blend_mapping[dest_color as usize],
 			);
 		} else {
 			self.rect(x1, y1, x2, y2, color);
@@ -106,10 +110,11 @@ impl IndexedBitmap {
 	pub fn blended_filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: u8, blend_map: &BlendMap) {
 		if let Some(blend_mapping) = blend_map.get_mapping(color) {
 			self.filled_rect_custom(
-				x1, y1, x2, y2,
-				|dest_color| {
-					blend_mapping[dest_color as usize]
-				}
+				x1, //
+				y1,
+				x2,
+				y2,
+				|dest_color| blend_mapping[dest_color as usize],
 			);
 		} else {
 			self.filled_rect(x1, y1, x2, y2, color);

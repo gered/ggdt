@@ -1,6 +1,6 @@
 use crate::system::event::{MouseEvent, SystemEvent, SystemEventHandler};
-use crate::system::input_devices::{ButtonState, InputDevice};
 use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
+use crate::system::input_devices::{ButtonState, InputDevice};
 
 pub mod buttons;
 pub mod cursor;
@@ -26,7 +26,7 @@ pub struct Mouse {
 impl Mouse {
 	pub fn new() -> Mouse {
 		Mouse {
-			x: 0,
+			x: 0, //
 			y: 0,
 			x_delta: 0,
 			y_delta: 0,
@@ -63,19 +63,13 @@ impl Mouse {
 	/// Returns true if the given button was just pressed or is being held down.
 	#[inline]
 	pub fn is_button_down(&self, button: usize) -> bool {
-		matches!(
-            self.buttons[button],
-            ButtonState::Pressed | ButtonState::Held
-        )
+		matches!(self.buttons[button], ButtonState::Pressed | ButtonState::Held)
 	}
 
 	/// Returns true if the given button was not just pressed and is not being held down.
 	#[inline]
 	pub fn is_button_up(&self, button: usize) -> bool {
-		matches!(
-            self.buttons[button],
-            ButtonState::Released | ButtonState::Idle
-        )
+		matches!(self.buttons[button], ButtonState::Released | ButtonState::Idle)
 	}
 
 	/// Returns true if the given button was just pressed (not being held down, yet).
@@ -125,13 +119,7 @@ impl InputDevice for Mouse {
 impl SystemEventHandler for Mouse {
 	fn handle_event(&mut self, event: &SystemEvent) -> bool {
 		match event {
-			SystemEvent::Mouse(MouseEvent::MouseMotion {
-				                   x,
-				                   y,
-				                   x_delta,
-				                   y_delta,
-				                   buttons,
-			                   }) => {
+			SystemEvent::Mouse(MouseEvent::MouseMotion { x, y, x_delta, y_delta, buttons }) => {
 				self.x = *x;
 				self.y = *y;
 				self.x_delta = *x_delta;

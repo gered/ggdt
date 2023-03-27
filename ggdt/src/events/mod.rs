@@ -14,7 +14,7 @@ pub struct EventPublisher<EventType> {
 
 impl<EventType> std::fmt::Debug for EventPublisher<EventType> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("EventPublisher")
+		f.debug_struct("EventPublisher") //
 			.field("queue.len()", &self.queue.len())
 			.finish_non_exhaustive()
 	}
@@ -22,9 +22,7 @@ impl<EventType> std::fmt::Debug for EventPublisher<EventType> {
 
 impl<EventType> EventPublisher<EventType> {
 	pub fn new() -> Self {
-		EventPublisher {
-			queue: VecDeque::new(),
-		}
+		EventPublisher { queue: VecDeque::new() }
 	}
 
 	/// Returns the number of events that have been queued.
@@ -78,7 +76,7 @@ impl<EventType, ContextType> std::fmt::Debug for EventListeners<EventType, Conte
 impl<EventType, ContextType> EventListeners<EventType, ContextType> {
 	pub fn new() -> Self {
 		EventListeners {
-			listeners: Vec::new(),
+			listeners: Vec::new(), //
 			dispatch_queue: VecDeque::new(),
 		}
 	}
@@ -193,7 +191,7 @@ mod tests {
 					false
 				}
 			}
-			_ => false
+			_ => false,
 		}
 	}
 
@@ -283,10 +281,7 @@ mod tests {
 		listeners.dispatch_queue(&mut context);
 		assert!(!context.events.is_empty());
 		assert_eq!(0, context.count);
-		assert_eq!(
-			vec![Dummy, Foobar(1), Dummy, Foobar(42)],
-			context.events
-		);
+		assert_eq!(vec![Dummy, Foobar(1), Dummy, Foobar(42)], context.events);
 
 		let mut context = TestContext::new();
 		assert!(context.events.is_empty());
@@ -303,10 +298,7 @@ mod tests {
 		listeners.dispatch_queue(&mut context);
 		assert!(!context.events.is_empty());
 		assert_eq!(3, context.count);
-		assert_eq!(
-			vec![Foobar(10), Foobar(20), Dummy],
-			context.events
-		);
+		assert_eq!(vec![Foobar(10), Foobar(20), Dummy], context.events);
 	}
 
 	#[test]
@@ -331,9 +323,6 @@ mod tests {
 		listeners.dispatch_queue(&mut context);
 		assert!(!context.events.is_empty());
 		assert_eq!(3, context.count);
-		assert_eq!(
-			vec![Message("hello"), Dummy, Foobar(3)],
-			context.events
-		);
+		assert_eq!(vec![Message("hello"), Dummy, Foobar(3)], context.events);
 	}
 }

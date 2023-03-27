@@ -1,8 +1,8 @@
 use ggdt::prelude::*;
 
-use crate::{Core, TILE_HEIGHT, TILE_WIDTH};
 use crate::entities::*;
 use crate::tilemap::*;
+use crate::{Core, TILE_HEIGHT, TILE_WIDTH};
 
 pub fn remove_entity(entities: &mut Entities, entity: EntityId) {
 	remove_entity_attachment(entities, entity);
@@ -31,7 +31,7 @@ pub fn move_entity_forward(context: &mut Core, entity: EntityId) {
 		Direction::North => Vector2::UP * movement_speed.0,
 		Direction::East => Vector2::RIGHT * movement_speed.0,
 		Direction::West => Vector2::LEFT * movement_speed.0,
-		Direction::South => Vector2::DOWN * movement_speed.0
+		Direction::South => Vector2::DOWN * movement_speed.0,
 	};
 
 	velocity.0 += movement;
@@ -56,7 +56,14 @@ pub fn turn_and_move_entity(context: &mut Core, entity: EntityId, direction: Dir
 	move_entity_forward(context, entity);
 }
 
-fn move_entity_with_collision(position: &mut Position, bounds: &Bounds, velocity: Option<&Velocity>, forces: Option<&Forces>, map: &TileMap, delta: f32) -> bool {
+fn move_entity_with_collision(
+	position: &mut Position,
+	bounds: &Bounds,
+	velocity: Option<&Velocity>,
+	forces: Option<&Forces>,
+	map: &TileMap,
+	delta: f32,
+) -> bool {
 	const NUM_STEPS: usize = 2;
 	const STEP_SCALE: f32 = 1.0 / NUM_STEPS as f32;
 
@@ -169,12 +176,8 @@ pub fn get_attack_area_of_effect(context: &mut Core, attacker: EntityId) -> Opti
 		if let Some(facing_direction) = facing_directions.get(&attacker) {
 			let center_point = position.0 + weapon.offsets[facing_direction.0 as usize];
 			return Some((
-				Circle::new(
-					center_point.x as i32 + 8,
-					center_point.y as i32 + 8,
-					weapon.radius_of_effect,
-				),
-				weapon.damage
+				Circle::new(center_point.x as i32 + 8, center_point.y as i32 + 8, weapon.radius_of_effect),
+				weapon.damage,
 			));
 		} else {
 			return Some((
@@ -183,7 +186,7 @@ pub fn get_attack_area_of_effect(context: &mut Core, attacker: EntityId) -> Opti
 					position.0.y as i32 + bound.height as i32 / 2,
 					weapon.radius_of_effect,
 				),
-				weapon.damage
+				weapon.damage,
 			));
 		}
 	}
@@ -337,7 +340,11 @@ fn update_system_pushing(context: &mut Core) {
 
 			let pushable_position = positions.get(pushable_entity).unwrap();
 			let pushable_bounds = bounds.get(pushable_entity).unwrap();
-			let pushable_circle = Circle::new(pushable_position.0.x as i32, pushable_position.0.y as i32, pushable_bounds.radius);
+			let pushable_circle = Circle::new(
+				pushable_position.0.x as i32, //
+				pushable_position.0.y as i32,
+				pushable_bounds.radius,
+			);
 
 			if pusher_circle.overlaps(&pushable_circle) {
 				let push_direction = (pushable_position.0 - pusher_position.0).normalize();
@@ -371,7 +378,7 @@ fn update_system_animation(context: &mut Core) {
 		animation.frame_timer += context.delta;
 
 		let delay = if let Some(delay_override) = animation.delay_override {
-			delay_override
+			delay_override //
 		} else {
 			animation.def.delay
 		};
@@ -469,7 +476,10 @@ fn update_system_randomly_walk_around(context: &mut Core) {
 						randomly_walk_around.cooldown_timer = 0.0;
 					}
 				} else if randomly_walk_around.should_start_walking() {
-					randomly_walk_around.cooldown_timer = rnd_value(randomly_walk_around.min_cooldown, randomly_walk_around.max_cooldown);
+					randomly_walk_around.cooldown_timer = rnd_value(
+						randomly_walk_around.min_cooldown, //
+						randomly_walk_around.max_cooldown,
+					);
 
 					let direction = Direction::new_random();
 					let walk_time = rnd_value(randomly_walk_around.min_walk_time, randomly_walk_around.max_walk_time);
@@ -674,7 +684,7 @@ fn render_system_sprites(context: &mut Core) {
 						}
 						FlickerMethod::Color(draw_color) => {
 							blit_method = IndexedBlitMethod::TransparentSingle {
-								transparent_color: 0,
+								transparent_color: 0, //
 								draw_color,
 							};
 						}

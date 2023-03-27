@@ -44,7 +44,7 @@ impl BlendFunction {
 			TintedBlend(tint) => {
 				let tinted = tint_argb32(src, *tint);
 				blend_argb32(tinted, dest)
-			},
+			}
 		}
 	}
 }
@@ -257,9 +257,9 @@ fn srgb_to_linearized(color_channel: u8) -> f32 {
 
 /// Calculates the given sRGB color's luminance, returned as a value between 0.0 and 1.0.
 pub fn luminance(r: u8, g: u8, b: u8) -> f32 {
-	(LUMINANCE_RED * srgb_to_linearized(r)) +
-		(LUMINANCE_GREEN * srgb_to_linearized(g)) +
-		(LUMINANCE_BLUE * srgb_to_linearized(b))
+	(LUMINANCE_RED * srgb_to_linearized(r))
+		+ (LUMINANCE_GREEN * srgb_to_linearized(g))
+		+ (LUMINANCE_BLUE * srgb_to_linearized(b))
 }
 
 fn brightness(mut luminance: f32) -> f32 {

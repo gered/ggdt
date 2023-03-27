@@ -68,7 +68,10 @@ pub enum IndexedBlitMethod {
 	/// Same as [IndexedBlitMethod::Transparent] except that the drawn pixels have their color indices
 	/// offset by the amount given. The transparent color check is not affected by the offset and
 	/// is always treated as an absolute palette color index.
-	TransparentOffset { transparent_color: u8, offset: u8 },
+	TransparentOffset {
+		transparent_color: u8,
+		offset: u8,
+	},
 	/// Combination of [IndexedBlitMethod::TransparentFlipped] and [IndexedBlitMethod::TransparentOffset].
 	TransparentFlippedOffset {
 		transparent_color: u8,
@@ -133,7 +136,11 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
 					*dest_pixels = blended_pixel;
@@ -155,7 +162,13 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
 					*dest_pixels = blended_pixel;
@@ -175,7 +188,11 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = (*src_pixels).wrapping_add(offset);
 			},
@@ -193,7 +210,13 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = (*src_pixels).wrapping_add(offset);
 			},
@@ -210,7 +233,11 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
@@ -235,7 +262,13 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					if let Some(blended_pixel) = blend_map.blend(*src_pixels, *dest_pixels) {
@@ -258,7 +291,11 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = (*src_pixels).wrapping_add(offset);
@@ -279,7 +316,13 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = (*src_pixels).wrapping_add(offset);
@@ -300,7 +343,14 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
 					let draw_pixel = if let Some(blended_pixel) = blend_map.blend(src_pixel, dest_pixel) {
@@ -327,7 +377,14 @@ impl IndexedBitmap {
 		blend_map: Rc<BlendMap>,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
@@ -355,7 +412,14 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				let src_pixel = src_pixel.wrapping_add(offset);
 				dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
@@ -376,7 +440,14 @@ impl IndexedBitmap {
 		offset: u8,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					let src_pixel = src_pixel.wrapping_add(offset);
@@ -413,15 +484,15 @@ impl IndexedBitmap {
 			RotoZoomTransparentOffset { .. } => {}
 
 			// set axis flip arguments
-			SolidFlipped { horizontal_flip, vertical_flip, .. } |
-			SolidFlippedBlended { horizontal_flip, vertical_flip, .. } |
-			SolidFlippedOffset { horizontal_flip, vertical_flip, .. } |
-			TransparentFlipped { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedBlended { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedOffset { horizontal_flip, vertical_flip, .. } => {
+			SolidFlipped { horizontal_flip, vertical_flip, .. }
+			| SolidFlippedBlended { horizontal_flip, vertical_flip, .. }
+			| SolidFlippedOffset { horizontal_flip, vertical_flip, .. }
+			| TransparentFlipped { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedBlended { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedSingle { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedOffset { horizontal_flip, vertical_flip, .. } => {
 				if !clip_blit(
-					self.clip_region(),
+					self.clip_region(), //
 					&mut src_region,
 					&mut dest_x,
 					&mut dest_y,
@@ -435,7 +506,7 @@ impl IndexedBitmap {
 			// otherwise clip like normal!
 			_ => {
 				if !clip_blit(
-					self.clip_region(),
+					self.clip_region(), //
 					&mut src_region,
 					&mut dest_x,
 					&mut dest_y,
@@ -543,7 +614,14 @@ impl IndexedBitmap {
 	}
 
 	#[inline]
-	pub unsafe fn blit_atlas_unchecked(&mut self, method: IndexedBlitMethod, src: &BitmapAtlas<Self>, index: usize, x: i32, y: i32) {
+	pub unsafe fn blit_atlas_unchecked(
+		&mut self,
+		method: IndexedBlitMethod,
+		src: &BitmapAtlas<Self>,
+		index: usize,
+		x: i32,
+		y: i32,
+	) {
 		if let Some(src_region) = src.get(index) {
 			self.blit_region_unchecked(method, src.bitmap(), &src_region, x, y);
 		}

@@ -1,7 +1,7 @@
 use std::path::Path;
 
-use crate::graphics::bitmap::{Bitmap, BitmapError};
 use crate::graphics::bitmap::rgb::RgbaBitmap;
+use crate::graphics::bitmap::{Bitmap, BitmapError};
 use crate::graphics::palette::Palette;
 
 pub mod blit;
@@ -29,20 +29,14 @@ impl IndexedBitmap {
 				Some("png") => {
 					let (bmp, palette) = Self::load_png_file(path)?;
 					Ok((bmp, palette.expect("Indexed color PNG loaded and should have returned a Palette")))
-				},
+				}
 				Some("pcx") => Ok(Self::load_pcx_file(path)?),
 				Some("gif") => Ok(Self::load_gif_file(path)?),
-				Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => {
-					Ok(Self::load_iff_file(path)?)
-				}
-				_ => Err(BitmapError::UnknownFileType(String::from(
-					"Unrecognized file extension",
-				))),
+				Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => Ok(Self::load_iff_file(path)?),
+				_ => Err(BitmapError::UnknownFileType(String::from("Unrecognized file extension"))),
 			}
 		} else {
-			Err(BitmapError::UnknownFileType(String::from(
-				"No file extension",
-			)))
+			Err(BitmapError::UnknownFileType(String::from("No file extension")))
 		}
 	}
 

@@ -12,7 +12,7 @@ mod states;
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let system = SystemBuilder::new()
+	let system = SystemBuilder::new() //
 		.window_title("Flying Balls")
 		.vsync(true)
 		.build(config)?;

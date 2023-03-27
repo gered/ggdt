@@ -38,7 +38,15 @@ pub enum Event {
 	LeaveTrail(Vector2),
 }
 
-fn new_basic_particle_entity(entities: &mut Entities, x: f32, y: f32, color: u8, lifetime: f32, angle: f32, speed: i32) {
+fn new_basic_particle_entity(
+	entities: &mut Entities,
+	x: f32,
+	y: f32,
+	color: u8,
+	lifetime: f32,
+	angle: f32,
+	speed: i32,
+) {
 	let id = entities.new_entity();
 	entities.add_component(id, Particle);
 	entities.add_component(id, Color(color));

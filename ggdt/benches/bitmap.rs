@@ -1,4 +1,4 @@
-use criterion::{black_box, Criterion, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use ggdt::prelude::*;
 
@@ -10,18 +10,12 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	let mut dest = vec![0u32; (width * height * 4) as usize].into_boxed_slice();
 	let palette = Palette::new_vga_palette().unwrap();
 
-	c.bench_function("deindex_bitmap_pixels", |b| {
-		b.iter(|| source.copy_as_argb_to(&mut dest, &palette))
-	});
+	c.bench_function("deindex_bitmap_pixels", |b| b.iter(|| source.copy_as_argb_to(&mut dest, &palette)));
 
-	c.bench_function("set_pixel", |b| {
-		b.iter(|| source.set_pixel(black_box(100), black_box(100), black_box(42)))
-	});
+	c.bench_function("set_pixel", |b| b.iter(|| source.set_pixel(black_box(100), black_box(100), black_box(42))));
 
 	c.bench_function("set_pixel_unchecked", |b| {
-		b.iter(|| unsafe {
-			source.set_pixel_unchecked(black_box(100), black_box(100), black_box(42))
-		})
+		b.iter(|| unsafe { source.set_pixel_unchecked(black_box(100), black_box(100), black_box(42)) })
 	});
 }
 

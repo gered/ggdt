@@ -30,15 +30,13 @@ pub struct SineWaveGenerator {
 
 impl SineWaveGenerator {
 	pub fn new() -> Self {
-		SineWaveGenerator {
-			t: 0
-		}
+		SineWaveGenerator { t: 0 }
 	}
 }
 
 impl AudioGenerator for SineWaveGenerator {
 	fn gen_sample(&mut self, _position: usize) -> Option<u8> {
-		const MAX_TIME: usize = AUDIO_FREQUENCY_22KHZ as usize * 3;  // 3 seconds
+		const MAX_TIME: usize = AUDIO_FREQUENCY_22KHZ as usize * 3; // 3 seconds
 		if self.t < MAX_TIME {
 			let sample = (self.t as f64 * 0.25).sin() * 80.0;
 			self.t += 1;
@@ -51,7 +49,7 @@ impl AudioGenerator for SineWaveGenerator {
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let mut system = SystemBuilder::new()
+	let mut system = SystemBuilder::new() //
 		.window_title("Audio Playback")
 		.vsync(true)
 		.build(config)?;
@@ -169,21 +167,20 @@ fn main() -> Result<()> {
 
 		system.res.video.print_string(
 			&format!("Volume: {:2.2}", volume),
-			16, 16, FontRenderOpts::Color(10), &system.res.font
+			16,
+			16,
+			FontRenderOpts::Color(10),
+			&system.res.font,
 		);
 		system.res.video.print_string(
-			if using_queue_commands {
-				"Queueing Commands"
-			} else {
-				"Direct Commands"
-			},
-			160, 16, FontRenderOpts::Color(9), &system.res.font,
+			if using_queue_commands { "Queueing Commands" } else { "Direct Commands" },
+			160,
+			16,
+			FontRenderOpts::Color(9),
+			&system.res.font,
 		);
 
-		system.res.video.print_string(
-			"Audio Channels",
-			16, 32, FontRenderOpts::Color(14), &system.res.font
-		);
+		system.res.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.res.font);
 
 		let mut y = 48;
 		for index in 0..NUM_CHANNELS {
@@ -193,9 +190,14 @@ fn main() -> Result<()> {
 					"channel {} - {} {}",
 					index,
 					if status.playing { "playing" } else { "not playing" },
-					if status.playing { String::from(format!("{} / {}", status.position, status.size)) } else { String::new() }
+					if status.playing {
+						String::from(format!("{} / {}", status.position, status.size))
+					} else {
+						String::new()
+					}
 				),
-				16, y,
+				16,
+				y,
 				FontRenderOpts::Color(15),
 				&system.res.font,
 			);

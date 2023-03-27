@@ -53,8 +53,8 @@ pub fn nearly_equal(a: f32, b: f32, epsilon: f32) -> bool {
 /// * `t`: the amount to interpolate between the two values, specified as a fraction
 #[inline]
 pub fn lerp<N>(a: N, b: N, t: f32) -> N
-	where
-		N: Copy + Add<Output=N> + Sub<Output=N> + Mul<f32, Output=N>,
+where
+	N: Copy + Add<Output = N> + Sub<Output = N> + Mul<f32, Output = N>,
 {
 	a + (b - a) * t
 }
@@ -69,8 +69,8 @@ pub fn lerp<N>(a: N, b: N, t: f32) -> N
 /// * `lerp_result`: the interpolated value between the range given
 #[inline]
 pub fn inverse_lerp<N>(a: N, b: N, lerp_result: N) -> f32
-	where
-		N: Copy + Sub<Output=N> + Div<N, Output=f32>,
+where
+	N: Copy + Sub<Output = N> + Div<N, Output = f32>,
 {
 	(lerp_result - a) / (b - a)
 }
@@ -84,8 +84,8 @@ pub fn inverse_lerp<N>(a: N, b: N, lerp_result: N) -> f32
 /// * `t`: the amount to interpolate between the two values, specified as a fraction
 #[inline]
 pub fn smooth_lerp<N>(a: N, b: N, t: f32) -> N
-	where
-		N: Copy + Add<Output=N> + Sub<Output=N> + Mul<f32, Output=N>,
+where
+	N: Copy + Add<Output = N> + Sub<Output = N> + Mul<f32, Output = N>,
 {
 	let t = t.clamp(0.0, 1.0);
 	lerp(a, b, (t * t) * (3.0 - (2.0 * t)))
@@ -104,8 +104,8 @@ pub fn smooth_lerp<N>(a: N, b: N, t: f32) -> N
 /// * `new_max`: new max value (high end of range)
 #[inline]
 pub fn scale_range<N>(value: N, old_min: N, old_max: N, new_min: N, new_max: N) -> N
-	where
-		N: Copy + Add<Output=N> + Sub<Output=N> + Mul<Output=N> + Div<Output=N>,
+where
+	N: Copy + Add<Output = N> + Sub<Output = N> + Mul<Output = N> + Div<Output = N>,
 {
 	(new_max - new_min) * (value - old_min) / (old_max - old_min) + new_min
 }

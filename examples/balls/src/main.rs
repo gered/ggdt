@@ -19,7 +19,7 @@ struct Ball {
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let mut system = SystemBuilder::new()
+	let mut system = SystemBuilder::new() //
 		.window_title("Flying Balls!")
 		.vsync(true)
 		.build(config)?;
@@ -99,12 +99,7 @@ fn main() -> Result<()> {
 		system.res.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &font);
 
 		for i in 0..NUM_BALLS {
-			system.res.video.blit(
-				IndexedBlitMethod::Transparent(0),
-				&sprites[balls[i].sprite],
-				balls[i].x,
-				balls[i].y,
-			);
+			system.res.video.blit(IndexedBlitMethod::Transparent(0), &sprites[balls[i].sprite], balls[i].x, balls[i].y);
 		}
 
 		system.display()?;

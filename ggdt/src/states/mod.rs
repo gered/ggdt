@@ -81,7 +81,7 @@ impl<ContextType> std::fmt::Debug for StateContainer<ContextType> {
 impl<ContextType> StateContainer<ContextType> {
 	pub fn new(state: Box<dyn AppState<ContextType>>) -> Self {
 		StateContainer {
-			current_state: State::Dead,
+			current_state: State::Dead, //
 			pending_state_change: None,
 			state,
 		}
@@ -133,9 +133,7 @@ impl<ContextType> StateContainer<ContextType> {
 				self.change_state(State::TransitionIn, context);
 				Ok(())
 			}
-			_ => {
-				Err(StateError::AppStateInvalidState(self.current_state))
-			}
+			_ => Err(StateError::AppStateInvalidState(self.current_state)),
 		}
 	}
 
@@ -185,13 +183,16 @@ pub struct States<ContextType> {
 
 impl<ContextType> std::fmt::Debug for States<ContextType> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("States")
+		f.debug_struct("States") //
 			.field("states", &self.states)
 			.field("command", &self.command)
-			.field("pending_state", match self.pending_state {
-				Some(..) => &"Some(..)",
-				None => &"None",
-			})
+			.field(
+				"pending_state",
+				match self.pending_state {
+					Some(..) => &"Some(..)",
+					None => &"None",
+				},
+			)
 			.field("pop_count", &self.pop_count)
 			.finish_non_exhaustive()
 	}
@@ -200,7 +201,7 @@ impl<ContextType> std::fmt::Debug for States<ContextType> {
 impl<ContextType> States<ContextType> {
 	pub fn new() -> Self {
 		States {
-			states: VecDeque::new(),
+			states: VecDeque::new(), //
 			command: None,
 			pending_state: None,
 			pop_count: None,
@@ -400,8 +401,12 @@ impl<ContextType> States<ContextType> {
 					// state has indicated it is done transitioning, so we can switch it to whatever
 					// it was transitioning to
 					match to {
-						TransitionTo::Paused => { state.pending_pause(); }
-						TransitionTo::Dead => { state.pending_kill(); }
+						TransitionTo::Paused => {
+							state.pending_pause();
+						}
+						TransitionTo::Dead => {
+							state.pending_kill();
+						}
 					}
 				}
 			}
@@ -444,7 +449,6 @@ impl<ContextType> States<ContextType> {
 	}
 }
 
-
 #[cfg(test)]
 mod tests {
 	use claim::*;
@@ -465,9 +469,7 @@ mod tests {
 
 	impl TestContext {
 		pub fn new() -> Self {
-			TestContext {
-				log: Vec::new()
-			}
+			TestContext { log: Vec::new() }
 		}
 
 		pub fn log(&mut self, entry: LogEntry) {
@@ -490,7 +492,7 @@ mod tests {
 	impl TestState {
 		pub fn new(id: u32) -> Self {
 			TestState {
-				id,
+				id, //
 				counter: 0,
 				transition_length: 0,
 			}
@@ -498,7 +500,7 @@ mod tests {
 
 		pub fn new_with_transition_length(id: u32, transition_length: u32) -> Self {
 			TestState {
-				id,
+				id, //
 				counter: 0,
 				transition_length,
 			}
@@ -562,7 +564,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Pending, Dead),
+				StateChange(FOO, Pending, Dead), //
 				StateChange(FOO, TransitionIn, Pending),
 				Transition(FOO, TransitionIn),
 				Update(FOO, TransitionIn),
@@ -574,7 +576,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Active, TransitionIn),
+				StateChange(FOO, Active, TransitionIn), //
 				Update(FOO, Active),
 				Render(FOO, Active),
 			]
@@ -588,7 +590,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FOO, TransitionOut(TransitionTo::Dead)),
 				Update(FOO, TransitionOut(TransitionTo::Dead)),
 				Render(FOO, TransitionOut(TransitionTo::Dead)),
@@ -623,7 +625,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Pending, Dead),
+				StateChange(FOO, Pending, Dead), //
 				StateChange(FOO, TransitionIn, Pending),
 				Transition(FOO, TransitionIn),
 				Update(FOO, TransitionIn),
@@ -636,7 +638,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FOO, TransitionIn),
+					Transition(FOO, TransitionIn), //
 					Update(FOO, TransitionIn),
 					Render(FOO, TransitionIn),
 				]
@@ -647,7 +649,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Active, TransitionIn),
+				StateChange(FOO, Active, TransitionIn), //
 				Update(FOO, Active),
 				Render(FOO, Active),
 			]
@@ -661,7 +663,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FOO, TransitionOut(TransitionTo::Dead)),
 				Update(FOO, TransitionOut(TransitionTo::Dead)),
 				Render(FOO, TransitionOut(TransitionTo::Dead)),
@@ -673,7 +675,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FOO, TransitionOut(TransitionTo::Dead)),
+					Transition(FOO, TransitionOut(TransitionTo::Dead)), //
 					Update(FOO, TransitionOut(TransitionTo::Dead)),
 					Render(FOO, TransitionOut(TransitionTo::Dead)),
 				]
@@ -710,7 +712,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Pending, Dead),
+				StateChange(FIRST, Pending, Dead), //
 				StateChange(FIRST, TransitionIn, Pending),
 				Transition(FIRST, TransitionIn),
 				Update(FIRST, TransitionIn),
@@ -722,7 +724,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -737,7 +739,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Paused)),
 				Update(FIRST, TransitionOut(TransitionTo::Paused)),
 				Render(FIRST, TransitionOut(TransitionTo::Paused)),
@@ -749,7 +751,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
+				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)), //
 				StateChange(SECOND, Pending, Dead),
 				StateChange(SECOND, TransitionIn, Pending),
 				Transition(SECOND, TransitionIn),
@@ -762,7 +764,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Active, TransitionIn),
+				StateChange(SECOND, Active, TransitionIn), //
 				Update(SECOND, Active),
 				Render(SECOND, Active),
 			]
@@ -777,7 +779,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(SECOND, TransitionOut(TransitionTo::Dead)),
 				Update(SECOND, TransitionOut(TransitionTo::Dead)),
 				Render(SECOND, TransitionOut(TransitionTo::Dead)),
@@ -789,7 +791,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
+				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)), //
 				StateChange(FIRST, Resume, Paused),
 				StateChange(FIRST, TransitionIn, Resume),
 				Transition(FIRST, TransitionIn),
@@ -802,7 +804,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -817,7 +819,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Dead)),
 				Update(FIRST, TransitionOut(TransitionTo::Dead)),
 				Render(FIRST, TransitionOut(TransitionTo::Dead)),
@@ -854,7 +856,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Pending, Dead),
+				StateChange(FIRST, Pending, Dead), //
 				StateChange(FIRST, TransitionIn, Pending),
 				Transition(FIRST, TransitionIn),
 				Update(FIRST, TransitionIn),
@@ -867,7 +869,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FIRST, TransitionIn),
+					Transition(FIRST, TransitionIn), //
 					Update(FIRST, TransitionIn),
 					Render(FIRST, TransitionIn),
 				]
@@ -878,7 +880,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -894,7 +896,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Paused)),
 				Update(FIRST, TransitionOut(TransitionTo::Paused)),
 				Render(FIRST, TransitionOut(TransitionTo::Paused)),
@@ -906,7 +908,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FIRST, TransitionOut(TransitionTo::Paused)),
+					Transition(FIRST, TransitionOut(TransitionTo::Paused)), //
 					Update(FIRST, TransitionOut(TransitionTo::Paused)),
 					Render(FIRST, TransitionOut(TransitionTo::Paused)),
 				]
@@ -917,7 +919,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
+				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)), //
 				StateChange(SECOND, Pending, Dead),
 				StateChange(SECOND, TransitionIn, Pending),
 				Transition(SECOND, TransitionIn),
@@ -931,7 +933,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(SECOND, TransitionIn),
+					Transition(SECOND, TransitionIn), //
 					Update(SECOND, TransitionIn),
 					Render(SECOND, TransitionIn),
 				]
@@ -942,7 +944,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Active, TransitionIn),
+				StateChange(SECOND, Active, TransitionIn), //
 				Update(SECOND, Active),
 				Render(SECOND, Active),
 			]
@@ -957,7 +959,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(SECOND, TransitionOut(TransitionTo::Dead)),
 				Update(SECOND, TransitionOut(TransitionTo::Dead)),
 				Render(SECOND, TransitionOut(TransitionTo::Dead)),
@@ -969,7 +971,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(SECOND, TransitionOut(TransitionTo::Dead)),
+					Transition(SECOND, TransitionOut(TransitionTo::Dead)), //
 					Update(SECOND, TransitionOut(TransitionTo::Dead)),
 					Render(SECOND, TransitionOut(TransitionTo::Dead)),
 				]
@@ -981,7 +983,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
+				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)), //
 				StateChange(FIRST, Resume, Paused),
 				StateChange(FIRST, TransitionIn, Resume),
 				Transition(FIRST, TransitionIn),
@@ -995,7 +997,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FIRST, TransitionIn),
+					Transition(FIRST, TransitionIn), //
 					Update(FIRST, TransitionIn),
 					Render(FIRST, TransitionIn),
 				]
@@ -1006,7 +1008,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -1021,7 +1023,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Dead)),
 				Update(FIRST, TransitionOut(TransitionTo::Dead)),
 				Render(FIRST, TransitionOut(TransitionTo::Dead)),
@@ -1033,7 +1035,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Transition(FIRST, TransitionOut(TransitionTo::Dead)),
+					Transition(FIRST, TransitionOut(TransitionTo::Dead)), //
 					Update(FIRST, TransitionOut(TransitionTo::Dead)),
 					Render(FIRST, TransitionOut(TransitionTo::Dead)),
 				]
@@ -1070,7 +1072,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Pending, Dead),
+				StateChange(FIRST, Pending, Dead), //
 				StateChange(FIRST, TransitionIn, Pending),
 				Transition(FIRST, TransitionIn),
 				Update(FIRST, TransitionIn),
@@ -1082,7 +1084,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -1097,7 +1099,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Paused)),
 				Update(FIRST, TransitionOut(TransitionTo::Paused)),
 				Render(FIRST, TransitionOut(TransitionTo::Paused)),
@@ -1109,7 +1111,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
+				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)), //
 				StateChange(SECOND, Pending, Dead),
 				StateChange(SECOND, TransitionIn, Pending),
 				Transition(SECOND, TransitionIn),
@@ -1122,7 +1124,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Active, TransitionIn),
+				StateChange(SECOND, Active, TransitionIn), //
 				Update(SECOND, Active),
 				Render(SECOND, Active),
 			]
@@ -1137,7 +1139,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(SECOND, TransitionOut(TransitionTo::Dead)),
 				Update(SECOND, TransitionOut(TransitionTo::Dead)),
 				Render(SECOND, TransitionOut(TransitionTo::Dead)),
@@ -1149,7 +1151,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
+				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)), //
 				StateChange(FIRST, Dead, Paused),
 			]
 		);
@@ -1160,7 +1162,6 @@ mod tests {
 
 		Ok(())
 	}
-
 
 	#[test]
 	fn swap_states() -> Result<(), StateError> {
@@ -1182,7 +1183,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Pending, Dead),
+				StateChange(FIRST, Pending, Dead), //
 				StateChange(FIRST, TransitionIn, Pending),
 				Transition(FIRST, TransitionIn),
 				Update(FIRST, TransitionIn),
@@ -1194,7 +1195,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -1209,7 +1210,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Dead)),
 				Update(FIRST, TransitionOut(TransitionTo::Dead)),
 				Render(FIRST, TransitionOut(TransitionTo::Dead)),
@@ -1221,7 +1222,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Dead, TransitionOut(TransitionTo::Dead)),
+				StateChange(FIRST, Dead, TransitionOut(TransitionTo::Dead)), //
 				StateChange(SECOND, Pending, Dead),
 				StateChange(SECOND, TransitionIn, Pending),
 				Transition(SECOND, TransitionIn),
@@ -1234,7 +1235,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Active, TransitionIn),
+				StateChange(SECOND, Active, TransitionIn), //
 				Update(SECOND, Active),
 				Render(SECOND, Active),
 			]
@@ -1248,7 +1249,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(SECOND, TransitionOut(TransitionTo::Dead)),
 				Update(SECOND, TransitionOut(TransitionTo::Dead)),
 				Render(SECOND, TransitionOut(TransitionTo::Dead)),
@@ -1275,7 +1276,7 @@ mod tests {
 	impl SelfPushPopState {
 		pub fn new(id: u32, push_after: Option<u32>, pop_after: u32) -> Self {
 			SelfPushPopState {
-				id,
+				id, //
 				counter: 0,
 				push_after,
 				pop_after,
@@ -1311,7 +1312,6 @@ mod tests {
 		}
 	}
 
-
 	#[test]
 	fn state_can_push_and_pop_states_itself() -> Result<(), StateError> {
 		use LogEntry::*;
@@ -1332,7 +1332,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Pending, Dead),
+				StateChange(FIRST, Pending, Dead), //
 				StateChange(FIRST, TransitionIn, Pending),
 				Transition(FIRST, TransitionIn),
 				Update(FIRST, TransitionIn),
@@ -1344,7 +1344,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -1355,7 +1355,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Update(FIRST, Active),
+					Update(FIRST, Active), //
 					Render(FIRST, Active),
 				]
 			);
@@ -1366,7 +1366,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Paused), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Paused)),
 				Update(FIRST, TransitionOut(TransitionTo::Paused)),
 				Render(FIRST, TransitionOut(TransitionTo::Paused)),
@@ -1377,7 +1377,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)),
+				StateChange(FIRST, Paused, TransitionOut(TransitionTo::Paused)), //
 				StateChange(SECOND, Pending, Dead),
 				StateChange(SECOND, TransitionIn, Pending),
 				Transition(SECOND, TransitionIn),
@@ -1390,7 +1390,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Active, TransitionIn),
+				StateChange(SECOND, Active, TransitionIn), //
 				Update(SECOND, Active),
 				Render(SECOND, Active),
 			]
@@ -1401,7 +1401,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Update(SECOND, Active),
+					Update(SECOND, Active), //
 					Render(SECOND, Active),
 				]
 			);
@@ -1412,7 +1412,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(SECOND, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(SECOND, TransitionOut(TransitionTo::Dead)),
 				Update(SECOND, TransitionOut(TransitionTo::Dead)),
 				Render(SECOND, TransitionOut(TransitionTo::Dead)),
@@ -1424,7 +1424,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)),
+				StateChange(SECOND, Dead, TransitionOut(TransitionTo::Dead)), //
 				StateChange(FIRST, Resume, Paused),
 				StateChange(FIRST, TransitionIn, Resume),
 				Transition(FIRST, TransitionIn),
@@ -1437,7 +1437,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, Active, TransitionIn),
+				StateChange(FIRST, Active, TransitionIn), //
 				Update(FIRST, Active),
 				Render(FIRST, Active),
 			]
@@ -1448,7 +1448,7 @@ mod tests {
 			assert_eq!(
 				context.take_log(),
 				vec![
-					Update(FIRST, Active),
+					Update(FIRST, Active), //
 					Render(FIRST, Active),
 				]
 			);
@@ -1459,7 +1459,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FIRST, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FIRST, TransitionOut(TransitionTo::Dead)),
 				Update(FIRST, TransitionOut(TransitionTo::Dead)),
 				Render(FIRST, TransitionOut(TransitionTo::Dead)),
@@ -1494,7 +1494,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Pending, Dead),
+				StateChange(FOO, Pending, Dead), //
 				StateChange(FOO, TransitionIn, Pending),
 				Transition(FOO, TransitionIn),
 				Update(FOO, TransitionIn),
@@ -1510,7 +1510,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, Active, TransitionIn),
+				StateChange(FOO, Active, TransitionIn), //
 				Update(FOO, Active),
 				Render(FOO, Active),
 			]
@@ -1524,7 +1524,7 @@ mod tests {
 		assert_eq!(
 			context.take_log(),
 			vec![
-				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active),
+				StateChange(FOO, TransitionOut(TransitionTo::Dead), Active), //
 				Transition(FOO, TransitionOut(TransitionTo::Dead)),
 				Update(FOO, TransitionOut(TransitionTo::Dead)),
 				Render(FOO, TransitionOut(TransitionTo::Dead)),

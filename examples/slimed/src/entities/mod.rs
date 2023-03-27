@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use ggdt::prelude::*;
 
-use crate::{Core, Game, TILE_HEIGHT, TILE_WIDTH, TileMap};
+use crate::{Core, Game, TileMap, TILE_HEIGHT, TILE_WIDTH};
 
 pub use self::events::*;
 pub use self::systems::*;
@@ -46,7 +46,7 @@ impl Direction {
 			1 => West,
 			2 => East,
 			3 => North,
-			_ => panic!("unknown random direction!")
+			_ => panic!("unknown random direction!"),
 		}
 	}
 }
@@ -65,7 +65,7 @@ impl SlimeColor {
 			0 => Green,
 			1 => Blue,
 			2 => Orange,
-			_ => panic!("unknown random slime color!")
+			_ => panic!("unknown random slime color!"),
 		}
 	}
 }
@@ -86,7 +86,7 @@ impl PickupType {
 			1 => BlueGem,
 			2 => OrangeGem,
 			3 => Coin,
-			_ => panic!("unknown random pickup type!")
+			_ => panic!("unknown random pickup type!"),
 		}
 	}
 }
@@ -116,12 +116,7 @@ pub struct AnimationDef {
 impl AnimationDef {
 	#[inline]
 	pub fn new(frames: &'static [usize], loops: bool, delay: f32, multi_direction_offset: Option<usize>) -> Self {
-		AnimationDef {
-			frames,
-			loops,
-			delay,
-			multi_direction_offset,
-		}
+		AnimationDef { frames, loops, delay, multi_direction_offset }
 	}
 }
 
@@ -138,7 +133,7 @@ impl AnimationInstance {
 	#[inline]
 	pub fn from(def: Rc<AnimationDef>) -> Self {
 		AnimationInstance {
-			def,
+			def, //
 			frame_index: 0,
 			frame_timer: 0.0,
 			complete: false,
@@ -174,9 +169,7 @@ pub struct Forces {
 
 impl Forces {
 	pub fn new() -> Self {
-		Forces {
-			forces: Vec::with_capacity(5),
-		}
+		Forces { forces: Vec::with_capacity(5) }
 	}
 
 	pub fn current_force(&self) -> Vector2 {
@@ -232,7 +225,13 @@ pub struct RandomlyWalksAround {
 }
 
 impl RandomlyWalksAround {
-	pub fn new(min_walk_time: f32, max_walk_time: f32, chance_to_move: u32, min_cooldown: f32, max_cooldown: f32) -> Self {
+	pub fn new(
+		min_walk_time: f32,
+		max_walk_time: f32,
+		chance_to_move: u32,
+		min_cooldown: f32,
+		max_cooldown: f32,
+	) -> Self {
 		RandomlyWalksAround {
 			min_walk_time,
 			max_walk_time,
@@ -264,7 +263,7 @@ pub struct SpawnTimer {
 impl SpawnTimer {
 	pub fn new(min_time: f32, max_time: f32, max_allowed: usize) -> Self {
 		SpawnTimer {
-			timer: 0.0,
+			timer: 0.0, //
 			min_time,
 			max_time,
 			max_allowed,
@@ -291,7 +290,7 @@ pub struct Pusher {
 impl Pusher {
 	pub fn new() -> Self {
 		Pusher {
-			strength: DEFAULT_PUSH_STRENGTH,
+			strength: DEFAULT_PUSH_STRENGTH, //
 			push_force_dissipation: DEFAULT_PUSH_DISSIPATION,
 		}
 	}
@@ -338,7 +337,7 @@ pub struct TimedFlicker {
 impl TimedFlicker {
 	pub fn new(timer: f32, method: FlickerMethod) -> Self {
 		TimedFlicker {
-			timer,
+			timer, //
 			method,
 			pre_timer: None,
 			flick: true,
@@ -347,7 +346,7 @@ impl TimedFlicker {
 
 	pub fn new_with_pre_timer(timer: f32, pre_timer: f32, method: FlickerMethod) -> Self {
 		TimedFlicker {
-			timer,
+			timer, //
 			method,
 			pre_timer: Some(pre_timer),
 			flick: true,
@@ -380,7 +379,13 @@ pub struct Pickuper;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-pub fn init_everything(context: &mut Game, map_file: &Path, min_spawn_time: f32, max_spawn_time: f32, max_slimes: usize) {
+pub fn init_everything(
+	context: &mut Game,
+	map_file: &Path,
+	min_spawn_time: f32,
+	max_spawn_time: f32,
+	max_slimes: usize,
+) {
 	init_entities(&mut context.core.entities);
 	init_component_system(&mut context.support.component_systems);
 	init_events(&mut context.support.event_listeners);
@@ -456,7 +461,17 @@ pub fn new_camera_entity(context: &mut Core, x: i32, y: i32) -> EntityId {
 pub fn new_slime_entity(context: &mut Core, x: i32, y: i32, direction: Direction, color: SlimeColor) -> EntityId {
 	let id = context.entities.new_entity();
 
-	let (atlas, chance_to_move, movement_speed, min_walk_time, max_walk_time, min_walk_cooldown, max_walk_cooldown, life, hit_color) = match color {
+	let (
+		atlas,
+		chance_to_move,
+		movement_speed,
+		min_walk_time,
+		max_walk_time,
+		min_walk_cooldown,
+		max_walk_cooldown,
+		life,
+		hit_color,
+	) = match color {
 		SlimeColor::Green => (context.green_slime.clone(), 10, 8.0, 0.5, 2.0, 0.5, 5.0, 1, 11),
 		SlimeColor::Blue => (context.blue_slime.clone(), 40, 12.0, 0.5, 2.0, 0.5, 3.0, 2, 13),
 		SlimeColor::Orange => (context.orange_slime.clone(), 90, 24.0, 0.5, 1.0, 0.5, 2.0, 3, 9),
@@ -476,7 +491,10 @@ pub fn new_slime_entity(context: &mut Core, x: i32, y: i32, direction: Direction
 	context.entities.add_component(id, Activity(activity));
 	context.entities.add_component(id, animate_by_activity);
 	context.entities.add_component(id, animation);
-	context.entities.add_component(id, RandomlyWalksAround::new(min_walk_time, max_walk_time, chance_to_move, min_walk_cooldown, max_walk_cooldown));
+	context.entities.add_component(
+		id,
+		RandomlyWalksAround::new(min_walk_time, max_walk_time, chance_to_move, min_walk_cooldown, max_walk_cooldown),
+	);
 	context.entities.add_component(id, MovementSpeed(movement_speed));
 	context.entities.add_component(id, Pusher::new());
 	context.entities.add_component(id, Pushable);
@@ -489,7 +507,13 @@ pub fn new_slime_entity(context: &mut Core, x: i32, y: i32, direction: Direction
 
 pub fn spawn_slime_randomly(context: &mut Core) -> EntityId {
 	let (x, y) = context.tilemap.get_random_spawnable_coordinates();
-	let id = new_slime_entity(context, x * TILE_WIDTH as i32, y * TILE_HEIGHT as i32, Direction::new_random(), SlimeColor::new_random());
+	let id = new_slime_entity(
+		context,
+		x * TILE_WIDTH as i32,
+		y * TILE_HEIGHT as i32,
+		Direction::new_random(),
+		SlimeColor::new_random(),
+	);
 	spawn_poof_cloud(context, x * TILE_WIDTH as i32, y * TILE_HEIGHT as i32, 4, 8);
 	id
 }
@@ -501,21 +525,21 @@ pub fn new_player_entity(context: &mut Core, x: i32, y: i32, direction: Directio
 		(
 			context.hero_female.clone(),
 			[
-				Vector2::new(-3.0, 13.0),
+				Vector2::new(-3.0, 13.0), //
 				Vector2::new(-14.0, 2.0),
 				Vector2::new(14.0, 2.0),
-				Vector2::new(3.0, -11.0)
-			]
+				Vector2::new(3.0, -11.0),
+			],
 		)
 	} else {
 		(
 			context.hero_male.clone(),
 			[
-				Vector2::new(-3.0, 13.0),
+				Vector2::new(-3.0, 13.0), //
 				Vector2::new(-13.0, 2.0),
 				Vector2::new(13.0, 2.0),
-				Vector2::new(3.0, -11.0)
-			]
+				Vector2::new(3.0, -11.0),
+			],
 		)
 	};
 
@@ -524,7 +548,7 @@ pub fn new_player_entity(context: &mut Core, x: i32, y: i32, direction: Directio
 	let animation = AnimationInstance::from(animate_by_activity.0.get(&activity).unwrap().clone());
 
 	let weapon = Weapon {
-		atlas: context.sword.clone(),
+		atlas: context.sword.clone(), //
 		base_index: 0,
 		offsets: weapon_offsets,
 		damage: 1,
@@ -555,7 +579,13 @@ pub fn spawn_player_randomly(context: &mut Core) -> EntityId {
 	new_player_entity(context, x * TILE_WIDTH as i32, y * TILE_HEIGHT as i32, Direction::South)
 }
 
-fn new_animation_effect(context: &mut Core, x: i32, y: i32, animation_def: Rc<AnimationDef>, delay_scaling_factor: Option<f32>) -> EntityId {
+fn new_animation_effect(
+	context: &mut Core,
+	x: i32,
+	y: i32,
+	animation_def: Rc<AnimationDef>,
+	delay_scaling_factor: Option<f32>,
+) -> EntityId {
 	let id = context.entities.new_entity();
 	context.entities.add_component(id, Particle);
 	context.entities.add_component(id, Position(Vector2::new(x as f32, y as f32)));
@@ -573,11 +603,17 @@ fn new_animation_effect(context: &mut Core, x: i32, y: i32, animation_def: Rc<An
 	id
 }
 
-pub fn new_poof_animation(context: &mut Core, x: i32, y: i32, variant: usize, delay_scaling_factor: Option<f32>) -> EntityId {
+pub fn new_poof_animation(
+	context: &mut Core,
+	x: i32,
+	y: i32,
+	variant: usize,
+	delay_scaling_factor: Option<f32>,
+) -> EntityId {
 	let def = match variant {
 		0 => context.poof1_animation_def.clone(),
 		1 => context.poof2_animation_def.clone(),
-		_ => panic!("unknown poof animation variant")
+		_ => panic!("unknown poof animation variant"),
 	};
 	new_animation_effect(context, x, y, def, delay_scaling_factor)
 }
@@ -611,15 +647,21 @@ pub fn spawn_poof_cloud(context: &mut Core, x: i32, y: i32, count: usize, radius
 	for _ in 0..count {
 		let x = x + rnd_value(-radius, radius);
 		let y = y + rnd_value(-radius, radius);
-		new_poof_animation(context, x, y, 0, match rnd_value(0, 5) {
-			0 => Some(0.25),
-			1 => Some(0.5),
-			2 => Some(0.75),
-			3 => Some(1.0),
-			4 => Some(1.25),
-			5 => Some(1.5),
-			_ => None,
-		});
+		new_poof_animation(
+			context,
+			x,
+			y,
+			0,
+			match rnd_value(0, 5) {
+				0 => Some(0.25),
+				1 => Some(0.5),
+				2 => Some(0.75),
+				3 => Some(1.0),
+				4 => Some(1.25),
+				5 => Some(1.5),
+				_ => None,
+			},
+		);
 	}
 }
 
@@ -691,7 +733,7 @@ pub fn spawn_pickups_from_entity(context: &mut Core, entity: EntityId) {
 		let angle = (rnd_value(0, 359) as f32).to_radians();
 		let force_strength = rnd_value(0.5, 5.0);
 		let force = Force {
-			force: Vector2::from_angle(angle) * force_strength,
+			force: Vector2::from_angle(angle) * force_strength, //
 			dissipation_factor: 0.5,
 		};
 		let kind = PickupType::new_random();

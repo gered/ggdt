@@ -1,7 +1,7 @@
 use crate::graphics::bitmap::blit::{clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit};
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::bitmapatlas::BitmapAtlas;
-use crate::graphics::color::{BlendFunction, tint_argb32};
+use crate::graphics::color::{tint_argb32, BlendFunction};
 use crate::math::rect::Rect;
 
 #[derive(Clone, PartialEq)]
@@ -120,7 +120,11 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = tint_argb32(*src_pixels, tint_color);
 			},
@@ -136,7 +140,11 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 			},
@@ -154,7 +162,13 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 			},
@@ -172,7 +186,13 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = tint_argb32(*src_pixels, tint_color);
 			},
@@ -189,7 +209,11 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = tint_argb32(*src_pixels, tint_color);
@@ -208,7 +232,11 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
@@ -229,7 +257,13 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = tint_argb32(*src_pixels, tint_color);
@@ -250,7 +284,13 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
@@ -271,7 +311,14 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
 			},
@@ -290,7 +337,14 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
 					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
@@ -312,7 +366,14 @@ impl RgbaBitmap {
 		tint_color: u32,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
@@ -334,7 +395,14 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
@@ -364,23 +432,23 @@ impl RgbaBitmap {
 		match method {
 			// rotozoom blits internally clip per-pixel right now ... and regardless, the normal
 			// clip_blit() function wouldn't handle a rotozoom blit destination region anyway ...
-			RotoZoom { .. } => {},
-			RotoZoomTinted { .. } => {},
-			RotoZoomBlended { .. } => {},
-			RotoZoomTransparent { .. } => {},
-			RotoZoomTransparentTinted { .. } => {},
-			RotoZoomTransparentBlended { .. } => {},
+			RotoZoom { .. } => {}
+			RotoZoomTinted { .. } => {}
+			RotoZoomBlended { .. } => {}
+			RotoZoomTransparent { .. } => {}
+			RotoZoomTransparentTinted { .. } => {}
+			RotoZoomTransparentBlended { .. } => {}
 
 			// set axis flip arguments
-			SolidFlipped { horizontal_flip, vertical_flip, .. } |
-			SolidFlippedTinted { horizontal_flip, vertical_flip, .. } |
-			SolidFlippedBlended { horizontal_flip, vertical_flip, .. } |
-			TransparentFlipped { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedTinted { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedBlended { horizontal_flip, vertical_flip, .. } |
-			TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } => {
+			SolidFlipped { horizontal_flip, vertical_flip, .. }
+			| SolidFlippedTinted { horizontal_flip, vertical_flip, .. }
+			| SolidFlippedBlended { horizontal_flip, vertical_flip, .. }
+			| TransparentFlipped { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedTinted { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedBlended { horizontal_flip, vertical_flip, .. }
+			| TransparentFlippedSingle { horizontal_flip, vertical_flip, .. } => {
 				if !clip_blit(
-					self.clip_region(),
+					self.clip_region(), //
 					&mut src_region,
 					&mut dest_x,
 					&mut dest_y,
@@ -394,7 +462,7 @@ impl RgbaBitmap {
 			// otherwise clip like normal!
 			_ => {
 				if !clip_blit(
-					self.clip_region(),
+					self.clip_region(), //
 					&mut src_region,
 					&mut dest_x,
 					&mut dest_y,
@@ -500,7 +568,14 @@ impl RgbaBitmap {
 	}
 
 	#[inline]
-	pub unsafe fn blit_atlas_unchecked(&mut self, method: RgbaBlitMethod, src: &BitmapAtlas<Self>, index: usize, x: i32, y: i32) {
+	pub unsafe fn blit_atlas_unchecked(
+		&mut self,
+		method: RgbaBlitMethod,
+		src: &BitmapAtlas<Self>,
+		index: usize,
+		x: i32,
+		y: i32,
+	) {
 		if let Some(src_region) = src.get(index) {
 			self.blit_region_unchecked(method, src.bitmap(), &src_region, x, y);
 		}

@@ -14,8 +14,8 @@ use crate::utils::abs_diff;
 const NUM_COLORS: usize = 256;
 
 /// Common trait to represent a range of indexed colour values.
-pub trait ColorRange: RangeBounds<u8> + Iterator<Item=u8> {}
-impl<T> ColorRange for T where T: RangeBounds<u8> + Iterator<Item=u8> {}
+pub trait ColorRange: RangeBounds<u8> + Iterator<Item = u8> {}
+impl<T> ColorRange for T where T: RangeBounds<u8> + Iterator<Item = u8> {}
 
 pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../assets/vga.pal");
 
@@ -30,10 +30,7 @@ fn to_6bit(value: u8) -> u8 {
 }
 
 // vga bios (0-63) format
-fn read_palette_6bit<T: ReadBytesExt>(
-	reader: &mut T,
-	num_colors: usize,
-) -> Result<[u32; NUM_COLORS], PaletteError> {
+fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[u32; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
@@ -42,11 +39,7 @@ fn read_palette_6bit<T: ReadBytesExt>(
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32(
-			from_6bit(r),
-			from_6bit(g),
-			from_6bit(b)
-		);
+		let color = to_rgb32(from_6bit(r), from_6bit(g), from_6bit(b));
 		colors[i as usize] = color;
 	}
 	Ok(colors)
@@ -70,10 +63,7 @@ fn write_palette_6bit<T: WriteBytesExt>(
 }
 
 // normal (0-255) format
-fn read_palette_8bit<T: ReadBytesExt>(
-	reader: &mut T,
-	num_colors: usize,
-) -> Result<[u32; NUM_COLORS], PaletteError> {
+fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[u32; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
@@ -131,17 +121,13 @@ pub struct Palette {
 impl Palette {
 	/// Creates a new Palette with all black colors.
 	pub fn new() -> Palette {
-		Palette {
-			colors: [0; NUM_COLORS],
-		}
+		Palette { colors: [0; NUM_COLORS] }
 	}
 
 	/// Creates a new Palette with all initial colors having the RGB values specified.
 	pub fn new_with_default(r: u8, g: u8, b: u8) -> Palette {
 		let rgb = to_rgb32(r, g, b);
-		Palette {
-			colors: [rgb; NUM_COLORS],
-		}
+		Palette { colors: [rgb; NUM_COLORS] }
 	}
 
 	/// Creates a new Palette, pre-loaded with the default VGA BIOS colors.
@@ -168,10 +154,7 @@ impl Palette {
 	///
 	/// * `reader`: the reader to load the palette from
 	/// * `format`: the format that the palette data is expected to be in
-	pub fn load_from_bytes<T: ReadBytesExt>(
-		reader: &mut T,
-		format: PaletteFormat,
-	) -> Result<Palette, PaletteError> {
+	pub fn load_from_bytes<T: ReadBytesExt>(reader: &mut T, format: PaletteFormat) -> Result<Palette, PaletteError> {
 		let colors = match format {
 			PaletteFormat::Vga => read_palette_6bit(reader, NUM_COLORS)?,
 			PaletteFormat::Normal => read_palette_8bit(reader, NUM_COLORS)?,
@@ -241,11 +224,7 @@ impl Palette {
 	///
 	/// * `writer`: the writer to write palette data to
 	/// * `format`: the format to write the palette data in
-	pub fn to_bytes<T: WriteBytesExt>(
-		&self,
-		writer: &mut T,
-		format: PaletteFormat,
-	) -> Result<(), PaletteError> {
+	pub fn to_bytes<T: WriteBytesExt>(&self, writer: &mut T, format: PaletteFormat) -> Result<(), PaletteError> {
 		match format {
 			PaletteFormat::Vga => write_palette_6bit(writer, &self.colors, NUM_COLORS),
 			PaletteFormat::Normal => write_palette_8bit(writer, &self.colors, NUM_COLORS),
@@ -314,14 +293,7 @@ impl Palette {
 	/// * `step`: the amount to "step" by towards the target RGB values
 	///
 	/// returns: true if the color has reached the target RGB values, false otherwise
-	pub fn fade_color_toward_rgb(
-		&mut self,
-		color: u8,
-		target_r: u8,
-		target_g: u8,
-		target_b: u8,
-		step: u8,
-	) -> bool {
+	pub fn fade_color_toward_rgb(&mut self, color: u8, target_r: u8, target_g: u8, target_b: u8, step: u8) -> bool {
 		let mut modified = false;
 
 		let (mut r, mut g, mut b) = from_rgb32(self.colors[color as usize]);
@@ -407,12 +379,7 @@ impl Palette {
 	///
 	/// returns: true if all of the colors in the range have reached the RGB values from the other
 	/// target palette, false otherwise
-	pub fn fade_colors_toward_palette<T: ColorRange>(
-		&mut self,
-		colors: T,
-		palette: &Palette,
-		step: u8,
-	) -> bool {
+	pub fn fade_colors_toward_palette<T: ColorRange>(&mut self, colors: T, palette: &Palette, step: u8) -> bool {
 		let mut all_faded = true;
 		for color in colors {
 			let (r, g, b) = from_rgb32(palette[color]);
@@ -481,9 +448,7 @@ impl Palette {
 				// this comparison method is using the sRGB Euclidean formula described here:
 				// https://en.wikipedia.org/wiki/Color_difference
 
-				let distance = abs_diff(this_r, r) as u32
-					+ abs_diff(this_g, g) as u32
-					+ abs_diff(this_b, b) as u32;
+				let distance = abs_diff(this_r, r) as u32 + abs_diff(this_g, g) as u32 + abs_diff(this_b, b) as u32;
 
 				if distance < closest_distance {
 					closest = index as u8;
@@ -597,10 +562,7 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette = Palette::load_from_file(
-			test_file(Path::new("vga.pal")).as_path(),
-			PaletteFormat::Vga
-		)?;
+		let palette = Palette::load_from_file(test_file(Path::new("vga.pal")).as_path(), PaletteFormat::Vga)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format.pal");
@@ -610,10 +572,7 @@ mod tests {
 
 		// normal rgb format (8-bit)
 
-		let palette = Palette::load_from_file(
-			test_file(Path::new("dp2.pal")).as_path(),
-			PaletteFormat::Normal
-		)?;
+		let palette = Palette::load_from_file(test_file(Path::new("dp2.pal")).as_path(), PaletteFormat::Normal)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format.pal");
 		palette.to_file(&save_path, PaletteFormat::Normal)?;
@@ -629,11 +588,8 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette = Palette::load_num_colors_from_file(
-			test_file(Path::new("ega_6bit.pal")).as_path(),
-			PaletteFormat::Vga,
-			16
-		)?;
+		let palette =
+			Palette::load_num_colors_from_file(test_file(Path::new("ega_6bit.pal")).as_path(), PaletteFormat::Vga, 16)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format_16_colors.pal");
@@ -646,7 +602,7 @@ mod tests {
 		let palette = Palette::load_num_colors_from_file(
 			test_file(Path::new("ega_8bit.pal")).as_path(),
 			PaletteFormat::Normal,
-			16
+			16,
 		)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format_16_colors.pal");

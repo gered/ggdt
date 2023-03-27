@@ -46,7 +46,7 @@ pub struct BlendMap {
 
 impl std::fmt::Debug for BlendMap {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("BlendMap")
+		f.debug_struct("BlendMap") //
 			.field("start_color", &self.start_color)
 			.field("end_color", &self.end_color)
 			.finish_non_exhaustive()
@@ -58,17 +58,10 @@ impl BlendMap {
 	/// range only. The `start_color` and `end_color` may also be equal to create a blend map with
 	/// only a single source color mapping.
 	pub fn new(start_color: u8, end_color: u8) -> Self {
-		let (start_color, end_color) = if start_color > end_color {
-			(end_color, start_color)
-		} else {
-			(start_color, end_color)
-		};
+		let (start_color, end_color) =
+			if start_color > end_color { (end_color, start_color) } else { (start_color, end_color) };
 		let num_colors = (end_color - start_color) as usize + 1;
-		BlendMap {
-			start_color,
-			end_color,
-			mapping: vec![[0u8; 256]; num_colors].into_boxed_slice(),
-		}
+		BlendMap { start_color, end_color, mapping: vec![[0u8; 256]; num_colors].into_boxed_slice() }
 	}
 
 	/// Creates and returns a new [`BlendMap`] with a single source color mapping which maps to
@@ -77,11 +70,8 @@ impl BlendMap {
 	/// like a simple translucency effect. The starting color in the gradient is used as the source
 	/// color mapping in the returned blend map.
 	pub fn new_colorized_map(gradient_start: u8, gradient_end: u8, palette: &Palette) -> Self {
-		let (gradient_start, gradient_end) = if gradient_start > gradient_end {
-			(gradient_end, gradient_start)
-		} else {
-			(gradient_start, gradient_end)
-		};
+		let (gradient_start, gradient_end) =
+			if gradient_start > gradient_end { (gradient_end, gradient_start) } else { (gradient_start, gradient_end) };
 		let gradient_size = gradient_end - gradient_start + 1;
 		let source_color = gradient_start;
 
@@ -89,11 +79,13 @@ impl BlendMap {
 		for idx in 0..=255 {
 			let (r, g, b) = from_rgb32(palette[idx]);
 			let lit = (luminance(r, g, b) * 255.0) as u8;
-			blend_map.set_mapping(
-				source_color,
-				idx as u8,
-				(gradient_size - 1) - (lit / (256 / gradient_size as u32) as u8) + source_color,
-			).unwrap();
+			blend_map
+				.set_mapping(
+					source_color,
+					idx as u8,
+					(gradient_size - 1) - (lit / (256 / gradient_size as u32) as u8) + source_color,
+				)
+				.unwrap();
 		}
 		blend_map
 	}
@@ -108,11 +100,8 @@ impl BlendMap {
 		palette: &Palette,
 		f: impl Fn(f32, f32) -> f32,
 	) -> BlendMap {
-		let (gradient_start, gradient_end) = if gradient_start > gradient_end {
-			(gradient_end, gradient_start)
-		} else {
-			(gradient_start, gradient_end)
-		};
+		let (gradient_start, gradient_end) =
+			if gradient_start > gradient_end { (gradient_end, gradient_start) } else { (gradient_start, gradient_end) };
 		let gradient_size = gradient_end - gradient_start + 1;
 
 		let mut blend_map = BlendMap::new(0, 255);
@@ -123,11 +112,13 @@ impl BlendMap {
 				let (r, g, b) = from_rgb32(palette[dest_color]);
 				let destination_luminance = luminance(r, g, b);
 				let weight = (f(source_luminance, destination_luminance) * 255.0) as u8;
-				blend_map.set_mapping(
-					source_color,
-					dest_color,
-					(gradient_size - 1).wrapping_sub(weight / (256 / gradient_size as u32) as u8) + gradient_start,
-				).unwrap();
+				blend_map
+					.set_mapping(
+						source_color,
+						dest_color,
+						(gradient_size - 1).wrapping_sub(weight / (256 / gradient_size as u32) as u8) + gradient_start,
+					)
+					.unwrap();
 			}
 		}
 		blend_map
@@ -223,12 +214,19 @@ impl BlendMap {
 		}
 	}
 
-
 	/// Sets a series of blend color mappings for the given source color and starting from a base
 	/// destination color.
-	pub fn set_mappings<const N: usize>(&mut self, source_color: u8, base_dest_color: u8, mappings: [u8; N]) -> Result<(), BlendMapError> {
+	pub fn set_mappings<const N: usize>(
+		&mut self,
+		source_color: u8,
+		base_dest_color: u8,
+		mappings: [u8; N],
+	) -> Result<(), BlendMapError> {
 		if let Some(mapping) = self.get_mapping_mut(source_color) {
-			assert!((base_dest_color as usize + N - 1) <= 255, "mappings array is too big for the remaining colors available");
+			assert!(
+				(base_dest_color as usize + N - 1) <= 255,
+				"mappings array is too big for the remaining colors available"
+			);
 			for index in 0..N {
 				mapping[index + base_dest_color as usize] = mappings[index];
 			}
@@ -272,7 +270,7 @@ impl BlendMap {
 		}
 
 		Ok(BlendMap {
-			start_color,
+			start_color, //
 			end_color,
 			mapping: maps.into_boxed_slice(),
 		})
@@ -368,10 +366,7 @@ mod tests {
 		mapping[0] = 217;
 		assert_eq!(Some(217), blend_map.blend(17, 0));
 
-		assert_matches!(
-            blend_map.set_mapping(64, 1, 2),
-            Err(BlendMapError::InvalidSourceColor(64))
-        );
+		assert_matches!(blend_map.set_mapping(64, 1, 2), Err(BlendMapError::InvalidSourceColor(64)));
 
 		Ok(())
 	}
@@ -386,11 +381,7 @@ mod tests {
 		assert_ok!(blend_map.set_mappings(2, 4, [1, 2, 3, 4, 5, 6, 7, 8]));
 
 		let mapping = blend_map.get_mapping(2).unwrap();
-		assert_eq!(
-			[0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0],
-			mapping[0..16]
-		);
-
+		assert_eq!([0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0, 0, 0, 0], mapping[0..16]);
 
 		Ok(())
 	}

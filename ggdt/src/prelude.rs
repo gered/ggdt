@@ -1,5 +1,5 @@
 pub use crate::{
-	*,
+	//
 	audio::prelude::*,
 	base::*,
 	entities::*,
@@ -9,10 +9,8 @@ pub use crate::{
 	states::*,
 	system::{
 		prelude::*,
-		res::{
-			dos_like::*,
-			standard::*,
-		},
+		res::{dos_like::*, standard::*},
 	},
 	utils::prelude::*,
+	*,
 };

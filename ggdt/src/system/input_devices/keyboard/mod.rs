@@ -1,6 +1,6 @@
 use crate::system::event::{KeyboardEvent, SystemEvent, SystemEventHandler};
-use crate::system::input_devices::{ButtonState, InputDevice};
 use crate::system::input_devices::keyboard::scancodes::Scancode;
+use crate::system::input_devices::{ButtonState, InputDevice};
 
 pub mod codes;
 pub mod scancodes;
@@ -21,9 +21,7 @@ pub struct Keyboard {
 
 impl Keyboard {
 	pub fn new() -> Keyboard {
-		Keyboard {
-			keyboard: [ButtonState::Idle; MAX_KEYS],
-		}
+		Keyboard { keyboard: [ButtonState::Idle; MAX_KEYS] }
 		/*
 		Keyboard {
 			keyboard: vec![ButtonState::Idle; 256].into_boxed_slice(),
@@ -34,19 +32,13 @@ impl Keyboard {
 	/// Returns true if the given key was just pressed or is being held down.
 	#[inline]
 	pub fn is_key_down(&self, scancode: Scancode) -> bool {
-		matches!(
-            self.keyboard[scancode as usize],
-            ButtonState::Pressed | ButtonState::Held
-        )
+		matches!(self.keyboard[scancode as usize], ButtonState::Pressed | ButtonState::Held)
 	}
 
 	/// Returns true if the given key was not just pressed and is not being held down.
 	#[inline]
 	pub fn is_key_up(&self, scancode: Scancode) -> bool {
-		matches!(
-            self.keyboard[scancode as usize],
-            ButtonState::Released | ButtonState::Idle
-        )
+		matches!(self.keyboard[scancode as usize], ButtonState::Released | ButtonState::Idle)
 	}
 
 	/// Returns true if the given key was just pressed (not being held down, yet).

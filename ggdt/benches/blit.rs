@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use criterion::{black_box, Criterion, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use ggdt::prelude::*;
 
@@ -17,12 +17,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 
 	c.bench_function("blit_single_checked_solid", |b| {
 		b.iter(|| {
-			framebuffer.blit(
-				black_box(IndexedBlitMethod::Solid),
-				black_box(&solid_bmp),
-				black_box(100),
-				black_box(100),
-			)
+			framebuffer.blit(black_box(IndexedBlitMethod::Solid), black_box(&solid_bmp), black_box(100), black_box(100))
 		})
 	});
 
@@ -66,10 +61,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_solid_flipped_not_flipped", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::SolidFlipped {
-					horizontal_flip: false,
-					vertical_flip: false,
-				}),
+				black_box(IndexedBlitMethod::SolidFlipped { horizontal_flip: false, vertical_flip: false }),
 				black_box(&solid_bmp),
 				black_box(100),
 				black_box(100),
@@ -80,10 +72,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_solid_flipped_horizontally", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::SolidFlipped {
-					horizontal_flip: true,
-					vertical_flip: false,
-				}),
+				black_box(IndexedBlitMethod::SolidFlipped { horizontal_flip: true, vertical_flip: false }),
 				black_box(&solid_bmp),
 				black_box(100),
 				black_box(100),
@@ -94,10 +83,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_solid_flipped_vertically", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::SolidFlipped {
-					horizontal_flip: false,
-					vertical_flip: true,
-				}),
+				black_box(IndexedBlitMethod::SolidFlipped { horizontal_flip: false, vertical_flip: true }),
 				black_box(&solid_bmp),
 				black_box(100),
 				black_box(100),
@@ -108,10 +94,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_solid_flipped_horizontally_and_vertically", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::SolidFlipped {
-					horizontal_flip: true,
-					vertical_flip: true,
-				}),
+				black_box(IndexedBlitMethod::SolidFlipped { horizontal_flip: true, vertical_flip: true }),
 				black_box(&solid_bmp),
 				black_box(100),
 				black_box(100),
@@ -252,10 +235,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_transparent_single", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::TransparentSingle {
-					transparent_color: 0,
-					draw_color: 17,
-				}),
+				black_box(IndexedBlitMethod::TransparentSingle { transparent_color: 0, draw_color: 17 }),
 				black_box(&trans_bmp),
 				black_box(100),
 				black_box(100),
@@ -268,10 +248,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_transparent_offset", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::TransparentOffset {
-					transparent_color: 0,
-					offset: 42,
-				}),
+				black_box(IndexedBlitMethod::TransparentOffset { transparent_color: 0, offset: 42 }),
 				black_box(&trans_bmp),
 				black_box(100),
 				black_box(100),
@@ -425,11 +402,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("blit_rotozoom", |b| {
 		b.iter(|| {
 			framebuffer.blit(
-				black_box(IndexedBlitMethod::RotoZoom {
-					angle: 73.0f32.to_radians(),
-					scale_x: 1.2,
-					scale_y: 0.8,
-				}),
+				black_box(IndexedBlitMethod::RotoZoom { angle: 73.0f32.to_radians(), scale_x: 1.2, scale_y: 0.8 }),
 				black_box(&solid_bmp),
 				black_box(100),
 				black_box(100),

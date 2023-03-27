@@ -3,8 +3,8 @@ use std::path::Path;
 use ggdt::prelude::*;
 
 use crate::entities::*;
-use crate::Game;
 use crate::support::*;
+use crate::Game;
 
 pub struct MainMenuState {
 	fade: f32,
@@ -13,10 +13,7 @@ pub struct MainMenuState {
 
 impl MainMenuState {
 	pub fn new() -> Self {
-		MainMenuState {
-			fade: 0.0,
-			selection: 0,
-		}
+		MainMenuState { fade: 0.0, selection: 0 }
 	}
 }
 
@@ -60,10 +57,28 @@ impl AppState<Game> for MainMenuState {
 		draw_window(&mut context.core.system.res.video, &context.core.ui, x, y, x + width, y + height);
 
 		let selection_y = y + SPACER + (self.selection as i32 * 16);
-		context.core.system.res.video.print_string(">", x + SPACER, selection_y, FontRenderOpts::Color(15), &context.core.font);
+		context.core.system.res.video.print_string(
+			">",
+			x + SPACER,
+			selection_y,
+			FontRenderOpts::Color(15),
+			&context.core.font,
+		);
 
-		context.core.system.res.video.print_string("Play", x + SPACER + SPACER, y + SPACER, FontRenderOpts::Color(15), &context.core.font);
-		context.core.system.res.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, FontRenderOpts::Color(15), &context.core.font);
+		context.core.system.res.video.print_string(
+			"Play",
+			x + SPACER + SPACER,
+			y + SPACER,
+			FontRenderOpts::Color(15),
+			&context.core.font,
+		);
+		context.core.system.res.video.print_string(
+			"Quit",
+			x + SPACER + SPACER,
+			y + SPACER + 16,
+			FontRenderOpts::Color(15),
+			&context.core.font,
+		);
 	}
 
 	fn transition(&mut self, state: State, context: &mut Game) -> bool {
@@ -98,7 +113,7 @@ pub struct GamePlayState {
 impl GamePlayState {
 	pub fn new() -> Self {
 		GamePlayState {
-			fade: 0.0,
+			fade: 0.0, //
 			in_menu: false,
 			selection: 0,
 		}
@@ -172,10 +187,28 @@ impl AppState<Game> for GamePlayState {
 			draw_window(&mut context.core.system.res.video, &context.core.ui, x, y, x + width, y + height);
 
 			let selection_y = y + SPACER + (self.selection as i32 * 16);
-			context.core.system.res.video.print_string(">", x + SPACER, selection_y, FontRenderOpts::Color(15), &context.core.font);
+			context.core.system.res.video.print_string(
+				">",
+				x + SPACER,
+				selection_y,
+				FontRenderOpts::Color(15),
+				&context.core.font,
+			);
 
-			context.core.system.res.video.print_string("Continue", x + SPACER + SPACER, y + SPACER, FontRenderOpts::Color(15), &context.core.font);
-			context.core.system.res.video.print_string("Quit", x + SPACER + SPACER, y + SPACER + 16, FontRenderOpts::Color(15), &context.core.font);
+			context.core.system.res.video.print_string(
+				"Continue",
+				x + SPACER + SPACER,
+				y + SPACER,
+				FontRenderOpts::Color(15),
+				&context.core.font,
+			);
+			context.core.system.res.video.print_string(
+				"Quit",
+				x + SPACER + SPACER,
+				y + SPACER + 16,
+				FontRenderOpts::Color(15),
+				&context.core.font,
+			);
 		}
 	}
 

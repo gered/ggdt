@@ -93,11 +93,7 @@ impl PcxHeader {
 	}
 }
 
-fn write_pcx_data<T: WriteBytesExt>(
-	writer: &mut T,
-	run_count: u8,
-	pixel: u8,
-) -> Result<(), PcxError> {
+fn write_pcx_data<T: WriteBytesExt>(writer: &mut T, run_count: u8, pixel: u8) -> Result<(), PcxError> {
 	if (run_count > 1) || ((pixel & 0xc0) == 0xc0) {
 		writer.write_u8(0xc0 | run_count)?;
 	}
@@ -106,9 +102,7 @@ fn write_pcx_data<T: WriteBytesExt>(
 }
 
 impl IndexedBitmap {
-	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(
-		reader: &mut T,
-	) -> Result<(IndexedBitmap, Palette), PcxError> {
+	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<(IndexedBitmap, Palette), PcxError> {
 		let header = PcxHeader::read(reader)?;
 
 		if header.manufacturer != 10 {
@@ -117,14 +111,10 @@ impl IndexedBitmap {
 			)));
 		}
 		if header.version != 5 {
-			return Err(PcxError::BadFile(String::from(
-				"Only version 5 PCX files are supported",
-			)));
+			return Err(PcxError::BadFile(String::from("Only version 5 PCX files are supported")));
 		}
 		if header.encoding != 1 {
-			return Err(PcxError::BadFile(String::from(
-				"Only RLE-compressed PCX files are supported",
-			)));
+			return Err(PcxError::BadFile(String::from("Only RLE-compressed PCX files are supported")));
 		}
 		if header.bpp != 8 {
 			return Err(PcxError::BadFile(String::from(
@@ -132,9 +122,7 @@ impl IndexedBitmap {
 			)));
 		}
 		if header.x2 == 0 || header.y2 == 0 {
-			return Err(PcxError::BadFile(String::from(
-				"Invalid PCX image dimensions",
-			)));
+			return Err(PcxError::BadFile(String::from("Invalid PCX image dimensions")));
 		}
 
 		// read the PCX file's pixel data into a bitmap
@@ -185,9 +173,7 @@ impl IndexedBitmap {
 
 		let palette_marker = reader.read_u8()?;
 		if palette_marker != 0x0c {
-			return Err(PcxError::BadFile(String::from(
-				"Palette not found at end of file",
-			)));
+			return Err(PcxError::BadFile(String::from("Palette not found at end of file")));
 		}
 
 		let palette = Palette::load_from_bytes(reader, PaletteFormat::Normal)?;
@@ -201,11 +187,7 @@ impl IndexedBitmap {
 		Self::load_pcx_bytes(&mut reader)
 	}
 
-	pub fn to_pcx_bytes<T: WriteBytesExt>(
-		&self,
-		writer: &mut T,
-		palette: &Palette,
-	) -> Result<(), PcxError> {
+	pub fn to_pcx_bytes<T: WriteBytesExt>(&self, writer: &mut T, palette: &Palette) -> Result<(), PcxError> {
 		let header = PcxHeader {
 			manufacturer: 10,
 			version: 5,
@@ -285,9 +267,7 @@ impl IndexedBitmap {
 // multi-pixel-depth support.
 
 impl RgbaBitmap {
-	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(
-		reader: &mut T,
-	) -> Result<(RgbaBitmap, Palette), PcxError> {
+	pub fn load_pcx_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<(RgbaBitmap, Palette), PcxError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_pcx_bytes(reader)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -322,9 +302,10 @@ pub mod tests {
 
 		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(),
-			PaletteFormat::Normal
-		).unwrap();
+			test_assets_file(Path::new("dp2.pal")).as_path(), //
+			PaletteFormat::Normal,
+		)
+		.unwrap();
 
 		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("small.pcx")).as_path())?;
 		assert_eq!(16, bmp.width());

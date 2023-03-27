@@ -30,23 +30,19 @@ impl RgbaBitmap {
 				Some("pcx") => {
 					let (bmp, palette) = Self::load_pcx_file(path)?;
 					Ok((bmp, Some(palette)))
-				},
+				}
 				Some("gif") => {
 					let (bmp, palette) = Self::load_gif_file(path)?;
 					Ok((bmp, Some(palette)))
-				},
+				}
 				Some("iff") | Some("lbm") | Some("pbm") | Some("bbm") => {
 					let (bmp, palette) = Self::load_iff_file(path)?;
 					Ok((bmp, Some(palette)))
 				}
-				_ => Err(BitmapError::UnknownFileType(String::from(
-					"Unrecognized file extension",
-				))),
+				_ => Err(BitmapError::UnknownFileType(String::from("Unrecognized file extension"))),
 			}
 		} else {
-			Err(BitmapError::UnknownFileType(String::from(
-				"No file extension",
-			)))
+			Err(BitmapError::UnknownFileType(String::from("No file extension")))
 		}
 	}
 }

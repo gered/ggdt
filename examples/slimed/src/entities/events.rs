@@ -1,7 +1,7 @@
 use ggdt::prelude::*;
 
-use crate::Core;
 use crate::entities::*;
+use crate::Core;
 
 #[derive(Debug, Copy, Clone)]
 pub enum Event {

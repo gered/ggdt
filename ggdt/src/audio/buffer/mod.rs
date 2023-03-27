@@ -30,10 +30,7 @@ impl AudioBuffer {
 	/// Creates and returns a new, empty, [`AudioBuffer`] that will hold audio sample data in the
 	/// spec/format given.
 	pub fn new(spec: AudioSpec) -> Self {
-		AudioBuffer {
-			spec,
-			data: Vec::new(),
-		}
+		AudioBuffer { spec, data: Vec::new() }
 	}
 
 	/// Returns the spec of the audio sample data that this buffer contains.

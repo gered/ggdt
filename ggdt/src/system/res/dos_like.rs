@@ -28,16 +28,16 @@
 
 use byte_slice_cast::AsByteSlice;
 
-use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::audio::queue::AudioQueue;
-use crate::graphics::font::BitmaskFont;
+use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::graphics::bitmap::indexed::IndexedBitmap;
+use crate::graphics::font::BitmaskFont;
 use crate::graphics::palette::Palette;
 use crate::system::event::{SystemEvent, SystemEventHandler};
-use crate::system::input_devices::InputDevice;
 use crate::system::input_devices::keyboard::Keyboard;
 use crate::system::input_devices::mouse::cursor::CustomMouseCursor;
 use crate::system::input_devices::mouse::Mouse;
+use crate::system::input_devices::InputDevice;
 use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
 
 const DEFAULT_SCREEN_WIDTH: u32 = 320;
@@ -113,7 +113,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 			sdl2::sys::SDL_RenderSetIntegerScale(
 				sdl_canvas.raw(),
 				if self.integer_scaling {
-					sdl2::sys::SDL_bool::SDL_TRUE
+					sdl2::sys::SDL_bool::SDL_TRUE //
 				} else {
 					sdl2::sys::SDL_bool::SDL_FALSE
 				},
@@ -193,7 +193,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 			keyboard,
 			mouse,
 			cursor,
-        })
+		})
 	}
 }
 
@@ -240,17 +240,17 @@ pub struct DosLike {
 }
 
 impl std::fmt::Debug for DosLike {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("DosLike")
-            .field("audio", &self.audio)
-            .field("audio_queue", &self.audio_queue)
-            .field("palette", &self.palette)
-            .field("video", &self.video)
-            .field("font", &self.font)
-            .field("keyboard", &self.keyboard)
-            .field("mouse", &self.mouse)
-            .finish_non_exhaustive()
-    }
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		f.debug_struct("DosLike") //
+			.field("audio", &self.audio)
+			.field("audio_queue", &self.audio_queue)
+			.field("palette", &self.palette)
+			.field("video", &self.video)
+			.field("font", &self.font)
+			.field("keyboard", &self.keyboard)
+			.field("mouse", &self.mouse)
+			.finish_non_exhaustive()
+	}
 }
 
 impl SystemResources for DosLike {
@@ -259,33 +259,33 @@ impl SystemResources for DosLike {
 
 		match self.audio_queue.apply(&mut self.audio) {
 			Ok(_) => Ok(()),
-			Err(error) => Err(SystemResourcesError::AudioDeviceError(error))
+			Err(error) => Err(SystemResourcesError::AudioDeviceError(error)),
 		}
 	}
 
 	/// Takes the `video` backbuffer bitmap and `palette` and renders it to the window, up-scaled
 	/// to fill the window (preserving aspect ratio of course).
 	fn display(&mut self) -> Result<(), SystemResourcesError> {
-        self.cursor.render(&mut self.video);
+		self.cursor.render(&mut self.video);
 
-        // convert application framebuffer to 32-bit RGBA pixels, and then upload it to the SDL
-        // texture so it will be displayed on screen
+		// convert application framebuffer to 32-bit RGBA pixels, and then upload it to the SDL
+		// texture so it will be displayed on screen
 
-        self.video.copy_as_argb_to(&mut self.texture_pixels, &self.palette);
+		self.video.copy_as_argb_to(&mut self.texture_pixels, &self.palette);
 
-        let texture_pixels = self.texture_pixels.as_byte_slice();
-        if let Err(error) = self.sdl_texture.update(None, texture_pixels, self.sdl_texture_pitch) {
-            return Err(SystemResourcesError::SDLError(error.to_string()));
-        }
-        self.sdl_canvas.clear();
-        if let Err(error) = self.sdl_canvas.copy(&self.sdl_texture, None, None) {
-            return Err(SystemResourcesError::SDLError(error));
-        }
-        self.sdl_canvas.present();
+		let texture_pixels = self.texture_pixels.as_byte_slice();
+		if let Err(error) = self.sdl_texture.update(None, texture_pixels, self.sdl_texture_pitch) {
+			return Err(SystemResourcesError::SDLError(error.to_string()));
+		}
+		self.sdl_canvas.clear();
+		if let Err(error) = self.sdl_canvas.copy(&self.sdl_texture, None, None) {
+			return Err(SystemResourcesError::SDLError(error));
+		}
+		self.sdl_canvas.present();
 
-        self.cursor.hide(&mut self.video);
+		self.cursor.hide(&mut self.video);
 
-        Ok(())
+		Ok(())
 	}
 
 	fn update_event_state(&mut self) -> Result<(), SystemResourcesError> {

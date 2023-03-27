@@ -1,37 +1,37 @@
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use crate::audio::{Audio, AudioGenerator, AudioSpec, NUM_CHANNELS};
 use crate::audio::buffer::AudioBuffer;
 use crate::audio::device::{AudioDevice, AudioDeviceError};
+use crate::audio::{Audio, AudioGenerator, AudioSpec, NUM_CHANNELS};
 
 pub enum AudioCommand {
 	StopChannel(usize),
 	StopAllChannels,
 	PlayBuffer {
-		buffer: AudioBuffer,
+		buffer: AudioBuffer, //
 		loops: bool,
 	},
 	PlayRcBuffer {
-		buffer: Rc<AudioBuffer>,
+		buffer: Rc<AudioBuffer>, //
 		loops: bool,
 	},
 	PlayBufferOnChannel {
-		channel: usize,
+		channel: usize, //
 		buffer: AudioBuffer,
 		loops: bool,
 	},
 	PlayRcBufferOnChannel {
-		channel: usize,
+		channel: usize, //
 		buffer: Rc<AudioBuffer>,
 		loops: bool,
 	},
 	PlayGenerator {
-		generator: Box<dyn AudioGenerator>,
+		generator: Box<dyn AudioGenerator>, //
 		loops: bool,
 	},
 	PlayGeneratorOnChannel {
-		channel: usize,
+		channel: usize, //
 		generator: Box<dyn AudioGenerator>,
 		loops: bool,
 	},
@@ -44,38 +44,38 @@ impl std::fmt::Debug for AudioCommand {
 			StopChannel(n) => write!(f, "StopChannel({})", n),
 			StopAllChannels => write!(f, "StopAllChannels"),
 			PlayBuffer { buffer, loops } => {
-				f.debug_struct("PlayBuffer")
+				f.debug_struct("PlayBuffer") //
 					.field("buffer", buffer)
 					.field("loops", loops)
 					.finish()
 			}
 			PlayRcBuffer { buffer, loops } => {
-				f.debug_struct("PlayRcBuffer")
+				f.debug_struct("PlayRcBuffer") //
 					.field("buffer", buffer)
 					.field("loops", loops)
 					.finish()
 			}
 			PlayBufferOnChannel { channel, buffer, loops } => {
-				f.debug_struct("PlayBufferOnChannel")
+				f.debug_struct("PlayBufferOnChannel") //
 					.field("channel", channel)
 					.field("buffer", buffer)
 					.field("loops", loops)
 					.finish()
 			}
 			PlayRcBufferOnChannel { channel, buffer, loops } => {
-				f.debug_struct("PlayRcBufferOnChannel")
+				f.debug_struct("PlayRcBufferOnChannel") //
 					.field("channel", channel)
 					.field("buffer", buffer)
 					.field("loops", loops)
 					.finish()
 			}
 			PlayGenerator { loops, .. } => {
-				f.debug_struct("PlayGenerator")
+				f.debug_struct("PlayGenerator") //
 					.field("loops", loops)
 					.finish_non_exhaustive()
 			}
 			PlayGeneratorOnChannel { channel, loops, .. } => {
-				f.debug_struct("PlayGeneratorOnChannel")
+				f.debug_struct("PlayGeneratorOnChannel") //
 					.field("channel", channel)
 					.field("loops", loops)
 					.finish_non_exhaustive()
@@ -98,10 +98,7 @@ pub struct AudioQueue {
 impl AudioQueue {
 	/// Creates and returns a new [`AudioQueue`] instance.
 	pub fn new(audio: &Audio) -> Self {
-		AudioQueue {
-			spec: audio.spec,
-			commands: VecDeque::new(),
-		}
+		AudioQueue { spec: audio.spec, commands: VecDeque::new() }
 	}
 
 	/// Returns the spec that this queue is currently set to play. All audio to be played via
@@ -130,16 +127,12 @@ impl AudioQueue {
 	/// Queues a command to play a copy of the given [`AudioBuffer`]'s data. The buffer will be
 	/// played on the first channel found that is not already playing. If all channels are already
 	/// playing, then nothing will be done.
-	pub fn play_buffer(
-		&mut self,
-		buffer: &AudioBuffer,
-		loops: bool,
-	) -> Result<(), AudioDeviceError> {
+	pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Result<(), AudioDeviceError> {
 		if *buffer.spec() != self.spec {
 			Err(AudioDeviceError::AudioSpecMismatch)
 		} else {
 			self.commands.push_back(AudioCommand::PlayBuffer {
-				buffer: buffer.clone(),
+				buffer: buffer.clone(), //
 				loops,
 			});
 			Ok(())
@@ -150,18 +143,11 @@ impl AudioQueue {
 	/// the first channel found that is not already playing. If all channels are already playing,
 	/// then nothing will be done. This method is more performant than [`AudioQueue::play_buffer`],
 	/// as that method will always immediately copy the given buffer to create the queued command.
-	pub fn play_buffer_rc(
-		&mut self,
-		buffer: Rc<AudioBuffer>,
-		loops: bool,
-	) -> Result<(), AudioDeviceError> {
+	pub fn play_buffer_rc(&mut self, buffer: Rc<AudioBuffer>, loops: bool) -> Result<(), AudioDeviceError> {
 		if *buffer.spec() != self.spec {
 			Err(AudioDeviceError::AudioSpecMismatch)
 		} else {
-			self.commands.push_back(AudioCommand::PlayRcBuffer {
-				buffer,
-				loops,
-			});
+			self.commands.push_back(AudioCommand::PlayRcBuffer { buffer, loops });
 			Ok(())
 		}
 	}
@@ -181,7 +167,7 @@ impl AudioQueue {
 			Err(AudioDeviceError::ChannelIndexOutOfRange(channel_index))
 		} else {
 			self.commands.push_back(AudioCommand::PlayBufferOnChannel {
-				channel: channel_index,
+				channel: channel_index, //
 				buffer: buffer.clone(),
 				loops,
 			});
@@ -205,7 +191,7 @@ impl AudioQueue {
 			Err(AudioDeviceError::ChannelIndexOutOfRange(channel_index))
 		} else {
 			self.commands.push_back(AudioCommand::PlayRcBufferOnChannel {
-				channel: channel_index,
+				channel: channel_index, //
 				buffer,
 				loops,
 			});
@@ -215,11 +201,7 @@ impl AudioQueue {
 
 	/// Queues a command to play the given [`AudioGenerator`] on the first channel found that is
 	/// not already playing. If all channels are already playing, then nothing will be done.
-	pub fn play_generator(
-		&mut self,
-		generator: Box<dyn AudioGenerator>,
-		loops: bool,
-	) -> Result<(), AudioDeviceError> {
+	pub fn play_generator(&mut self, generator: Box<dyn AudioGenerator>, loops: bool) -> Result<(), AudioDeviceError> {
 		self.commands.push_back(AudioCommand::PlayGenerator { generator, loops });
 		Ok(())
 	}
@@ -233,7 +215,7 @@ impl AudioQueue {
 		loops: bool,
 	) -> Result<(), AudioDeviceError> {
 		self.commands.push_back(AudioCommand::PlayGeneratorOnChannel {
-			channel: channel_index,
+			channel: channel_index, //
 			generator,
 			loops,
 		});

@@ -47,16 +47,12 @@ impl<T: Component> GenericComponentStore for ComponentStore<T> {
 }
 
 #[inline]
-pub fn as_component_store<T: Component>(
-	collection: &dyn GenericComponentStore,
-) -> &ComponentStore<T> {
+pub fn as_component_store<T: Component>(collection: &dyn GenericComponentStore) -> &ComponentStore<T> {
 	collection.as_any().downcast_ref().unwrap()
 }
 
 #[inline]
-pub fn as_component_store_mut<T: Component>(
-	collection: &mut dyn GenericComponentStore,
-) -> &mut ComponentStore<T> {
+pub fn as_component_store_mut<T: Component>(collection: &mut dyn GenericComponentStore) -> &mut ComponentStore<T> {
 	collection.as_any_mut().downcast_mut().unwrap()
 }
 
@@ -83,7 +79,7 @@ impl Entities {
 	/// Creates and returns a new instance of an entity manager.
 	pub fn new() -> Self {
 		Entities {
-			entities: HashSet::new(),
+			entities: HashSet::new(), //
 			component_stores: HashMap::new(),
 			next_id: 0,
 		}
@@ -100,9 +96,7 @@ impl Entities {
 			None
 		} else {
 			let type_id = TypeId::of::<T>();
-			Some(as_component_store(
-				self.component_stores.get(&type_id).unwrap().as_ref(),
-			))
+			Some(as_component_store(self.component_stores.get(&type_id).unwrap().as_ref()))
 		}
 	}
 
@@ -112,8 +106,7 @@ impl Entities {
 		} else {
 			let component_store = ComponentStore::<T>::new(HashMap::new());
 			let type_id = TypeId::of::<T>();
-			self.component_stores
-				.insert(type_id, Box::new(component_store));
+			self.component_stores.insert(type_id, Box::new(component_store));
 			as_component_store(self.component_stores.get(&type_id).unwrap().as_ref())
 		}
 	}
@@ -179,7 +172,7 @@ impl Entities {
 			if let Some(component_store) = self.get_component_store::<T>() {
 				component_store.borrow_mut().insert(entity, component);
 			} else {
-				self.add_component_store::<T>()
+				self.add_component_store::<T>() //
 					.borrow_mut()
 					.insert(entity, component);
 			}
@@ -445,7 +438,7 @@ impl<U, R> std::fmt::Debug for ComponentSystems<U, R> {
 impl<U, R> ComponentSystems<U, R> {
 	pub fn new() -> Self {
 		ComponentSystems {
-			update_systems: Vec::new(),
+			update_systems: Vec::new(), //
 			render_systems: Vec::new(),
 		}
 	}
@@ -735,10 +728,7 @@ mod tests {
 			let health = healths.get_mut(&entity);
 			let position = positions.get_mut(&entity);
 
-			println!(
-				"entity {}, health: {:?}, position: {:?}",
-				name.0, health, position
-			);
+			println!("entity {}, health: {:?}, position: {:?}", name.0, health, position);
 
 			if let Some(mut health) = health {
 				health.0 += 5;
@@ -763,10 +753,7 @@ mod tests {
 
 	impl ComponentSystemContext {
 		pub fn new(entities: Entities) -> Self {
-			ComponentSystemContext {
-				delta: 0.0,
-				entities,
-			}
+			ComponentSystemContext { delta: 0.0, entities }
 		}
 	}
 

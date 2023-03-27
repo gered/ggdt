@@ -27,7 +27,7 @@ pub fn event_listener(event: &Event, context: &mut Core) -> bool {
 			context.entities.add_component(id, Color(color));
 			true
 		}
-		_ => false
+		_ => false,
 	}
 }
 
@@ -201,16 +201,8 @@ impl App {
 		let event_listeners = EventListeners::new();
 
 		Ok(App {
-			core: Core {
-				delta: 0.0,
-				system,
-				entities,
-				event_publisher,
-			},
-			support: Support {
-				component_systems,
-				event_listeners,
-			},
+			core: Core { delta: 0.0, system, entities, event_publisher },
+			support: Support { component_systems, event_listeners },
 		})
 	}
 }
@@ -219,7 +211,7 @@ impl App {
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let system = SystemBuilder::new()
+	let system = SystemBuilder::new() //
 		.window_title("Complicated Template")
 		.vsync(true)
 		.build(config)?;

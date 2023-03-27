@@ -170,7 +170,6 @@ fn blended_pixel_drawing() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
-
 #[test]
 fn horiz_line_drawing() {
 	let (mut screen, palette) = setup();
@@ -752,6 +751,7 @@ fn solid_flipped_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_solid_flipped_blits() {
 	use IndexedBlitMethod::*;
@@ -884,6 +884,7 @@ fn solid_offset_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn solid_flipped_offset_blits() {
 	use IndexedBlitMethod::*;
@@ -1090,6 +1091,7 @@ fn blended_transparent_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_blits() {
 	use IndexedBlitMethod::*;
@@ -1156,6 +1158,7 @@ fn transparent_flipped_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_transparent_flipped_blits() {
 	use IndexedBlitMethod::*;
@@ -1292,6 +1295,7 @@ fn transparent_offset_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_offset_blits() {
 	use IndexedBlitMethod::*;
@@ -1432,6 +1436,7 @@ fn transparent_single_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_single_blits() {
 	use IndexedBlitMethod::*;
@@ -1568,6 +1573,7 @@ fn rotozoom_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_rotozoom_blits() {
 	use IndexedBlitMethod::*;
@@ -1634,6 +1640,7 @@ fn blended_rotozoom_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_offset_blits() {
 	use IndexedBlitMethod::*;
@@ -1702,6 +1709,7 @@ fn rotozoom_offset_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_transparent_blits() {
 	use IndexedBlitMethod::*;
@@ -1770,6 +1778,7 @@ fn rotozoom_transparent_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_rotozoom_transparent_blits() {
 	use IndexedBlitMethod::*;
@@ -1799,7 +1808,13 @@ fn blended_rotozoom_transparent_blits() {
 
 	//////
 
-	let method = RotoZoomTransparentBlended { transparent_color, angle: 1.3, scale_x: 1.0, scale_y: 1.0, blend_map: blend_map.clone() };
+	let method = RotoZoomTransparentBlended {
+		transparent_color,
+		angle: 1.3,
+		scale_x: 1.0,
+		scale_y: 1.0,
+		blend_map: blend_map.clone(),
+	};
 
 	screen.blit(method.clone(), &bmp, -3, 46);
 	screen.blit(method.clone(), &bmp, -4, 76);
@@ -1838,6 +1853,7 @@ fn blended_rotozoom_transparent_blits() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_transparent_offset_blits() {
 	use IndexedBlitMethod::*;

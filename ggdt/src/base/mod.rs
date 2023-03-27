@@ -134,11 +134,13 @@ use thiserror::Error;
 use crate::audio::device::AudioDeviceError;
 use crate::events::{EventListeners, EventPublisher};
 use crate::states::{AppState, StateError, States};
-use crate::system::{System, SystemError};
 use crate::system::res::SystemResources;
+use crate::system::{System, SystemError};
 
 pub trait CoreState<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	fn system(&self) -> &System<SystemResType>;
 	fn system_mut(&mut self) -> &mut System<SystemResType>;
 
@@ -155,14 +157,17 @@ where SystemResType: SystemResources {
 }
 
 pub trait CoreStateWithEvents<SystemResType, EventType>: CoreState<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	fn event_publisher(&mut self) -> &mut EventPublisher<EventType>;
 }
 
 pub trait SupportSystems {}
 
 pub trait SupportSystemsWithEvents<SystemResType, EventType>: SupportSystems
-where SystemResType: SystemResources
+where
+	SystemResType: SystemResources,
 {
 	type ContextType: CoreStateWithEvents<SystemResType, EventType>;
 	fn event_listeners(&mut self) -> &mut EventListeners<EventType, Self::ContextType>;
@@ -174,7 +179,9 @@ where SystemResType: SystemResources
 }
 
 pub trait AppContext<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	type CoreType: CoreState<SystemResType>;
 	type SupportType: SupportSystems;
 

@@ -79,7 +79,13 @@ impl TileMap {
 					}
 					let upper = self.layers[1][index];
 					if upper >= 0 {
-						dest.blit_region(IndexedBlitMethod::Transparent(0), tiles.bitmap(), &tiles[upper as usize], xd, yd);
+						dest.blit_region(
+							IndexedBlitMethod::Transparent(0),
+							tiles.bitmap(),
+							&tiles[upper as usize],
+							xd,
+							yd,
+						);
 					}
 				}
 			}
@@ -100,7 +106,7 @@ impl TileMap {
 							return true;
 						}
 					}
-					None => return true
+					None => return true,
 				}
 			}
 		}

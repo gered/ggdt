@@ -602,7 +602,7 @@ fn generate_bitmap_with_varied_alpha(width: i32, height: i32) -> RgbaBitmap {
 	let y_third = height / 3;
 
 	let mut bitmap = RgbaBitmap::new(width as u32, height as u32).unwrap();
-	bitmap.clear(0);  // alpha=0
+	bitmap.clear(0); // alpha=0
 
 	bitmap.filled_rect(0, 0, x_third, y_third, 0x330000aa);
 	bitmap.filled_rect(x_third * 2 + 1, y_third * 2 + 1, width - 1, height - 1, 0x6600aa00);
@@ -901,6 +901,7 @@ fn solid_flipped_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn solid_flipped_tinted_blits() {
 	use RgbaBlitMethod::*;
@@ -967,6 +968,7 @@ fn solid_flipped_tinted_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_solid_flipped_blits() {
 	use RgbaBlitMethod::*;
@@ -1113,10 +1115,7 @@ fn transparent_tinted_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
-	let method = TransparentTinted {
-		transparent_color: to_rgb32(0, 0, 0),
-		tint_color: to_argb32(127, 155, 242, 21)
-	};
+	let method = TransparentTinted { transparent_color: to_rgb32(0, 0, 0), tint_color: to_argb32(127, 155, 242, 21) };
 
 	let x = 40;
 	let y = 20;
@@ -1241,6 +1240,7 @@ fn blended_transparent_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_blits() {
 	use RgbaBlitMethod::*;
@@ -1307,6 +1307,7 @@ fn transparent_flipped_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_tinted_blits() {
 	use RgbaBlitMethod::*;
@@ -1374,6 +1375,7 @@ fn transparent_flipped_tinted_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_transparent_flipped_blits() {
 	use RgbaBlitMethod::*;
@@ -1440,6 +1442,7 @@ fn blended_transparent_flipped_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_single_blits() {
 	use RgbaBlitMethod::*;
@@ -1510,6 +1513,7 @@ fn transparent_single_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn transparent_flipped_single_blits() {
 	use RgbaBlitMethod::*;
@@ -1642,6 +1646,7 @@ fn rotozoom_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_tinted_blits() {
 	use RgbaBlitMethod::*;
@@ -1777,6 +1782,7 @@ fn blended_rotozoom_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_transparent_blits() {
 	use RgbaBlitMethod::*;
@@ -1845,6 +1851,7 @@ fn rotozoom_transparent_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn rotozoom_transparent_tinted_blits() {
 	use RgbaBlitMethod::*;
@@ -1914,6 +1921,7 @@ fn rotozoom_transparent_tinted_blits() {
 	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
 }
 
+#[rustfmt::skip]
 #[test]
 fn blended_rotozoom_transparent_blits() {
 	use RgbaBlitMethod::*;

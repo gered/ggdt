@@ -1,7 +1,7 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::math::{angle_between, angle_to_direction, nearly_equal, NearlyEqual};
 use crate::math::matrix3x3::Matrix3x3;
+use crate::math::{angle_between, angle_to_direction, nearly_equal, NearlyEqual};
 
 /// Represents a 2D vector and provides common methods for vector math.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -68,7 +68,7 @@ impl Vector2 {
 	pub fn normalize(&self) -> Vector2 {
 		let inverse_length = 1.0 / self.length();
 		Vector2 {
-			x: self.x * inverse_length,
+			x: self.x * inverse_length, //
 			y: self.y * inverse_length,
 		}
 	}
@@ -104,7 +104,7 @@ impl Neg for Vector2 {
 	#[inline]
 	fn neg(self) -> Self::Output {
 		Vector2 {
-			x: -self.x,
+			x: -self.x, //
 			y: -self.y,
 		}
 	}
@@ -116,7 +116,7 @@ impl Add for Vector2 {
 	#[inline]
 	fn add(self, rhs: Self) -> Self::Output {
 		Vector2 {
-			x: self.x + rhs.x,
+			x: self.x + rhs.x, //
 			y: self.y + rhs.y,
 		}
 	}
@@ -136,7 +136,7 @@ impl Sub for Vector2 {
 	#[inline]
 	fn sub(self, rhs: Self) -> Self::Output {
 		Vector2 {
-			x: self.x - rhs.x,
+			x: self.x - rhs.x, //
 			y: self.y - rhs.y,
 		}
 	}
@@ -156,7 +156,7 @@ impl Mul for Vector2 {
 	#[inline]
 	fn mul(self, rhs: Self) -> Self::Output {
 		Vector2 {
-			x: self.x * rhs.x,
+			x: self.x * rhs.x, //
 			y: self.y * rhs.y,
 		}
 	}
@@ -176,7 +176,7 @@ impl Div for Vector2 {
 	#[inline]
 	fn div(self, rhs: Self) -> Self::Output {
 		Vector2 {
-			x: self.x / rhs.x,
+			x: self.x / rhs.x, //
 			y: self.y / rhs.y,
 		}
 	}
@@ -196,7 +196,7 @@ impl Mul<f32> for Vector2 {
 	#[inline]
 	fn mul(self, rhs: f32) -> Self::Output {
 		Vector2 {
-			x: self.x * rhs,
+			x: self.x * rhs, //
 			y: self.y * rhs,
 		}
 	}
@@ -216,7 +216,7 @@ impl Div<f32> for Vector2 {
 	#[inline]
 	fn div(self, rhs: f32) -> Self::Output {
 		Vector2 {
-			x: self.x / rhs,
+			x: self.x / rhs, //
 			y: self.y / rhs,
 		}
 	}

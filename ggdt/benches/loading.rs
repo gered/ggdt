@@ -1,6 +1,6 @@
 use std::io::Cursor;
 
-use criterion::{black_box, Criterion, criterion_group, criterion_main};
+use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use ggdt::prelude::*;
 

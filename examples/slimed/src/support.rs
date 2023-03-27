@@ -27,7 +27,14 @@ pub fn load_bitmap_atlas(path: &Path) -> Result<BitmapAtlas<IndexedBitmap>> {
 	Ok(atlas)
 }
 
-pub fn draw_window(dest: &mut IndexedBitmap, ui: &BitmapAtlas<IndexedBitmap>, left: i32, top: i32, right: i32, bottom: i32) {
+pub fn draw_window(
+	dest: &mut IndexedBitmap,
+	ui: &BitmapAtlas<IndexedBitmap>,
+	left: i32,
+	top: i32,
+	right: i32,
+	bottom: i32,
+) {
 	dest.filled_rect(left + 8, top + 8, right - 8, bottom - 8, 1);
 
 	// corners
@@ -60,7 +67,12 @@ pub fn update_fade_transition(state: State, fade: &mut f32, delta: f32, context:
 				context.core.system.res.palette = context.core.palette.clone();
 				true
 			} else {
-				context.core.system.res.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
+				context.core.system.res.palette.lerp(
+					0..=255,
+					&context.core.fade_out_palette,
+					&context.core.palette,
+					*fade,
+				);
 				false
 			}
 		}
@@ -71,12 +83,15 @@ pub fn update_fade_transition(state: State, fade: &mut f32, delta: f32, context:
 				context.core.system.res.palette = context.core.fade_out_palette.clone();
 				true
 			} else {
-				context.core.system.res.palette.lerp(0..=255, &context.core.fade_out_palette, &context.core.palette, *fade);
+				context.core.system.res.palette.lerp(
+					0..=255,
+					&context.core.fade_out_palette,
+					&context.core.palette,
+					*fade,
+				);
 				false
 			}
 		}
-		_ => {
-			true
-		}
+		_ => true,
 	}
 }

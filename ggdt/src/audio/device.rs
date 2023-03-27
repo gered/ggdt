@@ -3,8 +3,8 @@ use std::ops::{Index, IndexMut};
 use sdl2::audio::AudioCallback;
 use thiserror::Error;
 
-use crate::audio::{AudioGenerator, AudioSpec, NUM_CHANNELS};
 use crate::audio::buffer::AudioBuffer;
+use crate::audio::{AudioGenerator, AudioSpec, NUM_CHANNELS};
 
 /// Represents a "channel" of audio playback that will be mixed together with all of the other
 /// actively playing audio channels to get the final audio playback.
@@ -36,10 +36,13 @@ impl std::fmt::Debug for AudioChannel {
 			.field("playing", &self.playing)
 			.field("loops", &self.loops)
 			.field("data.len()", &self.data.len())
-			.field("generator", match self.generator {
-				Some(..) => &"Some(..)",
-				None => &"None",
-			})
+			.field(
+				"generator",
+				match self.generator {
+					Some(..) => &"Some(..)",
+					None => &"None",
+				},
+			)
 			.field("volume", &self.volume)
 			.field("position", &self.position)
 			.finish_non_exhaustive()
@@ -49,7 +52,7 @@ impl std::fmt::Debug for AudioChannel {
 impl AudioChannel {
 	pub fn new() -> Self {
 		AudioChannel {
-			playing: false,
+			playing: false, //
 			loops: false,
 			volume: 1.0,
 			position: 0,
@@ -221,11 +224,7 @@ impl AudioDevice {
 		for _ in 0..NUM_CHANNELS {
 			channels.push(AudioChannel::new());
 		}
-		AudioDevice {
-			spec,
-			channels,
-			volume: 1.0,
-		}
+		AudioDevice { spec, channels, volume: 1.0 }
 	}
 
 	/// Returns the spec that this device is currently set to play. All audio to be played via
@@ -263,11 +262,7 @@ impl AudioDevice {
 	/// playing. If a free channel is found, playback will be started by copying the buffer's
 	/// contents to the channel. The index of the channel is returned. If playback was not started
 	/// because no channel is free currently, then `None` is returned.
-	pub fn play_buffer(
-		&mut self,
-		buffer: &AudioBuffer,
-		loops: bool,
-	) -> Result<Option<usize>, AudioDeviceError> {
+	pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Result<Option<usize>, AudioDeviceError> {
 		if *buffer.spec() != self.spec {
 			Err(AudioDeviceError::AudioSpecMismatch)
 		} else {
@@ -333,37 +328,37 @@ impl AudioDevice {
 
 	/// Returns an iterator of any [`AudioChannel`]s that are currently playing.
 	#[inline]
-	pub fn playing_channels_iter(&mut self) -> impl Iterator<Item=&AudioChannel> {
+	pub fn playing_channels_iter(&mut self) -> impl Iterator<Item = &AudioChannel> {
 		self.channels.iter().filter(|channel| channel.playing)
 	}
 
 	/// Returns an iterator of mutable [`AudioChannel`]s that are currently playing.
 	#[inline]
-	pub fn playing_channels_iter_mut(&mut self) -> impl Iterator<Item=&mut AudioChannel> {
+	pub fn playing_channels_iter_mut(&mut self) -> impl Iterator<Item = &mut AudioChannel> {
 		self.channels.iter_mut().filter(|channel| channel.playing)
 	}
 
 	/// Returns an iterator of [`AudioChannel`]s that are not currently playing.
 	#[inline]
-	pub fn stopped_channels_iter(&mut self) -> impl Iterator<Item=&AudioChannel> {
+	pub fn stopped_channels_iter(&mut self) -> impl Iterator<Item = &AudioChannel> {
 		self.channels.iter().filter(|channel| !channel.playing)
 	}
 
 	/// Returns an iterator of mutable [`AudioChannel`]s that are not currently playing.
 	#[inline]
-	pub fn stopped_channels_iter_mut(&mut self) -> impl Iterator<Item=&mut AudioChannel> {
+	pub fn stopped_channels_iter_mut(&mut self) -> impl Iterator<Item = &mut AudioChannel> {
 		self.channels.iter_mut().filter(|channel| !channel.playing)
 	}
 
 	/// Returns an iterator of all [`AudioChannel`]s.
 	#[inline]
-	pub fn channels_iter(&mut self) -> impl Iterator<Item=&AudioChannel> {
+	pub fn channels_iter(&mut self) -> impl Iterator<Item = &AudioChannel> {
 		self.channels.iter()
 	}
 
 	/// Returns an iterator of all [`AudioChannel`]s as mutable references.
 	#[inline]
-	pub fn channels_iter_mut(&mut self) -> impl Iterator<Item=&mut AudioChannel> {
+	pub fn channels_iter_mut(&mut self) -> impl Iterator<Item = &mut AudioChannel> {
 		self.channels.iter_mut()
 	}
 

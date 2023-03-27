@@ -13,8 +13,8 @@ use crate::states::*;
 use crate::support::*;
 use crate::tilemap::*;
 
-mod states;
 mod entities;
+mod states;
 mod support;
 mod tilemap;
 
@@ -182,17 +182,14 @@ impl Game {
 				sparkles_animation_def,
 				sprite_render_list: Vec::with_capacity(1024),
 			},
-			support: Support {
-				component_systems,
-				event_listeners,
-			},
+			support: Support { component_systems, event_listeners },
 		})
 	}
 }
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let system = SystemBuilder::new()
+	let system = SystemBuilder::new() //
 		.window_title("Slime Stabbing Simulator")
 		.vsync(true)
 		.build(config)?;

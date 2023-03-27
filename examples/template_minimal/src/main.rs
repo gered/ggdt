@@ -4,7 +4,7 @@ use ggdt::prelude::*;
 
 fn main() -> Result<()> {
 	let config = DosLikeConfig::new();
-	let mut system = SystemBuilder::new()
+	let mut system = SystemBuilder::new() //
 		.window_title("Minimal Template")
 		.vsync(true)
 		.build(config)?;

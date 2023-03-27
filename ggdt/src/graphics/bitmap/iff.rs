@@ -9,7 +9,7 @@ use thiserror::Error;
 use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
-use crate::utils::packbits::{pack_bits, PackBitsError, unpack_bits};
+use crate::utils::packbits::{pack_bits, unpack_bits, PackBitsError};
 
 #[derive(Error, Debug)]
 pub enum IffError {
@@ -91,11 +91,7 @@ impl FormChunkHeader {
 		let chunk_id = IffId::read(reader)?;
 		let size = reader.read_u32::<BigEndian>()?;
 		let type_id = IffId::read(reader)?;
-		Ok(FormChunkHeader {
-			chunk_id,
-			size,
-			type_id,
-		})
+		Ok(FormChunkHeader { chunk_id, size, type_id })
 	}
 
 	pub fn write<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), IffError> {
@@ -287,7 +283,7 @@ fn load_planar_body<T: ReadBytesExt>(reader: &mut T, bmhd: &BMHDChunk) -> Result
 			// scanline, the destination pointer will contain VGA-friendly
 			// "chunky pixel"-format pixel data
 			merge_bitplane(
-				plane,
+				plane, //
 				&buffer,
 				bitmap.pixels_at_mut(0, y as i32).unwrap(),
 				row_bytes,
@@ -327,7 +323,7 @@ fn write_planar_body<T: WriteBytesExt>(
 	for y in 0..bitmap.height() {
 		for plane in 0..(bmhd.bitplanes as u32) {
 			extract_bitplane(
-				plane,
+				plane, //
 				bitmap.pixels_at(0, y as i32).unwrap(),
 				&mut buffer,
 				row_bytes,
@@ -369,19 +365,13 @@ fn write_chunky_body<T: WriteBytesExt>(
 }
 
 impl IndexedBitmap {
-	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(
-		reader: &mut T,
-	) -> Result<(IndexedBitmap, Palette), IffError> {
+	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<(IndexedBitmap, Palette), IffError> {
 		let form_chunk = FormChunkHeader::read(reader)?;
 		if form_chunk.chunk_id.id != *b"FORM" {
-			return Err(IffError::BadFile(String::from(
-				"Unexpected form chunk ID, probably not an IFF file",
-			)));
+			return Err(IffError::BadFile(String::from("Unexpected form chunk ID, probably not an IFF file")));
 		}
 		if form_chunk.type_id.id != *b"ILBM" && form_chunk.type_id.id != *b"PBM " {
-			return Err(IffError::BadFile(String::from(
-				"Only ILBM or PBM formats are supported",
-			)));
+			return Err(IffError::BadFile(String::from("Only ILBM or PBM formats are supported")));
 		}
 
 		let mut bmhd: Option<BMHDChunk> = None;
@@ -391,11 +381,9 @@ impl IndexedBitmap {
 		loop {
 			let header = match SubChunkHeader::read(reader) {
 				Ok(header) => header,
-				Err(IffError::IOError(io_error))
-				if io_error.kind() == io::ErrorKind::UnexpectedEof =>
-					{
-						break;
-					}
+				Err(IffError::IOError(io_error)) if io_error.kind() == io::ErrorKind::UnexpectedEof => {
+					break;
+				}
 				Err(err) => return Err(err),
 			};
 			let chunk_data_position = reader.stream_position()?;
@@ -404,18 +392,14 @@ impl IndexedBitmap {
 			if header.chunk_id.id == *b"BMHD" {
 				bmhd = Some(BMHDChunk::read(reader)?);
 				if bmhd.as_ref().unwrap().bitplanes != 8 {
-					return Err(IffError::BadFile(String::from(
-						"Only 8bpp files are supported",
-					)));
+					return Err(IffError::BadFile(String::from("Only 8bpp files are supported")));
 				}
 				if bmhd.as_ref().unwrap().masking == 1 {
 					return Err(IffError::BadFile(String::from("Masking is not supported")));
 				}
 			} else if header.chunk_id.id == *b"CMAP" {
 				if header.size != 768 {
-					return Err(IffError::BadFile(String::from(
-						"Only 256 color files are supported",
-					)));
+					return Err(IffError::BadFile(String::from("Only 256 color files are supported")));
 				}
 				palette = Some(Palette::load_from_bytes(reader, PaletteFormat::Normal)?)
 			} else if header.chunk_id.id == *b"BODY" {
@@ -464,22 +448,16 @@ impl IndexedBitmap {
 
 		let mut form_chunk = FormChunkHeader {
 			chunk_id: IffId { id: *b"FORM" },
-			type_id: IffId {
-				id: format.type_id(),
-			},
+			type_id: IffId { id: format.type_id() },
 			size: 0, // filled in later once we know the size
 		};
 
 		// skip over the form chunk for now. will come back here and write it out later once we
 		// know what the final size is
-		writer.seek(SeekFrom::Current(
-			std::mem::size_of::<FormChunkHeader>() as i64
-		))?;
+		writer.seek(SeekFrom::Current(std::mem::size_of::<FormChunkHeader>() as i64))?;
 
-		let bmhd_chunk_header = SubChunkHeader {
-			chunk_id: IffId { id: *b"BMHD" },
-			size: std::mem::size_of::<BMHDChunk>() as u32,
-		};
+		let bmhd_chunk_header =
+			SubChunkHeader { chunk_id: IffId { id: *b"BMHD" }, size: std::mem::size_of::<BMHDChunk>() as u32 };
 		let bmhd = BMHDChunk {
 			width: self.width() as u16,
 			height: self.height() as u16,
@@ -501,7 +479,7 @@ impl IndexedBitmap {
 
 		let cmap_chunk_header = SubChunkHeader {
 			chunk_id: IffId { id: *b"CMAP" },
-			size: 768,
+			size: 768, //
 		};
 		cmap_chunk_header.write(writer)?;
 		palette.to_bytes(writer, PaletteFormat::Normal)?;
@@ -515,9 +493,7 @@ impl IndexedBitmap {
 
 		// skip over the body chunk header for now. we will again come back here and write it out
 		// later once we know what the final size again.
-		writer.seek(SeekFrom::Current(
-			std::mem::size_of::<SubChunkHeader>() as i64
-		))?;
+		writer.seek(SeekFrom::Current(std::mem::size_of::<SubChunkHeader>() as i64))?;
 
 		if format.chunky() {
 			write_chunky_body(writer, self, &bmhd)?;
@@ -548,12 +524,7 @@ impl IndexedBitmap {
 		Ok(())
 	}
 
-	pub fn to_iff_file(
-		&self,
-		path: &Path,
-		palette: &Palette,
-		format: IffFormat,
-	) -> Result<(), IffError> {
+	pub fn to_iff_file(&self, path: &Path, palette: &Palette, format: IffFormat) -> Result<(), IffError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_iff_bytes(&mut writer, palette, format)
@@ -564,9 +535,7 @@ impl IndexedBitmap {
 // multi-pixel-depth support.
 
 impl RgbaBitmap {
-	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(
-		reader: &mut T,
-	) -> Result<(RgbaBitmap, Palette), IffError> {
+	pub fn load_iff_bytes<T: ReadBytesExt + Seek>(reader: &mut T) -> Result<(RgbaBitmap, Palette), IffError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_iff_bytes(reader)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -601,9 +570,10 @@ mod tests {
 
 		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(),
-			PaletteFormat::Normal
-		).unwrap();
+			test_assets_file(Path::new("dp2.pal")).as_path(), //
+			PaletteFormat::Normal,
+		)
+		.unwrap();
 
 		// ILBM format
 

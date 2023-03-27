@@ -1,14 +1,14 @@
 use byte_slice_cast::AsByteSlice;
 
-use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::audio::queue::AudioQueue;
+use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::font::BitmaskFont;
 use crate::system::event::{SystemEvent, SystemEventHandler};
-use crate::system::input_devices::InputDevice;
 use crate::system::input_devices::keyboard::Keyboard;
 use crate::system::input_devices::mouse::cursor::CustomMouseCursor;
 use crate::system::input_devices::mouse::Mouse;
+use crate::system::input_devices::InputDevice;
 use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
 
 const DEFAULT_SCREEN_WIDTH: u32 = 320;
@@ -57,7 +57,7 @@ impl SystemResourcesConfig for StandardConfig {
 		self,
 		_video_subsystem: &sdl2::VideoSubsystem,
 		audio_subsystem: &sdl2::AudioSubsystem,
-		mut window: sdl2::video::Window
+		mut window: sdl2::video::Window,
 	) -> Result<Self::SystemResourcesType, SystemResourcesError> {
 		let texture_pixel_size = 4; // 32-bit ARGB format
 
@@ -83,7 +83,7 @@ impl SystemResourcesConfig for StandardConfig {
 			sdl2::sys::SDL_RenderSetIntegerScale(
 				sdl_canvas.raw(),
 				if self.integer_scaling {
-					sdl2::sys::SDL_bool::SDL_TRUE
+					sdl2::sys::SDL_bool::SDL_TRUE //
 				} else {
 					sdl2::sys::SDL_bool::SDL_FALSE
 				},
@@ -147,7 +147,6 @@ impl SystemResourcesConfig for StandardConfig {
 			mouse,
 			cursor,
 		})
-
 	}
 }
 
@@ -188,7 +187,7 @@ pub struct Standard {
 
 impl std::fmt::Debug for Standard {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("Standard")
+		f.debug_struct("Standard") //
 			.field("audio", &self.audio)
 			.field("audio_queue", &self.audio_queue)
 			.field("video", &self.video)
@@ -205,7 +204,7 @@ impl SystemResources for Standard {
 
 		match self.audio_queue.apply(&mut self.audio) {
 			Ok(_) => Ok(()),
-			Err(error) => Err(SystemResourcesError::AudioDeviceError(error))
+			Err(error) => Err(SystemResourcesError::AudioDeviceError(error)),
 		}
 	}
 

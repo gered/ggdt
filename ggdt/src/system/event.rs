@@ -58,33 +58,33 @@ impl From<sdl2::event::WindowEvent> for WindowEvent {
 }
 
 bitflags! {
-    pub struct KeyModifiers: u16 {
-        const NOMOD = 0x0000;
-        const LSHIFTMOD = 0x0001;
-        const RSHIFTMOD = 0x0002;
-        const LCTRLMOD = 0x0040;
-        const RCTRLMOD = 0x0080;
-        const LALTMOD = 0x0100;
-        const RALTMOD = 0x0200;
-        const LGUIMOD = 0x0400;
-        const RGUIMOD = 0x0800;
-        const NUMMOD = 0x1000;
-        const CAPSMOD = 0x2000;
-        const MODEMOD = 0x4000;
-        const RESERVEDMOD = 0x8000;
-    }
+	pub struct KeyModifiers: u16 {
+		const NOMOD = 0x0000;
+		const LSHIFTMOD = 0x0001;
+		const RSHIFTMOD = 0x0002;
+		const LCTRLMOD = 0x0040;
+		const RCTRLMOD = 0x0080;
+		const LALTMOD = 0x0100;
+		const RALTMOD = 0x0200;
+		const LGUIMOD = 0x0400;
+		const RGUIMOD = 0x0800;
+		const NUMMOD = 0x1000;
+		const CAPSMOD = 0x2000;
+		const MODEMOD = 0x4000;
+		const RESERVEDMOD = 0x8000;
+	}
 }
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum KeyboardEvent {
 	KeyUp {
-		keycode: Option<Keycode>,
+		keycode: Option<Keycode>, //
 		scancode: Option<Scancode>,
 		keymod: KeyModifiers,
 		repeat: bool,
 	},
 	KeyDown {
-		keycode: Option<Keycode>,
+		keycode: Option<Keycode>, //
 		scancode: Option<Scancode>,
 		keymod: KeyModifiers,
 		repeat: bool,
@@ -94,20 +94,20 @@ pub enum KeyboardEvent {
 #[derive(Debug, Clone, PartialEq)]
 pub enum MouseEvent {
 	MouseMotion {
-		x: i32,
+		x: i32, //
 		y: i32,
 		x_delta: i32,
 		y_delta: i32,
 		buttons: MouseButtons,
 	},
 	MouseButtonDown {
-		x: i32,
+		x: i32, //
 		y: i32,
 		button: MouseButton,
 		clicks: u8,
 	},
 	MouseButtonUp {
-		x: i32,
+		x: i32, //
 		y: i32,
 		button: MouseButton,
 		clicks: u8,
@@ -168,20 +168,10 @@ impl From<sdl2::event::Event> for SystemEvent {
 				})
 			}
 			sdl2::event::Event::MouseButtonDown { mouse_btn, clicks, x, y, .. } => {
-				SystemEvent::Mouse(MouseEvent::MouseButtonDown {
-					x,
-					y,
-					clicks,
-					button: mouse_btn.into(),
-				})
+				SystemEvent::Mouse(MouseEvent::MouseButtonDown { x, y, clicks, button: mouse_btn.into() })
 			}
 			sdl2::event::Event::MouseButtonUp { mouse_btn, clicks, x, y, .. } => {
-				SystemEvent::Mouse(MouseEvent::MouseButtonUp {
-					x,
-					y,
-					clicks,
-					button: mouse_btn.into(),
-				})
+				SystemEvent::Mouse(MouseEvent::MouseButtonUp { x, y, clicks, button: mouse_btn.into() })
 			}
 
 			_ => SystemEvent::Unimplemented,
@@ -218,9 +208,7 @@ pub struct SystemEventPump {
 
 impl SystemEventPump {
 	pub fn from(pump: sdl2::EventPump) -> Self {
-		SystemEventPump {
-			sdl_event_pump: pump,
-		}
+		SystemEventPump { sdl_event_pump: pump }
 	}
 
 	/// Returns an iterator over [`SystemEvent`]s that have been generated since the last time

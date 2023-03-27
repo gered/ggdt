@@ -255,14 +255,21 @@ pub unsafe fn per_pixel_rotozoom_blit<PixelType: Pixel>(
 			// destination bitmap's center point as the origin _except_ for the final post-transform
 			// offset where we instead use the source bitmap's center point to re-translate the
 			// coordinates back. this is necessary because of the (potential) scale differences!
-			let src_x = ((x as f32 - half_dest_width) * cos * scale_x) - ((y as f32 - half_dest_height) * sin * scale_x) + half_src_width;
-			let src_y = ((x as f32 - half_dest_width) * sin * scale_y) + ((y as f32 - half_dest_height) * cos * scale_y) + half_src_height;
+			let src_x = ((x as f32 - half_dest_width) * cos * scale_x)
+				- ((y as f32 - half_dest_height) * sin * scale_x)
+				+ half_src_width;
+			let src_y = ((x as f32 - half_dest_width) * sin * scale_y)
+				+ ((y as f32 - half_dest_height) * cos * scale_y)
+				+ half_src_height;
 
 			// ensure the source x,y is in bounds, as it very well might not be depending on exactly
 			// where we are inside the destination area currently. also, we're not interested in
 			// wrapping of course, since we just want to draw a single instance of this source
 			// bitmap.
-			if src_x >= 0.0 && (src_x as i32) < (src_region.width as i32) && src_y >= 0.0 && (src_y as i32) < (src_region.height as i32) {
+			if src_x >= 0.0
+				&& (src_x as i32) < (src_region.width as i32)
+				&& src_y >= 0.0 && (src_y as i32) < (src_region.height as i32)
+			{
 				let pixel = src.get_pixel_unchecked(src_x as i32 + src_region.x, src_y as i32 + src_region.y);
 
 				let draw_x = x + dest_x;
@@ -298,7 +305,13 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		vertical_flip: bool,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self,
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				*dest_pixels = *src_pixels;
 			},
@@ -314,7 +327,11 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		transparent_color: PixelType,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = *src_pixels;
@@ -334,7 +351,13 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		vertical_flip: bool,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = *src_pixels;
@@ -353,7 +376,11 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		draw_color: PixelType,
 	) {
 		per_pixel_blit(
-			self, src, src_region, dest_x, dest_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = draw_color;
@@ -374,7 +401,13 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		draw_color: PixelType,
 	) {
 		per_pixel_flipped_blit(
-			self, src, src_region, dest_x, dest_y, horizontal_flip, vertical_flip,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			horizontal_flip,
+			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
 					*dest_pixels = draw_color;
@@ -394,7 +427,14 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		scale_y: f32,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);
 			},
@@ -413,7 +453,14 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		transparent_color: PixelType,
 	) {
 		per_pixel_rotozoom_blit(
-			self, src, src_region, dest_x, dest_y, angle, scale_x, scale_y,
+			self, //
+			src,
+			src_region,
+			dest_x,
+			dest_y,
+			angle,
+			scale_x,
+			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					dest_bitmap.set_pixel(draw_x, draw_y, src_pixel);

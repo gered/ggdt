@@ -10,12 +10,7 @@ pub struct Rect {
 impl Rect {
 	#[inline]
 	pub fn new(x: i32, y: i32, width: u32, height: u32) -> Rect {
-		Rect {
-			x,
-			y,
-			width,
-			height,
-		}
+		Rect { x, y, width, height }
 	}
 
 	/// Creates a new rect from the specified coordinates. Automatically determines if the
@@ -51,7 +46,7 @@ impl Rect {
 		}
 
 		Rect {
-			x,
+			x, //
 			y,
 			width: width as u32,
 			height: height as u32,
@@ -165,21 +160,11 @@ pub mod tests {
 
 	#[test]
 	pub fn right_and_left() {
-		let rect = Rect {
-			x: 5,
-			y: 6,
-			width: 16,
-			height: 12,
-		};
+		let rect = Rect { x: 5, y: 6, width: 16, height: 12 };
 		assert_eq!(20, rect.right());
 		assert_eq!(17, rect.bottom());
 
-		let rect = Rect {
-			x: -11,
-			y: -25,
-			width: 16,
-			height: 12,
-		};
+		let rect = Rect { x: -11, y: -25, width: 16, height: 12 };
 		assert_eq!(4, rect.right());
 		assert_eq!(-14, rect.bottom());
 	}

@@ -7,8 +7,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
-use crate::audio::AudioSpec;
 use crate::audio::buffer::AudioBuffer;
+use crate::audio::AudioSpec;
 use crate::utils::io::StreamSize;
 
 #[derive(Error, Debug)]
@@ -70,10 +70,7 @@ impl WavHeader {
 	pub fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self, WavError> {
 		let file_chunk = SubChunkHeader::read(reader)?;
 		let file_container_id = ChunkId::read(reader)?;
-		Ok(WavHeader {
-			file_chunk,
-			file_container_id,
-		})
+		Ok(WavHeader { file_chunk, file_container_id })
 	}
 
 	#[allow(dead_code)]
@@ -98,10 +95,7 @@ struct FormatChunk {
 }
 
 impl FormatChunk {
-	pub fn read<T: ReadBytesExt>(
-		reader: &mut T,
-		chunk_header: &SubChunkHeader,
-	) -> Result<Self, WavError> {
+	pub fn read<T: ReadBytesExt>(reader: &mut T, chunk_header: &SubChunkHeader) -> Result<Self, WavError> {
 		let compression_code = reader.read_u16::<LittleEndian>()?;
 		let channels = reader.read_u16::<LittleEndian>()?;
 		let frequency = reader.read_u32::<LittleEndian>()?;
@@ -180,9 +174,7 @@ impl DataChunk {
 			buffer = vec![0u8; chunk_header.size as usize];
 			reader.read_exact(&mut buffer)?;
 		}
-		Ok(DataChunk {
-			data: buffer.into_boxed_slice(),
-		})
+		Ok(DataChunk { data: buffer.into_boxed_slice() })
 	}
 
 	#[allow(dead_code)]
@@ -200,14 +192,10 @@ impl AudioBuffer {
 
 		let header = WavHeader::read(reader)?;
 		if header.file_chunk.chunk_id.id != *b"RIFF" {
-			return Err(WavError::BadFile(String::from(
-				"Unexpected RIFF chunk id, probably not a WAV file",
-			)));
+			return Err(WavError::BadFile(String::from("Unexpected RIFF chunk id, probably not a WAV file")));
 		}
 		if header.file_container_id.id != *b"WAVE" {
-			return Err(WavError::BadFile(String::from(
-				"Unexpected RIFF container id, probably not a WAV file",
-			)));
+			return Err(WavError::BadFile(String::from("Unexpected RIFF container id, probably not a WAV file")));
 		}
 
 		// some tools like sfxr and jsfxr incorrectly calculate data sizes, seemingly using a
@@ -227,11 +215,9 @@ impl AudioBuffer {
 		loop {
 			let chunk_header = match SubChunkHeader::read(reader) {
 				Ok(header) => header,
-				Err(WavError::IOError(io_error))
-				if io_error.kind() == io::ErrorKind::UnexpectedEof =>
-					{
-						break;
-					}
+				Err(WavError::IOError(io_error)) if io_error.kind() == io::ErrorKind::UnexpectedEof => {
+					break;
+				}
 				Err(err) => return Err(err),
 			};
 			let chunk_data_position = reader.stream_position()?;
@@ -240,12 +226,9 @@ impl AudioBuffer {
 			if chunk_header.chunk_id.id == *b"fmt " {
 				format = Some(FormatChunk::read(reader, &chunk_header)?);
 				if format.as_ref().unwrap().compression_code != 1 {
-					return Err(WavError::BadFile(String::from(
-						"Only PCM format WAV files are supported",
-					)));
+					return Err(WavError::BadFile(String::from("Only PCM format WAV files are supported")));
 				}
-				if format.as_ref().unwrap().bits_per_sample != 8 &&
-					format.as_ref().unwrap().bits_per_sample != 16 {
+				if format.as_ref().unwrap().bits_per_sample != 8 && format.as_ref().unwrap().bits_per_sample != 16 {
 					return Err(WavError::BadFile(String::from(
 						"Only 8-bit and 16-bit sample WAV files are supported",
 					)));
@@ -256,9 +239,7 @@ impl AudioBuffer {
 
 			// move to the start of the next chunk (possibly skipping over the current chunk if we
 			// didn't recognize it above ...)
-			reader.seek(SeekFrom::Start(
-				chunk_data_position + chunk_header.size as u64,
-			))?;
+			reader.seek(SeekFrom::Start(chunk_data_position + chunk_header.size as u64))?;
 		}
 
 		// all done reading the file, now convert the read data into an AudioBuffer ...
@@ -271,7 +252,7 @@ impl AudioBuffer {
 				16 => AudioFormat::S16LSB,
 				// this shouldn't be able to happen given the above checks when reading the
 				// "fmt" chunk
-				_ => return Err(WavError::BadFile(String::from("Unsupported sample bit size.")))
+				_ => return Err(WavError::BadFile(String::from("Unsupported sample bit size."))),
 			};
 			let spec = AudioSpec::new(format.frequency, format.channels as u8, sample_format);
 			audio_buffer = AudioBuffer::new(spec);

@@ -53,7 +53,7 @@ pub struct Bitmap<PixelType: Pixel> {
 
 impl<PixelType: Pixel> std::fmt::Debug for Bitmap<PixelType> {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("Bitmap")
+		f.debug_struct("Bitmap") //
 			.field("width", &self.width)
 			.field("height", &self.height)
 			.field("clip_region", &self.clip_region)
@@ -72,15 +72,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		}
 
 		Ok(Bitmap {
-			width,
+			width, //
 			height,
 			pixels: vec![color; (width * height) as usize].into_boxed_slice(),
-			clip_region: Rect {
-				x: 0,
-				y: 0,
-				width,
-				height,
-			},
+			clip_region: Rect { x: 0, y: 0, width, height },
 		})
 	}
 
@@ -138,7 +133,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	#[inline]
 	pub fn full_bounds(&self) -> Rect {
 		Rect {
-			x: 0,
+			x: 0, //
 			y: 0,
 			width: self.width,
 			height: self.height,
@@ -215,7 +210,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	pub unsafe fn pixels_at_mut_unchecked(&mut self, x: i32, y: i32) -> &mut [PixelType] {
 		let offset = self.get_offset_to_xy(x, y);
 		std::slice::from_raw_parts_mut(
-			self.pixels.as_mut_ptr().add(offset),
+			self.pixels.as_mut_ptr().add(offset), //
 			self.pixels.len() - offset,
 		)
 	}
@@ -318,24 +313,8 @@ pub mod tests {
 		assert_eq!(32, bmp.height());
 		assert_eq!(15, bmp.right());
 		assert_eq!(31, bmp.bottom());
-		assert_eq!(
-			Rect {
-				x: 0,
-				y: 0,
-				width: 16,
-				height: 32,
-			},
-			bmp.full_bounds()
-		);
-		assert_eq!(
-			Rect {
-				x: 0,
-				y: 0,
-				width: 16,
-				height: 32,
-			},
-			*bmp.clip_region()
-		);
+		assert_eq!(Rect { x: 0, y: 0, width: 16, height: 32 }, bmp.full_bounds());
+		assert_eq!(Rect { x: 0, y: 0, width: 16, height: 32 }, *bmp.clip_region());
 	}
 
 	#[test]
@@ -343,10 +322,7 @@ pub mod tests {
 		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
-		assert_matches!(
-            Bitmap::<u8>::from(&bmp, &Rect::new(0, 0, 16, 16)),
-            Err(BitmapError::OutOfBounds)
-        );
+		assert_matches!(Bitmap::<u8>::from(&bmp, &Rect::new(0, 0, 16, 16)), Err(BitmapError::OutOfBounds));
 
 		let copy = Bitmap::<u8>::from(&bmp, &Rect::new(0, 0, 8, 8)).unwrap();
 		assert_eq!(bmp.pixels(), copy.pixels());
@@ -382,15 +358,7 @@ pub mod tests {
 
 		let new_clip_region = Rect::from_coords(4, 2, 12, 6);
 		bmp.set_clip_region(&new_clip_region);
-		assert_eq!(
-			Rect {
-				x: 0,
-				y: 0,
-				width: 16,
-				height: 8,
-			},
-			bmp.full_bounds()
-		);
+		assert_eq!(Rect { x: 0, y: 0, width: 16, height: 8 }, bmp.full_bounds());
 		assert_eq!(new_clip_region, *bmp.clip_region());
 		assert!(bmp.is_xy_visible(4, 2));
 		assert!(bmp.is_xy_visible(12, 2));

@@ -10,7 +10,7 @@ use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::utils::lzwgif::{lzw_decode, lzw_encode, LzwError};
 
-const BITS_FOR_256_COLORS: u32 = 7;   // formula is `2 ^ (bits + 1) = num_colors`
+const BITS_FOR_256_COLORS: u32 = 7; // formula is `2 ^ (bits + 1) = num_colors`
 
 fn bits_to_num_colors(bits: u32) -> u32 {
 	1_u32.wrapping_shl(bits + 1)
@@ -119,7 +119,7 @@ impl GifHeader {
 		let mut version = [0u8; 3];
 		reader.read_exact(&mut version)?;
 		Ok(GifHeader {
-			signature,
+			signature, //
 			version,
 			screen_width: reader.read_u16::<LittleEndian>()?,
 			screen_height: reader.read_u16::<LittleEndian>()?,
@@ -161,7 +161,7 @@ impl GifExtensionLabel {
 			0x01 => Ok(PlainText),
 			0xff => Ok(Application),
 			0xfe => Ok(Comment),
-			_ => Err(GifError::UnknownExtension(value))
+			_ => Err(GifError::UnknownExtension(value)),
 		}
 	}
 }
@@ -178,7 +178,7 @@ struct GraphicControlExtension {
 impl GraphicControlExtension {
 	pub fn read<T: Read>(reader: &mut T) -> Result<Self, GifError> {
 		Ok(GraphicControlExtension {
-			block_size: reader.read_u8()?,
+			block_size: reader.read_u8()?, //
 			flags: reader.read_u8()?,
 			delay: reader.read_u16::<LittleEndian>()?,
 			transparent_color: reader.read_u8()?,
@@ -259,7 +259,7 @@ impl ApplicationExtension {
 		let mut authentication_code = [0u8; 3];
 		reader.read_exact(&mut authentication_code)?;
 		Ok(ApplicationExtension {
-			block_size,
+			block_size, //
 			identifier,
 			authentication_code,
 			data: read_raw_sub_block_data(reader)?,
@@ -283,9 +283,7 @@ struct CommentExtension {
 #[allow(dead_code)]
 impl CommentExtension {
 	pub fn read<T: Read>(reader: &mut T) -> Result<Self, GifError> {
-		Ok(CommentExtension {
-			data: read_raw_sub_block_data(reader)?,
-		})
+		Ok(CommentExtension { data: read_raw_sub_block_data(reader)? })
 	}
 
 	pub fn write<T: Write>(&self, writer: &mut T) -> Result<(), GifError> {
@@ -331,7 +329,7 @@ impl LocalImageDescriptor {
 
 	pub fn read<T: Read>(reader: &mut T) -> Result<Self, GifError> {
 		Ok(LocalImageDescriptor {
-			x: reader.read_u16::<LittleEndian>()?,
+			x: reader.read_u16::<LittleEndian>()?, //
 			y: reader.read_u16::<LittleEndian>()?,
 			width: reader.read_u16::<LittleEndian>()?,
 			height: reader.read_u16::<LittleEndian>()?,
@@ -359,11 +357,7 @@ fn load_image_section<T: ReadBytesExt>(
 	let palette: Option<Palette>;
 	if descriptor.has_local_color_table() {
 		let num_colors = bits_to_num_colors(descriptor.local_color_table_bits() as u32) as usize;
-		palette = Some(Palette::load_num_colors_from_bytes(
-			reader,
-			PaletteFormat::Normal,
-			num_colors,
-		)?);
+		palette = Some(Palette::load_num_colors_from_bytes(reader, PaletteFormat::Normal, num_colors)?);
 	} else {
 		palette = None; // we expect that there was a global color table previously
 	}
@@ -375,17 +369,14 @@ fn load_image_section<T: ReadBytesExt>(
 	Ok((bitmap, palette))
 }
 
-fn save_image_section<T: WriteBytesExt>(
-	writer: &mut T,
-	bitmap: &IndexedBitmap,
-) -> Result<(), GifError> {
+fn save_image_section<T: WriteBytesExt>(writer: &mut T, bitmap: &IndexedBitmap) -> Result<(), GifError> {
 	writer.write_u8(IMAGE_DESCRIPTOR_SEPARATOR)?;
 	let image_descriptor = LocalImageDescriptor {
-		x: 0,
+		x: 0, //
 		y: 0,
 		width: bitmap.width as u16,
 		height: bitmap.height as u16,
-		flags: 0,  // again, we're not using local color tables, so no flags to set here
+		flags: 0, // again, we're not using local color tables, so no flags to set here
 	};
 	image_descriptor.write(writer)?;
 
@@ -400,9 +391,7 @@ fn save_image_section<T: WriteBytesExt>(
 }
 
 impl IndexedBitmap {
-	pub fn load_gif_bytes<T: ReadBytesExt>(
-		reader: &mut T,
-	) -> Result<(IndexedBitmap, Palette), GifError> {
+	pub fn load_gif_bytes<T: ReadBytesExt>(reader: &mut T) -> Result<(IndexedBitmap, Palette), GifError> {
 		let header = GifHeader::read(reader)?;
 		if header.signature != *b"GIF" || header.version != *b"89a" {
 			return Err(GifError::BadFile(String::from("Expected GIF89a header signature")));
@@ -412,11 +401,7 @@ impl IndexedBitmap {
 		let mut palette: Option<Palette>;
 		if header.has_global_color_table() {
 			let num_colors = bits_to_num_colors(header.global_color_table_bits() as u32) as usize;
-			palette = Some(Palette::load_num_colors_from_bytes(
-				reader,
-				PaletteFormat::Normal,
-				num_colors,
-			)?);
+			palette = Some(Palette::load_num_colors_from_bytes(reader, PaletteFormat::Normal, num_colors)?);
 		} else {
 			palette = None; // we expect to find a local color table later
 		}
@@ -468,7 +453,10 @@ impl IndexedBitmap {
 					}
 				}
 				_ => {
-					return Err(GifError::BadFile(format!("Unexpected byte found {} not a file trailer, image separator or extension introducer", current_byte)));
+					return Err(GifError::BadFile(format!(
+						"Unexpected byte found {} not a file trailer, image separator or extension introducer",
+						current_byte
+					)));
 				}
 			}
 		}
@@ -526,7 +514,7 @@ impl IndexedBitmap {
 		writer.write_u8(EXTENSION_INTRODUCER)?;
 		writer.write_u8(GifExtensionLabel::GraphicControl as u8)?;
 		let graphic_control = GraphicControlExtension {
-			block_size: 4,
+			block_size: 4, //
 			flags: 0,
 			delay: 0,
 			transparent_color,
@@ -540,12 +528,7 @@ impl IndexedBitmap {
 		Ok(())
 	}
 
-	pub fn to_gif_file(
-		&self,
-		path: &Path,
-		palette: &Palette,
-		settings: GifSettings,
-	) -> Result<(), GifError> {
+	pub fn to_gif_file(&self, path: &Path, palette: &Palette, settings: GifSettings) -> Result<(), GifError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_gif_bytes(&mut writer, palette, settings)
@@ -556,9 +539,7 @@ impl IndexedBitmap {
 // multi-pixel-depth support.
 
 impl RgbaBitmap {
-	pub fn load_gif_bytes<T: ReadBytesExt>(
-		reader: &mut T,
-	) -> Result<(RgbaBitmap, Palette), GifError> {
+	pub fn load_gif_bytes<T: ReadBytesExt>(reader: &mut T) -> Result<(RgbaBitmap, Palette), GifError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_gif_bytes(reader)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -593,9 +574,10 @@ pub mod tests {
 
 		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(),
+			test_assets_file(Path::new("dp2.pal")).as_path(), //
 			PaletteFormat::Normal,
-		).unwrap();
+		)
+		.unwrap();
 
 		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file(Path::new("small.gif")).as_path())?;
 		assert_eq!(16, bmp.width());

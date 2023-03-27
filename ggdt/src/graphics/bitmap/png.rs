@@ -7,12 +7,12 @@ use std::path::Path;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::Bitmap;
 use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::palette::Palette;
+use crate::graphics::bitmap::Bitmap;
+use crate::graphics::color::{from_argb32, from_rgb32, to_argb32, to_rgb32};
+use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
 use crate::graphics::Pixel;
-use crate::prelude::{from_argb32, from_rgb32, PaletteError, PaletteFormat, to_argb32, to_rgb32};
 use crate::utils::bytes::ReadFixedLengthByteArray;
 
 const PNG_HEADER: [u8; 8] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -76,7 +76,7 @@ struct ChunkHeader {
 impl ChunkHeader {
 	pub fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self, PngError> {
 		Ok(ChunkHeader {
-			size: reader.read_u32::<BigEndian>()?,
+			size: reader.read_u32::<BigEndian>()?, //
 			name: reader.read_bytes()?,
 		})
 	}
@@ -102,7 +102,7 @@ struct ImageHeaderChunk {
 impl ImageHeaderChunk {
 	pub fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self, PngError> {
 		Ok(ImageHeaderChunk {
-			width: reader.read_u32::<BigEndian>()?,
+			width: reader.read_u32::<BigEndian>()?, //
 			height: reader.read_u32::<BigEndian>()?,
 			bpp: reader.read_u8()?,
 			format: ColorFormat::from(reader.read_u8()?)?,
@@ -234,7 +234,7 @@ impl ScanlineBuffer {
 				// unsigned arithmetic modulo 256 *except* for the average calculation itself which must not overflow!
 				let average = (a + b) / 2;
 				byte.wrapping_add(average as u8)
-			},
+			}
 			Filter::Paeth => {
 				let a = if x < self.bpp { 0 } else { self.current[x - self.bpp] } as i16;
 				let b = if y < 1 { 0 } else { self.previous[x] } as i16;
@@ -252,7 +252,7 @@ impl ScanlineBuffer {
 				};
 				// all of the above must not overflow. however, this last part is unsigned arithmetic modulo 256
 				byte.wrapping_add(value)
-			},
+			}
 		}
 	}
 
@@ -307,10 +307,13 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 	fn read_pixel(&mut self, x: usize, _palette: &Option<Palette>) -> Result<u8, PngError> {
 		let offset = x * self.bpp;
 		match self.format {
-			ColorFormat::IndexedColor => {
-				Ok(self.current[offset])
-			},
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+			ColorFormat::IndexedColor => Ok(self.current[offset]),
+			_ => {
+				return Err(PngError::BadFile(format!(
+					"Unsupported color format for this PixelReader: {:?}",
+					self.format
+				)))
+			}
 		}
 	}
 
@@ -320,8 +323,13 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 			ColorFormat::IndexedColor => {
 				self.current[offset] = pixel;
 				Ok(())
-			},
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+			}
+			_ => {
+				return Err(PngError::BadFile(format!(
+					"Unsupported color format for this PixelReader: {:?}",
+					self.format
+				)))
+			}
 		}
 	}
 }
@@ -335,23 +343,30 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				if let Some(palette) = palette {
 					Ok(palette[color])
 				} else {
-					return Err(PngError::BadFile(String::from("No palette to map indexed-color format pixels to RGBA format destination")));
+					return Err(PngError::BadFile(String::from(
+						"No palette to map indexed-color format pixels to RGBA format destination",
+					)));
 				}
-			},
+			}
 			ColorFormat::RGB => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				Ok(to_rgb32(r, g, b))
-			},
+			}
 			ColorFormat::RGBA => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				let a = self.current[offset + 3];
 				Ok(to_argb32(a, r, g, b))
-			},
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+			}
+			_ => {
+				return Err(PngError::BadFile(format!(
+					"Unsupported color format for this PixelReader: {:?}",
+					self.format
+				)))
+			}
 		}
 	}
 
@@ -364,7 +379,7 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				self.current[offset + 1] = g;
 				self.current[offset + 2] = b;
 				Ok(())
-			},
+			}
 			ColorFormat::RGBA => {
 				let (a, r, g, b) = from_argb32(pixel);
 				self.current[offset] = r;
@@ -372,20 +387,22 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				self.current[offset + 2] = b;
 				self.current[offset + 3] = a;
 				Ok(())
-			},
-			_ => return Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
+			}
+			_ => {
+				return Err(PngError::BadFile(format!(
+					"Unsupported color format for this PixelReader: {:?}",
+					self.format
+				)))
+			}
 		}
 	}
 }
 
-
-fn load_png_bytes<Reader, PixelType>(
-	reader: &mut Reader
-) -> Result<(Bitmap<PixelType>, Option<Palette>), PngError>
+fn load_png_bytes<Reader, PixelType>(reader: &mut Reader) -> Result<(Bitmap<PixelType>, Option<Palette>), PngError>
 where
 	Reader: ReadBytesExt,
 	PixelType: Pixel,
-	ScanlineBuffer: ScanlinePixelConverter<PixelType>
+	ScanlineBuffer: ScanlinePixelConverter<PixelType>,
 {
 	let header: [u8; 8] = reader.read_bytes()?;
 	if header != PNG_HEADER {
@@ -409,9 +426,10 @@ where
 	if ihdr.bpp != 8 {
 		return Err(PngError::BadFile(String::from("Unsupported color bit depth.")));
 	}
-	if ihdr.format != ColorFormat::IndexedColor
+	if ihdr.format != ColorFormat::IndexedColor // .
 		&& ihdr.format != ColorFormat::RGB
-		&& ihdr.format != ColorFormat::RGBA {
+		&& ihdr.format != ColorFormat::RGBA
+	{
 		return Err(PngError::BadFile(String::from("Unsupported pixel color format.")));
 	}
 	if ihdr.compression != 0 {
@@ -438,7 +456,7 @@ where
 		let chunk_bytes = read_chunk_data(reader, &chunk_header)?;
 		let num_colors = (chunk_header.size / 3) as usize;
 		Some(Palette::load_num_colors_from_bytes(
-			&mut chunk_bytes.as_slice(),
+			&mut chunk_bytes.as_slice(), //
 			PaletteFormat::Normal,
 			num_colors,
 		)?)
@@ -473,7 +491,9 @@ where
 		scanline_buffer.read_line(&mut deflater)?;
 		for x in 0..ihdr.width as usize {
 			let pixel = scanline_buffer.read_pixel(x, &palette)?;
-			unsafe { output.set_pixel_unchecked(x as i32, y as i32, pixel); }
+			unsafe {
+				output.set_pixel_unchecked(x as i32, y as i32, pixel);
+			}
 		}
 	}
 
@@ -563,9 +583,7 @@ where
 }
 
 impl IndexedBitmap {
-	pub fn load_png_bytes<T: ReadBytesExt>(
-		reader: &mut T,
-	) -> Result<(IndexedBitmap, Option<Palette>), PngError> {
+	pub fn load_png_bytes<T: ReadBytesExt>(reader: &mut T) -> Result<(IndexedBitmap, Option<Palette>), PngError> {
 		load_png_bytes(reader)
 	}
 
@@ -575,11 +593,7 @@ impl IndexedBitmap {
 		Self::load_png_bytes(&mut reader)
 	}
 
-	pub fn to_png_bytes<T: WriteBytesExt>(
-		&self,
-		writer: &mut T,
-		palette: &Palette,
-	) -> Result<(), PngError> {
+	pub fn to_png_bytes<T: WriteBytesExt>(&self, writer: &mut T, palette: &Palette) -> Result<(), PngError> {
 		write_png_bytes(writer, &self, ColorFormat::IndexedColor, Some(palette))
 	}
 
@@ -591,9 +605,7 @@ impl IndexedBitmap {
 }
 
 impl RgbaBitmap {
-	pub fn load_png_bytes<T: ReadBytesExt>(
-		reader: &mut T,
-	) -> Result<(RgbaBitmap, Option<Palette>), PngError> {
+	pub fn load_png_bytes<T: ReadBytesExt>(reader: &mut T) -> Result<(RgbaBitmap, Option<Palette>), PngError> {
 		load_png_bytes(reader)
 	}
 
@@ -603,11 +615,7 @@ impl RgbaBitmap {
 		Self::load_png_bytes(&mut reader)
 	}
 
-	pub fn to_png_bytes<T: WriteBytesExt>(
-		&self,
-		writer: &mut T,
-		format: PngFormat,
-	) -> Result<(), PngError> {
+	pub fn to_png_bytes<T: WriteBytesExt>(&self, writer: &mut T, format: PngFormat) -> Result<(), PngError> {
 		write_png_bytes(
 			writer,
 			&self,
@@ -619,10 +627,7 @@ impl RgbaBitmap {
 		)
 	}
 
-	pub fn to_png_file(
-		&self, path: &Path,
-		format: PngFormat,
-	) -> Result<(), PngError> {
+	pub fn to_png_file(&self, path: &Path, format: PngFormat) -> Result<(), PngError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_png_bytes(&mut writer, format)

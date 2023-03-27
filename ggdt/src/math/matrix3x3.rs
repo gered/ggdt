@@ -20,8 +20,13 @@ impl Matrix3x3 {
 	pub const M32: usize = 5;
 	pub const M33: usize = 8;
 
+	#[rustfmt::skip]
 	pub const IDENTITY: Matrix3x3 = Matrix3x3 {
-		m: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0],
+		m: [
+			1.0, 0.0, 0.0,
+			0.0, 1.0, 0.0,
+			0.0, 0.0, 1.0
+		],
 	};
 
 	/// Returns a new identity matrix.
@@ -208,18 +213,7 @@ impl Matrix3x3 {
 
 	/// Sets all of the elements of this matrix.
 	#[inline]
-	pub fn set(
-		&mut self,
-		m11: f32,
-		m12: f32,
-		m13: f32,
-		m21: f32,
-		m22: f32,
-		m23: f32,
-		m31: f32,
-		m32: f32,
-		m33: f32,
-	) {
+	pub fn set(&mut self, m11: f32, m12: f32, m13: f32, m21: f32, m22: f32, m23: f32, m31: f32, m32: f32, m33: f32) {
 		self.m[Matrix3x3::M11] = m11;
 		self.m[Matrix3x3::M12] = m12;
 		self.m[Matrix3x3::M13] = m13;

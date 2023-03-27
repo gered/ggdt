@@ -32,12 +32,10 @@ fn is_x11_compositor_skipping_problematic() -> bool {
 	to check for this.
 	 */
 	match std::env::consts::OS {
-		"linux" | "freebsd" | "netbsd" | "openbsd" => {
-			match std::env::var("XDG_SESSION_DESKTOP") {
-				Ok(value) => value.eq_ignore_ascii_case("KDE"),
-				Err(_) => false
-			}
-		}
+		"linux" | "freebsd" | "netbsd" | "openbsd" => match std::env::var("XDG_SESSION_DESKTOP") {
+			Ok(value) => value.eq_ignore_ascii_case("KDE"),
+			Err(_) => false,
+		},
 		_ => false,
 	}
 }
@@ -140,7 +138,6 @@ impl SystemBuilder {
 		&self,
 		config: ConfigType,
 	) -> Result<System<ConfigType::SystemResourcesType>, SystemError> {
-
 		sdl2::hint::set("SDL_RENDER_VSYNC", if self.vsync { "1" } else { "0" });
 		sdl2::hint::set("SDL_MOUSE_RELATIVE_SCALING", if self.relative_mouse_scaling { "1" } else { "0" });
 		sdl2::hint::set("SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR", if self.skip_x11_compositor { "1" } else { "0" });
@@ -176,7 +173,7 @@ impl SystemBuilder {
 		// SystemResources initialization
 
 		let mut window_builder = &mut (sdl_video_subsystem.window(
-			self.window_title.as_str(),
+			self.window_title.as_str(), //
 			640,
 			480,
 		));
@@ -190,11 +187,7 @@ impl SystemBuilder {
 
 		sdl_context.mouse().show_cursor(self.show_mouse);
 
-		let system_resources = match config.build(
-			&sdl_video_subsystem,
-			&sdl_audio_subsystem,
-			sdl_window
-		) {
+		let system_resources = match config.build(&sdl_video_subsystem, &sdl_audio_subsystem, sdl_window) {
 			Ok(system_resources) => system_resources,
 			Err(error) => return Err(SystemError::SystemResourcesError(error)),
 		};
@@ -221,7 +214,9 @@ impl SystemBuilder {
 /// "virtual machine" exposed by this library.
 #[allow(dead_code)]
 pub struct System<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	sdl_context: sdl2::Sdl,
 	sdl_audio_subsystem: sdl2::AudioSubsystem,
 	sdl_video_subsystem: sdl2::VideoSubsystem,
@@ -238,9 +233,11 @@ where SystemResType: SystemResources {
 }
 
 impl<SystemResType> std::fmt::Debug for System<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("System")
+		f.debug_struct("System") //
 			.field("res", &self.res)
 			.field("vsync", &self.vsync)
 			.field("target_framerate", &self.target_framerate)
@@ -251,7 +248,9 @@ where SystemResType: SystemResources {
 }
 
 impl<SystemResType> System<SystemResType>
-where SystemResType: SystemResources {
+where
+	SystemResType: SystemResources,
+{
 	/// Displays the current backbuffer on to the window. If a `target_framerate` is set, this will
 	/// attempt to apply some timing to achieve that framerate. If V-sync is enabled, that will take
 	/// priority instead. You must call this in your application's main loop to display anything on screen.

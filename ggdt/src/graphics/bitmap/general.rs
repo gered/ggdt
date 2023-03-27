@@ -6,11 +6,11 @@
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
-use crate::graphics::bitmap::BitmapError;
 use crate::graphics::bitmap::indexed::blit::IndexedBlitMethod;
 use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::bitmap::rgb::blit::RgbaBlitMethod;
 use crate::graphics::bitmap::rgb::RgbaBitmap;
+use crate::graphics::bitmap::BitmapError;
 use crate::graphics::Pixel;
 use crate::math::rect::Rect;
 
@@ -87,7 +87,7 @@ pub trait GeneralBitmap: Sized + Clone {
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
-		dest_y: i32
+		dest_y: i32,
 	);
 
 	fn blit(&mut self, method: GeneralBlitMethod<Self::PixelType>, src: &Self, x: i32, y: i32) {
@@ -165,7 +165,7 @@ impl GeneralBitmap for IndexedBitmap {
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
-		dest_y: i32
+		dest_y: i32,
 	) {
 		let blit_method = match method {
 			GeneralBlitMethod::Solid => IndexedBlitMethod::Solid,
@@ -244,7 +244,7 @@ impl GeneralBitmap for RgbaBitmap {
 		src: &Self,
 		src_region: &Rect,
 		dest_x: i32,
-		dest_y: i32
+		dest_y: i32,
 	) {
 		let blit_method = match method {
 			GeneralBlitMethod::Solid => RgbaBlitMethod::Solid,

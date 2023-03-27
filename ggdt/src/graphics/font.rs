@@ -62,7 +62,7 @@ impl Character for BitmaskCharacter {
 
 	fn draw<PixelType>(&self, dest: &mut Bitmap<PixelType>, x: i32, y: i32, opts: FontRenderOpts<PixelType>)
 	where
-		PixelType: Pixel
+		PixelType: Pixel,
 	{
 		// out of bounds check
 		if ((x + self.bounds.width as i32) < dest.clip_region().x)
@@ -104,7 +104,7 @@ pub struct BitmaskFont {
 
 impl std::fmt::Debug for BitmaskFont {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		f.debug_struct("BitmaskFont")
+		f.debug_struct("BitmaskFont") //
 			.field("line_height", &self.line_height)
 			.field("space_width", &self.space_width)
 			.field("characters.len()", &self.characters.len())
@@ -134,12 +134,7 @@ impl BitmaskFont {
 			let character = BitmaskCharacter {
 				bytes: buffer,
 				// bounds are filled in below. ugh.
-				bounds: Rect {
-					x: 0,
-					y: 0,
-					width: 0,
-					height: 0,
-				},
+				bounds: Rect { x: 0, y: 0, width: 0, height: 0 },
 			};
 			characters.push(character);
 		}
@@ -158,7 +153,7 @@ impl BitmaskFont {
 		let space_width = characters[' ' as usize].bounds.width as u8;
 
 		Ok(BitmaskFont {
-			characters: characters.into_boxed_slice(),
+			characters: characters.into_boxed_slice(), //
 			line_height,
 			space_width,
 		})
@@ -208,7 +203,7 @@ impl Font for BitmaskFont {
 
 	fn measure<PixelType>(&self, text: &str, _opts: FontRenderOpts<PixelType>) -> (u32, u32)
 	where
-		PixelType: Pixel
+		PixelType: Pixel,
 	{
 		if text.is_empty() {
 			return (0, 0);

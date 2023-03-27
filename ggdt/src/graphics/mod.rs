@@ -2,9 +2,9 @@ use num_traits::{PrimInt, Unsigned};
 
 pub mod bitmap;
 pub mod bitmapatlas;
+pub mod blendmap;
 pub mod color;
 pub mod font;
-pub mod blendmap;
 pub mod palette;
 
 pub mod prelude;

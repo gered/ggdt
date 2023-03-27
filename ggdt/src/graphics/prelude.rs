@@ -1,29 +1,21 @@
 pub use crate::graphics::{
-	*,
+	//
 	bitmap::{
-		*,
 		blit::*,
 		general::*,
 		gif::*,
 		iff::*,
-		indexed::{
-			*,
-			blit::*,
-			primitives::*,
-		},
+		indexed::{blit::*, primitives::*, *},
 		pcx::*,
 		png::*,
 		primitives::*,
-		rgb::{
-			*,
-			blit::*,
-			primitives::*,
-		},
+		rgb::{blit::*, primitives::*, *},
+		*,
 	},
 	bitmapatlas::*,
 	blendmap::*,
 	color::*,
 	font::*,
 	palette::*,
+	*,
 };
-

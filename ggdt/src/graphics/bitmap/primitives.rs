@@ -73,7 +73,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// Renders a single character using the font given.
 	#[inline]
 	pub fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<PixelType>, font: &T) {
-		font.character(ch)
+		font.character(ch) //
 			.draw(self, x, y, opts);
 	}
 
@@ -287,7 +287,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			swap(&mut y1, &mut y2);
 		}
 		let mut region = Rect {
-			x: x1,
+			x: x1, //
 			y: y1,
 			width: (x2 - x1 + 1) as u32,
 			height: (y2 - y1 + 1) as u32,
@@ -345,7 +345,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		mut y1: i32,
 		mut x2: i32,
 		mut y2: i32,
-		pixel_fn: impl Fn(PixelType) -> PixelType
+		pixel_fn: impl Fn(PixelType) -> PixelType,
 	) {
 		// note: need to manually do all this instead of just relying on Rect::from_coords (which
 		// could otherwise figure all this out for us) mainly just because we need the post-swap
@@ -357,7 +357,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			swap(&mut y1, &mut y2);
 		}
 		let mut region = Rect {
-			x: x1,
+			x: x1, //
 			y: y1,
 			width: (x2 - x1 + 1) as u32,
 			height: (y2 - y1 + 1) as u32,
@@ -394,7 +394,8 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		// bottom line, only if y2 was originally within bounds
 		if y2 == region.bottom() {
 			unsafe {
-				let dest = &mut self.pixels_at_mut_unchecked(horiz_draw_x, region.bottom())[0..horiz_draw_width as usize];
+				let dest =
+					&mut self.pixels_at_mut_unchecked(horiz_draw_x, region.bottom())[0..horiz_draw_width as usize];
 				for pixel in dest.iter_mut() {
 					*pixel = pixel_fn(*pixel);
 				}
@@ -450,7 +451,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		y1: i32,
 		x2: i32,
 		y2: i32,
-		pixel_fn: impl Fn(PixelType) -> PixelType
+		pixel_fn: impl Fn(PixelType) -> PixelType,
 	) {
 		let mut region = Rect::from_coords(x1, y1, x2, y2);
 		if region.clamp_to(&self.clip_region) {

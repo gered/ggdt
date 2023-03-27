@@ -50,14 +50,7 @@ impl Game {
 		init_event_listeners(&mut event_listeners);
 
 		Ok(Game {
-			context: Context {
-				delta: 0.0,
-				system,
-				font,
-				sprites,
-				entities,
-				event_publisher,
-			},
+			context: Context { delta: 0.0, system, font, sprites, entities, event_publisher },
 			component_systems,
 			event_listeners,
 		})
@@ -88,7 +81,13 @@ impl AppState<Game> for SimulationState {
 	fn render(&mut self, _state: State, context: &mut Game) {
 		context.context.system.res.video.clear(2);
 		context.component_systems.render(&mut context.context);
-		context.context.system.res.video.print_string("hello, world!", 10, 10, FontRenderOpts::Color(15), &context.context.font);
+		context.context.system.res.video.print_string(
+			"hello, world!",
+			10,
+			10,
+			FontRenderOpts::Color(15),
+			&context.context.font,
+		);
 	}
 
 	fn transition(&mut self, _state: State, _context: &mut Game) -> bool {

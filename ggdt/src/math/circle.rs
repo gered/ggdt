@@ -1,5 +1,5 @@
-use crate::math::{distance_between, distance_squared_between};
 use crate::math::vector2::Vector2;
+use crate::math::{distance_between, distance_squared_between};
 
 /// Represents a 2D circle, using integer center coordinates and radius.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -38,7 +38,7 @@ impl Circle {
 		let center_y = (max_y - min_y) / 2.0;
 
 		Some(Circle {
-			x: center_x as i32,
+			x: center_x as i32, //
 			y: center_y as i32,
 			radius: radius as u32,
 		})
@@ -52,18 +52,15 @@ impl Circle {
 
 	/// Returns true if the given point is contained within the bounds of this circle.
 	pub fn contains_point(&self, x: i32, y: i32) -> bool {
-		let distance_squared =
-			distance_squared_between(self.x as f32, self.y as f32, x as f32, y as f32);
+		let distance_squared = distance_squared_between(self.x as f32, self.y as f32, x as f32, y as f32);
 		let radius_squared = (self.radius * self.radius) as f32;
 		distance_squared <= radius_squared
 	}
 
 	/// Returns true if the given circle at least partially overlaps the bounds of this circle.
 	pub fn overlaps(&self, other: &Circle) -> bool {
-		let distance_squared =
-			distance_squared_between(self.x as f32, self.y as f32, other.x as f32, other.y as f32);
-		let minimum_distance_squared =
-			((self.radius + other.radius) * (self.radius + other.radius)) as f32;
+		let distance_squared = distance_squared_between(self.x as f32, self.y as f32, other.x as f32, other.y as f32);
+		let minimum_distance_squared = ((self.radius + other.radius) * (self.radius + other.radius)) as f32;
 		distance_squared <= minimum_distance_squared
 	}
 }
