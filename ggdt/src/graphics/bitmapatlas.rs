@@ -105,6 +105,11 @@ where
 	}
 
 	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.tiles.is_empty()
+	}
+
+	#[inline]
 	pub fn get(&self, index: usize) -> Option<&Rect> {
 		self.tiles.get(index)
 	}
@@ -141,12 +146,12 @@ pub mod tests {
 		let mut atlas = BitmapAtlas::new(bmp);
 
 		let rect = Rect::new(0, 0, 16, 16);
-		assert_eq!(0, atlas.add(rect.clone()).unwrap());
+		assert_eq!(0, atlas.add(rect).unwrap());
 		assert_eq!(rect, atlas[0]);
 		assert_eq!(1, atlas.len());
 
 		let rect = Rect::new(16, 0, 16, 16);
-		assert_eq!(1, atlas.add(rect.clone()).unwrap());
+		assert_eq!(1, atlas.add(rect).unwrap());
 		assert_eq!(rect, atlas[1]);
 		assert_eq!(2, atlas.len());
 

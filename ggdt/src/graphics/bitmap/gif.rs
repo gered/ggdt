@@ -354,13 +354,12 @@ fn load_image_section<T: ReadBytesExt>(
 ) -> Result<(IndexedBitmap, Option<Palette>), GifError> {
 	let descriptor = LocalImageDescriptor::read(reader)?;
 
-	let palette: Option<Palette>;
-	if descriptor.has_local_color_table() {
+	let palette = if descriptor.has_local_color_table() {
 		let num_colors = bits_to_num_colors(descriptor.local_color_table_bits() as u32) as usize;
-		palette = Some(Palette::load_num_colors_from_bytes(reader, PaletteFormat::Normal, num_colors)?);
+		Some(Palette::load_num_colors_from_bytes(reader, PaletteFormat::Normal, num_colors)?)
 	} else {
-		palette = None; // we expect that there was a global color table previously
-	}
+		None // we expect that there was a global color table previously
+	};
 
 	let mut bitmap = IndexedBitmap::new(gif_header.screen_width as u32, gif_header.screen_height as u32).unwrap();
 	let mut writer = bitmap.pixels_mut();
@@ -501,15 +500,10 @@ impl IndexedBitmap {
 		// local color tables.
 		palette.to_bytes(writer, PaletteFormat::Normal)?;
 
-		let transparent_color: u8;
-		match settings {
-			GifSettings::Default => {
-				transparent_color = 0;
-			}
-			GifSettings::TransparentColor(color) => {
-				transparent_color = color;
-			}
-		}
+		let transparent_color = match settings {
+			GifSettings::Default => 0,
+			GifSettings::TransparentColor(color) => color,
+		};
 
 		writer.write_u8(EXTENSION_INTRODUCER)?;
 		writer.write_u8(GifExtensionLabel::GraphicControl as u8)?;
@@ -522,7 +516,7 @@ impl IndexedBitmap {
 		};
 		graphic_control.write(writer)?;
 
-		save_image_section(writer, &self)?;
+		save_image_section(writer, self)?;
 
 		writer.write_u8(GIF_TRAILER)?;
 		Ok(())

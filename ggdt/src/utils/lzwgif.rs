@@ -57,11 +57,11 @@ const MAX_BITS: usize = 12;
 const MAX_CODE_VALUE: LzwCode = (1 as LzwCode).wrapping_shl(MAX_BITS as u32) - 1;
 
 fn is_valid_code_size_bits(code_size_bits: usize) -> bool {
-	code_size_bits >= MIN_BITS && code_size_bits <= MAX_BITS
+	(MIN_BITS..=MAX_BITS).contains(&code_size_bits)
 }
 
 fn is_valid_gif_min_code_size_bits(min_code_size_bits: usize) -> bool {
-	min_code_size_bits >= MIN_BITS && min_code_size_bits <= GIF_MAX_CODE_SIZE_BITS
+	(MIN_BITS..=GIF_MAX_CODE_SIZE_BITS).contains(&min_code_size_bits)
 }
 
 fn get_bitmask_for_bits(bits: usize) -> u32 {
@@ -111,7 +111,7 @@ impl LzwBytePacker {
 
 	pub fn increase_bit_size(&mut self) -> Result<usize, LzwBytePackingError> {
 		if self.current_bit_size >= MAX_BITS {
-			return Err(LzwBytePackingError::UnsupportedCodeSizeBits(self.current_bit_size + 1));
+			Err(LzwBytePackingError::UnsupportedCodeSizeBits(self.current_bit_size + 1))
 		} else {
 			self.current_bit_size += 1;
 			self.bitmask = get_bitmask_for_bits(self.current_bit_size);
@@ -257,7 +257,7 @@ impl LzwByteUnpacker {
 
 	pub fn increase_bit_size(&mut self) -> Result<usize, LzwBytePackingError> {
 		if self.current_bit_size >= MAX_BITS {
-			return Err(LzwBytePackingError::UnsupportedCodeSizeBits(self.current_bit_size + 1));
+			Err(LzwBytePackingError::UnsupportedCodeSizeBits(self.current_bit_size + 1))
 		} else {
 			self.current_bit_size += 1;
 			self.bitmask = get_bitmask_for_bits(self.current_bit_size);

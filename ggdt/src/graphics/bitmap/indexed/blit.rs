@@ -623,7 +623,7 @@ impl IndexedBitmap {
 		y: i32,
 	) {
 		if let Some(src_region) = src.get(index) {
-			self.blit_region_unchecked(method, src.bitmap(), &src_region, x, y);
+			self.blit_region_unchecked(method, src.bitmap(), src_region, x, y);
 		}
 	}
 }

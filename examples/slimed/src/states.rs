@@ -56,7 +56,7 @@ impl AppState<Game> for MainMenuState {
 		const SPACER: i32 = 8;
 		draw_window(&mut context.core.system.res.video, &context.core.ui, x, y, x + width, y + height);
 
-		let selection_y = y + SPACER + (self.selection as i32 * 16);
+		let selection_y = y + SPACER + (self.selection * 16);
 		context.core.system.res.video.print_string(
 			">",
 			x + SPACER,
@@ -186,7 +186,7 @@ impl AppState<Game> for GamePlayState {
 			const SPACER: i32 = 8;
 			draw_window(&mut context.core.system.res.video, &context.core.ui, x, y, x + width, y + height);
 
-			let selection_y = y + SPACER + (self.selection as i32 * 16);
+			let selection_y = y + SPACER + (self.selection * 16);
 			context.core.system.res.video.print_string(
 				">",
 				x + SPACER,

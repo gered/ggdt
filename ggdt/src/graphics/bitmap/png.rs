@@ -83,7 +83,7 @@ impl ChunkHeader {
 
 	pub fn write<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), PngError> {
 		writer.write_u32::<BigEndian>(self.size)?;
-		writer.write(&self.name)?;
+		writer.write_all(&self.name)?;
 		Ok(())
 	}
 }
@@ -142,11 +142,11 @@ fn read_chunk_data<T: ReadBytesExt>(reader: &mut T, chunk_header: &ChunkHeader) 
 fn write_chunk<T: WriteBytesExt>(writer: &mut T, chunk_header: &ChunkHeader, data: &[u8]) -> Result<(), PngError> {
 	let mut hasher = crc32fast::Hasher::new();
 	hasher.write(&chunk_header.name);
-	hasher.write(&data);
+	hasher.write(data);
 	let checksum = hasher.finalize();
 
 	chunk_header.write(writer)?;
-	writer.write(data)?;
+	writer.write_all(data)?;
 	writer.write_u32::<BigEndian>(checksum)?;
 
 	Ok(())
@@ -308,12 +308,7 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 		let offset = x * self.bpp;
 		match self.format {
 			ColorFormat::IndexedColor => Ok(self.current[offset]),
-			_ => {
-				return Err(PngError::BadFile(format!(
-					"Unsupported color format for this PixelReader: {:?}",
-					self.format
-				)))
-			}
+			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 
@@ -324,12 +319,7 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 				self.current[offset] = pixel;
 				Ok(())
 			}
-			_ => {
-				return Err(PngError::BadFile(format!(
-					"Unsupported color format for this PixelReader: {:?}",
-					self.format
-				)))
-			}
+			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 }
@@ -343,9 +333,9 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				if let Some(palette) = palette {
 					Ok(palette[color])
 				} else {
-					return Err(PngError::BadFile(String::from(
+					Err(PngError::BadFile(String::from(
 						"No palette to map indexed-color format pixels to RGBA format destination",
-					)));
+					)))
 				}
 			}
 			ColorFormat::RGB => {
@@ -361,12 +351,7 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				let a = self.current[offset + 3];
 				Ok(to_argb32(a, r, g, b))
 			}
-			_ => {
-				return Err(PngError::BadFile(format!(
-					"Unsupported color format for this PixelReader: {:?}",
-					self.format
-				)))
-			}
+			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 
@@ -388,12 +373,7 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				self.current[offset + 3] = a;
 				Ok(())
 			}
-			_ => {
-				return Err(PngError::BadFile(format!(
-					"Unsupported color format for this PixelReader: {:?}",
-					self.format
-				)))
-			}
+			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 }
@@ -563,11 +543,11 @@ where
 
 		let mut hasher = crc32fast::Hasher::new();
 		hasher.write(&chunk_header.name);
-		hasher.write(&sub_chunk_bytes);
+		hasher.write(sub_chunk_bytes);
 		let checksum = hasher.finalize();
 
 		chunk_header.write(writer)?;
-		writer.write(sub_chunk_bytes)?;
+		writer.write_all(sub_chunk_bytes)?;
 		writer.write_u32::<BigEndian>(checksum)?;
 	}
 
@@ -594,7 +574,7 @@ impl IndexedBitmap {
 	}
 
 	pub fn to_png_bytes<T: WriteBytesExt>(&self, writer: &mut T, palette: &Palette) -> Result<(), PngError> {
-		write_png_bytes(writer, &self, ColorFormat::IndexedColor, Some(palette))
+		write_png_bytes(writer, self, ColorFormat::IndexedColor, Some(palette))
 	}
 
 	pub fn to_png_file(&self, path: &Path, palette: &Palette) -> Result<(), PngError> {
@@ -618,7 +598,7 @@ impl RgbaBitmap {
 	pub fn to_png_bytes<T: WriteBytesExt>(&self, writer: &mut T, format: PngFormat) -> Result<(), PngError> {
 		write_png_bytes(
 			writer,
-			&self,
+			self,
 			match format {
 				PngFormat::RGB => ColorFormat::RGB,
 				PngFormat::RGBA => ColorFormat::RGBA,

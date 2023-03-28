@@ -164,7 +164,7 @@ where
 		// preserve existing background first
 		self.cursor_background.blit_region(
 			GeneralBlitMethod::Solid,
-			&dest,
+			dest,
 			&Rect::new(x, y, self.cursor.width(), self.cursor.height()),
 			0,
 			0,

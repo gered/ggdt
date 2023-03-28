@@ -636,7 +636,7 @@ pub fn new_pixel_particle(context: &mut Core, x: i32, y: i32, velocity: Vector2,
 
 pub fn spawn_pixel_cloud(context: &mut Core, x: i32, y: i32, count: usize, speed: f32, lifetime: f32, color: u8) {
 	let mut angle = 0.0;
-	for i in 0..count {
+	for _ in 0..count {
 		angle += RADIANS_360 / count as f32;
 		let velocity = Vector2::from_angle(angle) * speed;
 		new_pixel_particle(context, x, y, velocity, lifetime, color);

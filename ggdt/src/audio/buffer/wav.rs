@@ -107,7 +107,7 @@ impl FormatChunk {
 		if chunk_header.size > 16 {
 			additional_data_length = reader.read_u16::<LittleEndian>()?;
 			let mut buffer = vec![0u8; additional_data_length as usize];
-			reader.read(&mut buffer)?;
+			reader.read_exact(&mut buffer)?;
 			additional_data = Some(buffer.into_boxed_slice());
 		} else {
 			additional_data_length = 0;
@@ -136,7 +136,7 @@ impl FormatChunk {
 		writer.write_u16::<LittleEndian>(self.bits_per_sample)?;
 		if self.additional_data_length > 0 {
 			writer.write_u16::<LittleEndian>(self.additional_data_length)?;
-			writer.write_all(&self.additional_data.as_ref().unwrap())?;
+			writer.write_all(self.additional_data.as_ref().unwrap())?;
 		}
 		Ok(())
 	}

@@ -21,12 +21,12 @@ pub static VGA_PALETTE_BYTES: &[u8] = include_bytes!("../../assets/vga.pal");
 
 #[inline]
 fn from_6bit(value: u8) -> u8 {
-	(value.wrapping_shl(2) | value.wrapping_shr(4)) as u8
+	value.wrapping_shl(2) | value.wrapping_shr(4)
 }
 
 #[inline]
 fn to_6bit(value: u8) -> u8 {
-	(value.wrapping_shr(2)) as u8
+	value.wrapping_shr(2)
 }
 
 // vga bios (0-63) format
@@ -40,7 +40,7 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
 		let color = to_rgb32(from_6bit(r), from_6bit(g), from_6bit(b));
-		colors[i as usize] = color;
+		colors[i] = color;
 	}
 	Ok(colors)
 }
@@ -54,7 +54,7 @@ fn write_palette_6bit<T: WriteBytesExt>(
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let (r, g, b) = from_rgb32(colors[i as usize]);
+		let (r, g, b) = from_rgb32(colors[i]);
 		writer.write_u8(to_6bit(r))?;
 		writer.write_u8(to_6bit(g))?;
 		writer.write_u8(to_6bit(b))?;
@@ -73,7 +73,7 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
 		let color = to_rgb32(r, g, b);
-		colors[i as usize] = color;
+		colors[i] = color;
 	}
 	Ok(colors)
 }
@@ -87,7 +87,7 @@ fn write_palette_8bit<T: WriteBytesExt>(
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let (r, g, b) = from_rgb32(colors[i as usize]);
+		let (r, g, b) = from_rgb32(colors[i]);
 		writer.write_u8(r)?;
 		writer.write_u8(g)?;
 		writer.write_u8(b)?;
@@ -425,8 +425,8 @@ impl Palette {
 		} as usize;
 		let subset = &mut self.colors[start..=end];
 		match step.signum() {
-			-1 => subset.rotate_left(step.abs() as usize),
-			1 => subset.rotate_right(step.abs() as usize),
+			-1 => subset.rotate_left(step.unsigned_abs() as usize),
+			1 => subset.rotate_right(step.unsigned_abs() as usize),
 			_ => {}
 		}
 	}

@@ -561,7 +561,7 @@ fn update_system_turn_attached_entities(context: &mut Core) {
 	for (parent_entity, attachment) in attachments.iter() {
 		// the parent may not have a facing direction. and if so, we don't need to change the
 		// attachment (child)
-		let parent_facing_direction = if let Some(facing_direction) = facing_directions.get(&parent_entity) {
+		let parent_facing_direction = if let Some(facing_direction) = facing_directions.get(parent_entity) {
 			facing_direction.0
 		} else {
 			continue;
@@ -586,7 +586,7 @@ fn update_system_position_attached_entities(context: &mut Core) {
 		// get the parent position used as the base for the attached (child) entity. if the
 		// parent doesn't have one (probably it is dead?), then skip this attachment
 		let parent_position;
-		if let Some(position) = positions.get(&parent_entity) {
+		if let Some(position) = positions.get(parent_entity) {
 			parent_position = position.0;
 		} else {
 			continue;

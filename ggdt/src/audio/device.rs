@@ -104,14 +104,12 @@ impl AudioChannel {
 
 		if let Some(sample) = self.next_sample() {
 			Some((sample as f32 * self.volume) as i16)
+		} else if self.loops {
+			self.position = 0;
+			None
 		} else {
-			if self.loops {
-				self.position = 0;
-				None
-			} else {
-				self.stop();
-				None
-			}
+			self.stop();
+			None
 		}
 	}
 
@@ -265,13 +263,11 @@ impl AudioDevice {
 	pub fn play_buffer(&mut self, buffer: &AudioBuffer, loops: bool) -> Result<Option<usize>, AudioDeviceError> {
 		if *buffer.spec() != self.spec {
 			Err(AudioDeviceError::AudioSpecMismatch)
+		} else if let Some((index, channel)) = self.stopped_channels_iter_mut().enumerate().next() {
+			channel.play_buffer(buffer, loops);
+			Ok(Some(index))
 		} else {
-			if let Some((index, channel)) = self.stopped_channels_iter_mut().enumerate().next() {
-				channel.play_buffer(buffer, loops);
-				Ok(Some(index))
-			} else {
-				Ok(None)
-			}
+			Ok(None)
 		}
 	}
 

@@ -31,6 +31,11 @@ impl<EventType> EventPublisher<EventType> {
 		self.queue.len()
 	}
 
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.queue.is_empty()
+	}
+
 	/// Clears the current event queue. The events will not be processed/handled.
 	#[inline]
 	pub fn clear(&mut self) {
@@ -87,6 +92,11 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
 		self.listeners.len()
 	}
 
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.listeners.is_empty()
+	}
+
 	/// Unregisters all event listeners/managers previously registered with this manager.
 	#[inline]
 	pub fn clear(&mut self) {
@@ -113,7 +123,7 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
 		// HACK?: comparing function pointers -- see above "HACK?" comment. same concern here.
 		self.listeners.retain(|&l| l as usize != listener as usize);
 		// return true if the listener was removed
-		return before_size != self.listeners.len();
+		before_size != self.listeners.len()
 	}
 
 	/// Moves the queue from the given [`EventPublisher`] to this manager in preparation for
@@ -184,13 +194,7 @@ mod tests {
 
 	fn message_filter(event: &TestEvent, _context: &mut TestContext) -> bool {
 		match event {
-			TestEvent::Message(s) => {
-				if *s == "filter" {
-					true // means event was handled, and no subsequent listeners should be called
-				} else {
-					false
-				}
-			}
+			TestEvent::Message(s) => *s == "filter",
 			_ => false,
 		}
 	}

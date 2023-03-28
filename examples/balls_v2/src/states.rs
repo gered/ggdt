@@ -34,7 +34,7 @@ impl Game {
 			sprite.blit_region(
 				IndexedBlitMethod::Solid,
 				&balls_bmp,
-				&Rect::new(i as i32 * BALL_SIZE as i32, 0, BALL_SIZE as u32, BALL_SIZE as u32),
+				&Rect::new(i as i32 * BALL_SIZE, 0, BALL_SIZE as u32, BALL_SIZE as u32),
 				0,
 				0,
 			);

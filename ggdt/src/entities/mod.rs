@@ -200,11 +200,7 @@ impl Entities {
 	/// no component store for this type of component, `None` is returned.
 	#[inline]
 	pub fn components<T: Component>(&self) -> Option<RefComponents<T>> {
-		if let Some(component_store) = self.get_component_store() {
-			Some(component_store.borrow())
-		} else {
-			None
-		}
+		self.get_component_store().map(|component_store| component_store.borrow())
 	}
 
 	/// Returns a reference to the mutable component store for the given component type. This allows
@@ -216,11 +212,7 @@ impl Entities {
 	/// instead.
 	#[inline]
 	pub fn components_mut<T: Component>(&self) -> Option<RefMutComponents<T>> {
-		if let Some(component_store) = self.get_component_store() {
-			Some(component_store.borrow_mut())
-		} else {
-			None
-		}
+		self.get_component_store().map(|component_store| component_store.borrow_mut())
 	}
 
 	/// Initializes a component store for the given component type if one does not exist already.
@@ -725,8 +717,8 @@ mod tests {
 			let mut healths = em.components_mut::<Health>().unwrap();
 			let mut positions = em.components_mut::<Position>().unwrap();
 
-			let health = healths.get_mut(&entity);
-			let position = positions.get_mut(&entity);
+			let health = healths.get_mut(entity);
+			let position = positions.get_mut(entity);
 
 			println!("entity {}, health: {:?}, position: {:?}", name.0, health, position);
 
@@ -768,7 +760,7 @@ mod tests {
 		let mut positions = context.entities.components_mut::<Position>().unwrap();
 		let velocities = context.entities.components::<Velocity>().unwrap();
 		for (entity, position) in positions.iter_mut() {
-			if let Some(velocity) = velocities.get(&entity) {
+			if let Some(velocity) = velocities.get(entity) {
 				position.0 += velocity.0;
 				position.1 += velocity.1;
 			}

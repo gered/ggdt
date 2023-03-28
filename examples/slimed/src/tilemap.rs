@@ -47,17 +47,17 @@ impl TileMap {
 	}
 
 	#[inline]
-	pub fn lower(&self) -> &Box<[i32]> {
+	pub fn lower(&self) -> &[i32] {
 		&self.layers[0]
 	}
 
 	#[inline]
-	pub fn upper(&self) -> &Box<[i32]> {
+	pub fn upper(&self) -> &[i32] {
 		&self.layers[1]
 	}
 
 	#[inline]
-	pub fn collision(&self) -> &Box<[i32]> {
+	pub fn collision(&self) -> &[i32] {
 		&self.layers[2]
 	}
 

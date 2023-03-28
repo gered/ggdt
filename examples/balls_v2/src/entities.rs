@@ -102,7 +102,7 @@ fn update_system_movement(context: &mut Context) {
 	let velocities = context.entities.components::<Velocity>();
 
 	for (entity, position) in positions.iter_mut() {
-		if let Some(velocity) = velocities.get(&entity) {
+		if let Some(velocity) = velocities.get(entity) {
 			position.0 += velocity.0 * context.delta;
 		}
 	}
@@ -114,8 +114,8 @@ fn update_system_collision(context: &mut Context) {
 	let mut velocities = context.entities.components_mut::<Velocity>();
 
 	for (entity, _) in bounceables.iter() {
-		let mut position = positions.get_mut(&entity).unwrap();
-		let mut velocity = velocities.get_mut(&entity).unwrap();
+		let mut position = positions.get_mut(entity).unwrap();
+		let mut velocity = velocities.get_mut(entity).unwrap();
 
 		let mut bounced = false;
 		if position.0.x as i32 <= 0 || position.0.x as i32 + BALL_SIZE >= context.system.res.video.right() as i32 {
@@ -153,7 +153,7 @@ fn update_system_leave_particle_trail(context: &mut Context) {
 
 		if leaves_trail.timer <= 0.0 {
 			leaves_trail.timer = BALL_TRAIL_PARTICLE_INTERVAL;
-			let position = positions.get(&entity).unwrap();
+			let position = positions.get(entity).unwrap();
 			let mut trail_position = position.0;
 			trail_position.x += (BALL_SIZE / 2) as f32;
 			trail_position.y += (BALL_SIZE / 2) as f32;
@@ -167,7 +167,7 @@ fn render_system_sprites(context: &mut Context) {
 	let positions = context.entities.components::<Position>();
 
 	for (entity, sprite_index) in sprite_indices.iter() {
-		let position = positions.get(&entity).unwrap();
+		let position = positions.get(entity).unwrap();
 		context.system.res.video.blit(
 			IndexedBlitMethod::Transparent(0),
 			&context.sprites[sprite_index.0],
@@ -185,13 +185,13 @@ fn render_system_particles(context: &mut Context) {
 	let lifetimes = context.entities.components::<LifeLeft>();
 
 	for (entity, _) in particles.iter() {
-		let position = positions.get(&entity).unwrap();
+		let position = positions.get(entity).unwrap();
 
 		let pixel_color;
-		if let Some(color) = colors.get(&entity) {
+		if let Some(color) = colors.get(entity) {
 			pixel_color = Some(color.0);
-		} else if let Some(color_by_lifetime) = colors_by_lifetime.get(&entity) {
-			let lifetime = lifetimes.get(&entity).unwrap();
+		} else if let Some(color_by_lifetime) = colors_by_lifetime.get(entity) {
+			let lifetime = lifetimes.get(entity).unwrap();
 			let percent_life = lifetime.life / lifetime.initial;
 			pixel_color = Some(if percent_life >= 0.8 {
 				color_by_lifetime.0

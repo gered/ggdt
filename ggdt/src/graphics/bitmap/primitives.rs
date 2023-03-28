@@ -56,11 +56,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// clipping region, None is returned.
 	#[inline]
 	pub fn get_pixel(&self, x: i32, y: i32) -> Option<PixelType> {
-		if let Some(pixels) = self.pixels_at(x, y) {
-			Some(pixels[0])
-		} else {
-			None
-		}
+		self.pixels_at(x, y).map(|pixels| pixels[0])
 	}
 
 	/// Gets the pixel at the given coordinates. The coordinates are not checked for validity, so

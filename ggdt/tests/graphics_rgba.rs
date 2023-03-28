@@ -179,16 +179,16 @@ fn blended_pixel_drawing() {
 	let blend = BlendFunction::Blend;
 
 	for i in 0..10 {
-		screen.set_blended_pixel(0 + i, 0 + i, COLOR_BLUE_HALF_ALPHA, blend);
-		screen.set_blended_pixel(319 - i, 0 + i, COLOR_GREEN_HALF_ALPHA, blend);
-		screen.set_blended_pixel(0 + i, 239 - i, COLOR_CYAN_HALF_ALPHA, blend);
+		screen.set_blended_pixel(i, i, COLOR_BLUE_HALF_ALPHA, blend);
+		screen.set_blended_pixel(319 - i, i, COLOR_GREEN_HALF_ALPHA, blend);
+		screen.set_blended_pixel(i, 239 - i, COLOR_CYAN_HALF_ALPHA, blend);
 		screen.set_blended_pixel(319 - i, 239 - i, COLOR_RED_HALF_ALPHA, blend);
 	}
 
 	unsafe {
 		for i in 0..10 {
-			screen.set_blended_pixel_unchecked(5 + i, 0 + i, COLOR_BLUE_HALF_ALPHA, blend);
-			screen.set_blended_pixel_unchecked(314 - i, 0 + i, COLOR_GREEN_HALF_ALPHA, blend);
+			screen.set_blended_pixel_unchecked(5 + i, i, COLOR_BLUE_HALF_ALPHA, blend);
+			screen.set_blended_pixel_unchecked(314 - i, i, COLOR_GREEN_HALF_ALPHA, blend);
 			screen.set_blended_pixel_unchecked(5 + i, 239 - i, COLOR_CYAN_HALF_ALPHA, blend);
 			screen.set_blended_pixel_unchecked(314 - i, 239 - i, COLOR_RED_HALF_ALPHA, blend);
 		}

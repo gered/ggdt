@@ -38,23 +38,23 @@ pub fn draw_window(
 	dest.filled_rect(left + 8, top + 8, right - 8, bottom - 8, 1);
 
 	// corners
-	dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[2], left, top);
-	dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[3], right - 8, top);
-	dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[4], left, bottom - 8);
-	dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[5], right - 8, bottom - 8);
+	dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[2], left, top);
+	dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[3], right - 8, top);
+	dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[4], left, bottom - 8);
+	dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[5], right - 8, bottom - 8);
 
 	// top and bottom edges
 	for i in 0..((right - left) / 8) - 2 {
 		let x = left + 8 + (i * 8);
-		dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[9], x, top);
-		dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[8], x, bottom - 8);
+		dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[9], x, top);
+		dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[8], x, bottom - 8);
 	}
 
 	// left and right edges
 	for i in 0..((bottom - top) / 8) - 2 {
 		let y = top + 8 + (i * 8);
-		dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[6], left, y);
-		dest.blit_region(IndexedBlitMethod::Transparent(0), &ui.bitmap(), &ui[7], right - 8, y);
+		dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[6], left, y);
+		dest.blit_region(IndexedBlitMethod::Transparent(0), ui.bitmap(), &ui[7], right - 8, y);
 	}
 }
 

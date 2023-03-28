@@ -190,11 +190,7 @@ fn main() -> Result<()> {
 					"channel {} - {} {}",
 					index,
 					if status.playing { "playing" } else { "not playing" },
-					if status.playing {
-						String::from(format!("{} / {}", status.position, status.size))
-					} else {
-						String::new()
-					}
+					if status.playing { format!("{} / {}", status.position, status.size) } else { String::new() }
 				),
 				16,
 				y,

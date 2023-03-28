@@ -41,7 +41,7 @@ fn event_handler(event: &Event, context: &mut Core) -> bool {
 				move_entity_forward(context, *entity);
 			}
 		}
-		Event::Spawn(entity) => {
+		Event::Spawn(_entity) => {
 			// todo
 		}
 		Event::AnimationFinished(entity) => {

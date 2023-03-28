@@ -170,7 +170,7 @@ impl SystemResourcesConfig for DosLikeConfig {
 			channels: Some(TARGET_AUDIO_CHANNELS),
 			samples: None,
 		};
-		let mut audio = Audio::new(audio_spec, &audio_subsystem)?;
+		let mut audio = Audio::new(audio_spec, audio_subsystem)?;
 		audio.resume();
 		let audio_queue = AudioQueue::new(&audio);
 

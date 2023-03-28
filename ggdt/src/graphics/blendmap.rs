@@ -82,7 +82,7 @@ impl BlendMap {
 			blend_map
 				.set_mapping(
 					source_color,
-					idx as u8,
+					idx,
 					(gradient_size - 1) - (lit / (256 / gradient_size as u32) as u8) + source_color,
 				)
 				.unwrap();
@@ -240,11 +240,7 @@ impl BlendMap {
 	/// is not in this blend map, `None` is returned.
 	#[inline]
 	pub fn blend(&self, source_color: u8, dest_color: u8) -> Option<u8> {
-		if let Some(mapping) = self.get_mapping(source_color) {
-			Some(mapping[dest_color as usize])
-		} else {
-			None
-		}
+		self.get_mapping(source_color).map(|mapping| mapping[dest_color as usize])
 	}
 
 	pub fn load_from_file(path: &Path) -> Result<Self, BlendMapError> {

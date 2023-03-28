@@ -264,11 +264,7 @@ impl<ContextType> States<ContextType> {
 	}
 
 	fn state_of_front_state(&self) -> Option<State> {
-		if let Some(state) = self.states.front() {
-			Some(state.current_state())
-		} else {
-			None
-		}
+		self.states.front().map(|state| state.current_state())
 	}
 
 	fn process_state_changes(&mut self, context: &mut ContextType) -> Result<(), StateError> {
@@ -522,11 +518,7 @@ mod tests {
 			if self.counter > 0 {
 				self.counter -= 1;
 			}
-			if self.counter == 0 {
-				true
-			} else {
-				false
-			}
+			self.counter == 0
 		}
 
 		fn state_change(&mut self, new_state: State, old_state: State, context: &mut TestContext) {

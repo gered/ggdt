@@ -227,14 +227,12 @@ impl IndexedBitmap {
 				if run_count == 0 {
 					run_count = 1;
 					run_pixel = pixel;
+				} else if (pixel != run_pixel) || (run_count >= 63) {
+					write_pcx_data(writer, run_count, run_pixel)?;
+					run_count = 1;
+					run_pixel = pixel;
 				} else {
-					if (pixel != run_pixel) || (run_count >= 63) {
-						write_pcx_data(writer, run_count, run_pixel)?;
-						run_count = 1;
-						run_pixel = pixel;
-					} else {
-						run_count += 1;
-					}
+					run_count += 1;
 				}
 			}
 
