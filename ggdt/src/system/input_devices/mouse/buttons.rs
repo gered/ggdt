@@ -1,6 +1,7 @@
 use bitflags::bitflags;
 
 bitflags! {
+	#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 	pub struct MouseButtons: u32 {
 		const LEFT_BUTTON = sdl2::mouse::MouseButton::Left as u32;
 		const MIDDLE_BUTTON = sdl2::mouse::MouseButton::Middle as u32;

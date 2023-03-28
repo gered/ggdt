@@ -15,7 +15,7 @@ use crate::system::input_devices::keyboard::codes::Keycode;
 use crate::system::input_devices::keyboard::scancodes::Scancode;
 use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum WindowEvent {
 	Shown,
 	Hidden,
@@ -58,6 +58,7 @@ impl From<sdl2::event::WindowEvent> for WindowEvent {
 }
 
 bitflags! {
+	#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 	pub struct KeyModifiers: u16 {
 		const NOMOD = 0x0000;
 		const LSHIFTMOD = 0x0001;
@@ -75,7 +76,7 @@ bitflags! {
 	}
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum KeyboardEvent {
 	KeyUp {
 		keycode: Option<Keycode>, //
@@ -91,7 +92,7 @@ pub enum KeyboardEvent {
 	},
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum MouseEvent {
 	MouseMotion {
 		x: i32, //
@@ -114,7 +115,7 @@ pub enum MouseEvent {
 	},
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum SystemEvent {
 	Quit,
 	AppTerminating,
