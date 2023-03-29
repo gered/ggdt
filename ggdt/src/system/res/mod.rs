@@ -3,6 +3,7 @@ use thiserror::Error;
 use crate::audio::device::AudioDeviceError;
 use crate::audio::AudioError;
 use crate::system::event::SystemEvent;
+use crate::system::framebuffer::SdlFramebufferError;
 
 pub mod dos_like;
 pub mod standard;
@@ -11,6 +12,9 @@ pub mod standard;
 pub enum SystemResourcesError {
 	#[error("SystemResources SDL error: {0}")]
 	SDLError(String),
+
+	#[error("SdlFramebufferError: {0}")]
+	SdlFramebufferError(#[from] SdlFramebufferError),
 
 	#[error("System audioerror: {0}")]
 	AudioError(#[from] AudioError),
