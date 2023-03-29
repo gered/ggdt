@@ -188,7 +188,7 @@ impl Game {
 }
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new();
+	let config = DosLikeConfig::default();
 	let system = SystemBuilder::new() //
 		.window_title("Slime Stabbing Simulator")
 		.vsync(true)

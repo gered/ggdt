@@ -296,7 +296,7 @@ where
 	/// ```no_run
 	/// use ggdt::prelude::*;
 	///
-	/// let config = DosLikeConfig::new();
+	/// let config = DosLikeConfig::default();
 	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
 	///
 	/// while !system.do_events().unwrap() {
@@ -311,7 +311,7 @@ where
 	/// ```no_run
 	/// use ggdt::prelude::*;
 	///
-	/// let config = DosLikeConfig::new();
+	/// let config = DosLikeConfig::default();
 	/// let mut system = SystemBuilder::new().window_title("Example").build(config).unwrap();
 	///
 	/// 'mainloop: loop {

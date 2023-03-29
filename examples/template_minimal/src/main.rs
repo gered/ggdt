@@ -3,7 +3,7 @@ use anyhow::Result;
 use ggdt::prelude::*;
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new();
+	let config = DosLikeConfig::default();
 	let mut system = SystemBuilder::new() //
 		.window_title("Minimal Template")
 		.vsync(true)

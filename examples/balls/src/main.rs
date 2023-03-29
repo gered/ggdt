@@ -18,7 +18,7 @@ struct Ball {
 }
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new();
+	let config = DosLikeConfig::default();
 	let mut system = SystemBuilder::new() //
 		.window_title("Flying Balls!")
 		.vsync(true)

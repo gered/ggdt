@@ -11,7 +11,7 @@ mod entities;
 mod states;
 
 fn main() -> Result<()> {
-	let config = DosLikeConfig::new();
+	let config = DosLikeConfig::default();
 	let system = SystemBuilder::new() //
 		.window_title("Flying Balls")
 		.vsync(true)
