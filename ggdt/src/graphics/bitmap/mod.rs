@@ -24,6 +24,9 @@ pub enum BitmapError {
 	#[error("Unknown bitmap file type: {0}")]
 	UnknownFileType(String),
 
+	#[error("Bitmap I/O error")]
+	IOError(#[from] std::io::Error),
+
 	#[error("Bitmap IFF file error")]
 	IffError(#[from] iff::IffError),
 
