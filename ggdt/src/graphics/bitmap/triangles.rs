@@ -29,17 +29,15 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		c_tex: Vector2,
 		texture: &Bitmap<PixelType>,
 	) {
-		let texture_width = texture.width() as f32;
-		let texture_height = texture.height() as f32;
 		let inverse_area = 1.0 / cross(a, b, c); // inverting to avoid division
 		self.triangle_2d_custom(
 			a, //
 			b,
 			c,
 			|dest_pixels, w0, w1, w2| {
-				let u = (w0 * a_tex.x + w1 * b_tex.x + w2 * c_tex.x) * inverse_area * texture_width;
-				let v = (w0 * a_tex.y + w1 * b_tex.y + w2 * c_tex.y) * inverse_area * texture_height;
-				*dest_pixels = unsafe { texture.get_pixel_unchecked(u as i32, v as i32) };
+				let u = (w0 * a_tex.x + w1 * b_tex.x + w2 * c_tex.x) * inverse_area;
+				let v = (w0 * a_tex.y + w1 * b_tex.y + w2 * c_tex.y) * inverse_area;
+				*dest_pixels = texture.sample_at(u, v);
 			},
 		)
 	}
