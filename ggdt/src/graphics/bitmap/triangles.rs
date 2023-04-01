@@ -90,6 +90,8 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 
 			let row_pixels = unsafe { std::slice::from_raw_parts_mut(pixels, draw_width) };
 			for pixel in row_pixels.iter_mut() {
+				// note that for a counter-clockwise vertex winding order with the direction of Y+ going down instead
+				// of up, we need to test for *negative* area when checking if we're inside the triangle
 				if w0 < 0.0 && w1 < 0.0 && w2 < 0.0 {
 					pixel_fn(pixel, w0, w1, w2);
 				}
