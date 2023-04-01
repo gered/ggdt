@@ -13,7 +13,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			a, //
 			b,
 			c,
-			|dest_pixels, _w0, _w1, _w2| unsafe {
+			|dest_pixels, _w0, _w1, _w2| {
 				*dest_pixels = color;
 			},
 		)
@@ -25,7 +25,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		a: Vector2,
 		b: Vector2,
 		c: Vector2,
-		pixel_fn: impl Fn(*mut PixelType, f32, f32, f32),
+		pixel_fn: impl Fn(&mut PixelType, f32, f32, f32),
 	) {
 		// based off the triangle rasterization algorithm presented in these article series' (as well as others)
 		// https://fgiesen.wordpress.com/2013/02/17/optimizing-sw-occlusion-culling-index/
