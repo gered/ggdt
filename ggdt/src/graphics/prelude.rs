@@ -10,6 +10,7 @@ pub use crate::graphics::{
 		png::*,
 		primitives::*,
 		rgb::{blit::*, primitives::*, *},
+		triangles::*,
 		*,
 	},
 	bitmapatlas::*,

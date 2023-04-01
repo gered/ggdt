@@ -12,6 +12,7 @@ pub mod pcx;
 pub mod png;
 pub mod primitives;
 pub mod rgb;
+pub mod triangles;
 
 #[derive(Error, Debug)]
 pub enum BitmapError {
