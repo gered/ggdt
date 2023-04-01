@@ -65,6 +65,24 @@ pub fn to_argb32(a: u8, r: u8, g: u8, b: u8) -> u32 {
 	(b as u32) + ((g as u32) << 8) + ((r as u32) << 16) + ((a as u32) << 24)
 }
 
+/// Converts a set of individual ARGB normalized components to a combined 32-bit color value,
+/// packed into the format 0xAARRGGBB.
+///
+/// # Arguments
+///
+/// * `a`: the normalized alpha component (0.0 to 1.0)
+/// * `r`: the normalized red component (0.0 to 1.0)
+/// * `g`: the normalized green component (0.0 to 1.0)
+/// * `b`: the normalized blue component (0.0 to 1.0)
+///
+/// returns: the u32 packed color
+pub fn to_argb32_normalized(a: f32, r: f32, g: f32, b: f32) -> u32 {
+	(((b * 255.0) as u32) & 0xff)
+		+ ((((g * 255.0) as u32) & 0xff) << 8)
+		+ ((((r * 255.0) as u32) & 0xff) << 16)
+		+ ((((a * 255.0) as u32) & 0xff) << 24)
+}
+
 /// Extracts the individual ARGB components out of a combined 32-bit color value which is in the
 /// format 0xAARRGGBB
 ///
@@ -79,6 +97,22 @@ pub fn from_argb32(argb: u32) -> (u8, u8, u8, u8) {
 	let r = ((argb & 0x00ff0000) >> 16) as u8;
 	let g = ((argb & 0x0000ff00) >> 8) as u8;
 	let b = (argb & 0x000000ff) as u8;
+	(a, r, g, b)
+}
+
+/// Extracts the individual ARGB normalized components out of a combined 32-bit color value which
+/// is in the format 0xAARRGGBB
+///
+/// # Arguments
+///
+/// * `argb`: the 32-bit packed color
+///
+/// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: alpha, red, green, blue
+pub fn from_argb32_normalized(argb: u32) -> (f32, f32, f32, f32) {
+	let a = ((argb & 0xff000000) >> 24) as f32 / 255.0;
+	let r = ((argb & 0x00ff0000) >> 16) as f32 / 255.0;
+	let g = ((argb & 0x0000ff00) >> 8) as f32 / 255.0;
+	let b = (argb & 0x000000ff) as f32 / 255.0;
 	(a, r, g, b)
 }
 
@@ -97,6 +131,20 @@ pub fn to_rgb32(r: u8, g: u8, b: u8) -> u32 {
 	to_argb32(255, r, g, b)
 }
 
+/// Converts a set of individual RGB normalized components to a combined 32-bit color value, packed
+/// into the format 0xAARRGGBB. Substitutes a value of 1.0 for the missing alpha component.
+///
+/// # Arguments
+///
+/// * `r`: the normalized red component (0.0 to 1.0)
+/// * `g`: the normalized green component (0.0 to 1.0)
+/// * `b`: the normalized blue component (0.0 to 1.0)
+///
+/// returns: the u32 packed color
+pub fn to_rgb32_normalized(r: f32, g: f32, b: f32) -> u32 {
+	to_argb32_normalized(1.0, r, g, b)
+}
+
 /// Extracts the individual RGB components out of a combined 32-bit color value which is in the
 /// format 0xAARRGGBB. Ignores the alpha component.
 ///
@@ -111,6 +159,22 @@ pub fn from_rgb32(rgb: u32) -> (u8, u8, u8) {
 	let r = ((rgb & 0x00ff0000) >> 16) as u8;
 	let g = ((rgb & 0x0000ff00) >> 8) as u8;
 	let b = (rgb & 0x000000ff) as u8;
+	(r, g, b)
+}
+
+/// Extracts the individual RGB normalized components out of a combined 32-bit color value which
+/// is in the format 0xAARRGGBB. Ignores the alpha component.
+///
+/// # Arguments
+///
+/// * `argb`: the 32-bit packed color
+///
+/// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: red, green, blue
+pub fn from_rgb32_normalized(rgb: u32) -> (f32, f32, f32) {
+	// ignore alpha component at 0xff000000 ...
+	let r = ((rgb & 0x00ff0000) >> 16) as f32 / 255.0;
+	let g = ((rgb & 0x0000ff00) >> 8) as f32 / 255.0;
+	let b = (rgb & 0x000000ff) as f32 / 255.0;
 	(r, g, b)
 }
 
