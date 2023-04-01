@@ -81,7 +81,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			for (idx, pixel) in row_pixels.iter_mut().enumerate() {
 				let x = min_x + idx as i32;
 
-				let p = Vector2::new(x as f32, y as f32);
+				let p = Vector2::new(x as f32 + 0.5, y as f32 + 0.5);
 				let w0 = cross(b, c, p);
 				let w1 = cross(c, a, p);
 				let w2 = cross(a, b, p);
