@@ -60,15 +60,15 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		//       ordering but the math presented seems to only work as-is with clockwise ordering ... *grumble*
 		// TODO: implement fill rules, probably using top-left ordering as most 3d APIs do i guess
 
-		let min_x = a.x.min(b.x).min(c.x);
-		let min_y = a.y.min(b.y).min(c.y);
-		let max_x = a.x.max(b.x).max(c.x);
-		let max_y = a.y.max(b.y).max(c.y);
+		let min_x = a.x.min(b.x).min(c.x).floor() as i32;
+		let min_y = a.y.min(b.y).min(c.y).floor() as i32;
+		let max_x = a.x.max(b.x).max(c.x).ceil() as i32;
+		let max_y = a.y.max(b.y).max(c.y).ceil() as i32;
 
-		let min_x = std::cmp::max(self.clip_region().x, min_x as i32);
-		let min_y = std::cmp::max(self.clip_region().y, min_y as i32);
-		let max_x = std::cmp::min(self.clip_region().right(), max_x as i32);
-		let max_y = std::cmp::min(self.clip_region().bottom(), max_y as i32);
+		let min_x = std::cmp::max(self.clip_region().x, min_x);
+		let min_y = std::cmp::max(self.clip_region().y, min_y);
+		let max_x = std::cmp::min(self.clip_region().right(), max_x);
+		let max_y = std::cmp::min(self.clip_region().bottom(), max_y);
 
 		let draw_width = (max_x - min_x + 1) as usize;
 		let next_row_inc = self.width() as usize;
@@ -79,7 +79,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 			for (idx, pixel) in row_pixels.iter_mut().enumerate() {
 				let x = min_x + idx as i32;
 
-				let p = Vector2::new(x as f32 + 0.5, y as f32 + 0.5);
+				let p = Vector2::new(x as f32, y as f32);
 				let w0 = cross(b, c, p);
 				let w1 = cross(c, a, p);
 				let w2 = cross(a, b, p);

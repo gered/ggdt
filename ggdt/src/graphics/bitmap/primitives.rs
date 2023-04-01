@@ -3,6 +3,7 @@ use std::mem::swap;
 use crate::graphics::bitmap::Bitmap;
 use crate::graphics::font::{Character, Font, FontRenderOpts};
 use crate::graphics::Pixel;
+use crate::math::lerp;
 use crate::math::rect::Rect;
 
 impl<PixelType: Pixel> Bitmap<PixelType> {
@@ -68,8 +69,14 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 
 	#[inline]
 	pub fn sample_at(&self, u: f32, v: f32) -> PixelType {
-		let x = (u * self.width as f32) as i32 % self.width as i32;
-		let y = (v * self.height as f32) as i32 % self.height as i32;
+		// HACK: the 0.00001 shit. there is some weird and classic "off-by-1" issue happening SOMEWHERE in the
+		//       textured 2d triangle rendering and i cannot find it. every other article i've read on the subject
+		//       doesn't seem to do anything special here so either i'm doing something wrong or no one else tests
+		//       their shit either. i just don't know which it is! but this hack fix definitely is all kinds of shit.
+		//       i have no doubt that this "Fix" will probably be the source of OTHER issues too that i've just not
+		//       seen yet in my testing. ugh.
+		let x = lerp(0.0, self.width as f32 - 0.00001, u) as i32 % self.width as i32;
+		let y = lerp(0.0, self.height as f32 - 0.00001, v) as i32 % self.height as i32;
 		unsafe { self.get_pixel_unchecked(x, y) }
 	}
 
