@@ -5,11 +5,23 @@ pub use crate::graphics::{
 		general::*,
 		gif::*,
 		iff::*,
-		indexed::{blit::*, primitives::*, *},
+		indexed::{
+			//
+			blit::*,
+			primitives::*,
+			triangles::*,
+			*,
+		},
 		pcx::*,
 		png::*,
 		primitives::*,
-		rgb::{blit::*, primitives::*, *},
+		rgb::{
+			//
+			blit::*,
+			primitives::*,
+			triangles::*,
+			*,
+		},
 		triangles::*,
 		*,
 	},

@@ -6,6 +6,7 @@ use crate::graphics::palette::Palette;
 
 pub mod blit;
 pub mod primitives;
+pub mod triangles;
 
 pub type IndexedBitmap = Bitmap<u8>;
 

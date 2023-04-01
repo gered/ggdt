@@ -7,6 +7,7 @@ use crate::graphics::palette::Palette;
 
 pub mod blit;
 pub mod primitives;
+pub mod triangles;
 
 pub type RgbaBitmap = Bitmap<u32>;
 
