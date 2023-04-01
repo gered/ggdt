@@ -66,6 +66,13 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		*(self.pixels_at_ptr_unchecked(x, y))
 	}
 
+	#[inline]
+	pub fn sample_at(&self, u: f32, v: f32) -> PixelType {
+		let x = (u * self.width as f32) as i32 % self.width as i32;
+		let y = (v * self.height as f32) as i32 % self.height as i32;
+		unsafe { self.get_pixel_unchecked(x, y) }
+	}
+
 	/// Renders a single character using the font given.
 	#[inline]
 	pub fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<PixelType>, font: &T) {
