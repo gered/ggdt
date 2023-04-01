@@ -4,8 +4,8 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use ggdt::prelude::*;
 
-pub static SMALL_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/test.gif");
-pub static LARGE_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/test_image.gif");
+pub static SMALL_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/gif/small.gif");
+pub static LARGE_GIF_FILE_BYTES: &[u8] = include_bytes!("../test-assets/gif/large_1.gif");
 
 pub fn criterion_benchmark(c: &mut Criterion) {
 	c.bench_function("loading_small_gif", |b| {
