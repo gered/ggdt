@@ -58,7 +58,7 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 	let is_ac_bottom_right = is_bottom_right_edge(a, c);
 	let is_ba_bottom_right = is_bottom_right_edge(b, a);
 
-	let p = Vector2::new(min_x as f32, min_y as f32);
+	let p = Vector2::new(min_x as f32 + 0.5, min_y as f32 + 0.5);
 	let mut w0_row = edge_function(b, c, p);
 	let mut w1_row = edge_function(c, a, p);
 	let mut w2_row = edge_function(a, b, p);
