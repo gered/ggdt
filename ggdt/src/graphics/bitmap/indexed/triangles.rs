@@ -4,7 +4,7 @@ use crate::math::vector2::Vector2;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum IndexedTriangle2d<'a> {
-	SolidSingleColor {
+	Solid {
 		position: [Vector2; 3], //
 		color: u8,
 	},
@@ -19,7 +19,7 @@ impl IndexedBitmap {
 	pub fn triangle_2d(&mut self, triangle: &IndexedTriangle2d) {
 		use IndexedTriangle2d::*;
 		match triangle {
-			SolidSingleColor { position, color } => {
+			Solid { position, color } => {
 				per_pixel_triangle_2d(
 					self, //
 					position[0],

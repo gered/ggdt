@@ -5,7 +5,7 @@ use crate::prelude::{from_rgb32, from_rgb32_normalized, to_rgb32_normalized};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum RgbaTriangle2d<'a> {
-	SolidSingleColor {
+	Solid {
 		position: [Vector2; 3], //
 		color: u32,
 	},
@@ -24,7 +24,7 @@ impl RgbaBitmap {
 	pub fn triangle_2d(&mut self, triangle: &RgbaTriangle2d) {
 		use RgbaTriangle2d::*;
 		match triangle {
-			SolidSingleColor { position, color } => {
+			Solid { position, color } => {
 				per_pixel_triangle_2d(
 					self, //
 					position[0],

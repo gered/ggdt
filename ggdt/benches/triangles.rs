@@ -24,14 +24,14 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	let texcoord_1_1 = Vector2::new(1.0, 1.0);
 
 	c.bench_function("indexedbitmap_triangle_2d_solid_color", |b| {
-		let triangle = IndexedTriangle2d::SolidSingleColor { position: [big_v1, big_v2, big_v3], color: 5 };
+		let triangle = IndexedTriangle2d::Solid { position: [big_v1, big_v2, big_v3], color: 5 };
 		b.iter(|| {
 			dest.triangle_2d(black_box(&triangle));
 		})
 	});
 
 	c.bench_function("indexedbitmap_triangle_2d_solid_color_small", |b| {
-		let triangle = IndexedTriangle2d::SolidSingleColor { position: [small_v1, small_v2, small_v3], color: 5 };
+		let triangle = IndexedTriangle2d::Solid { position: [small_v1, small_v2, small_v3], color: 5 };
 		b.iter(|| {
 			dest.triangle_2d(black_box(&triangle));
 		})
