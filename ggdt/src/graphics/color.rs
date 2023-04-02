@@ -268,6 +268,28 @@ pub fn tint_argb32(color: u32, tint: u32) -> u32 {
 	)
 }
 
+/// Multiplies two colors together, returing the result. The multiplication is performed by
+/// individually multiplying each color component using the formula `(component * component) / 255`.
+/// Both colors should be 32-bit packed colors in the format 0xAARRGGBB.
+///
+/// # Arguments
+///
+/// * `a`: the first 32-bit packed color
+/// * `b`: the second 32-bit packed color
+///
+/// returns: the resulting color from the multiplication
+#[inline]
+pub fn multiply_argb32(a: u32, b: u32) -> u32 {
+	let (a_a, a_r, a_g, a_b) = from_argb32(a);
+	let (b_a, b_r, b_g, b_b) = from_argb32(b);
+	to_argb32(
+		((a_a as u32 * b_a as u32) / 255) as u8,
+		((a_r as u32 * b_r as u32) / 255) as u8,
+		((a_g as u32 * b_g as u32) / 255) as u8,
+		((a_b as u32 * b_b as u32) / 255) as u8,
+	)
+}
+
 /// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB.
 ///
 /// # Arguments
