@@ -40,8 +40,8 @@ pub const RIGHT: f32 = RADIANS_0;
 /// precision of the provided epsilon value.
 #[inline]
 pub fn nearly_equal(a: f32, b: f32, epsilon: f32) -> bool {
-	// HACK/TODO: this is a shitty way to do this. but it's "good enough" for me ...
-	(a - b).abs() <= epsilon
+	// this could still be improved
+	a == b || (a - b).abs() <= epsilon
 }
 
 /// Linearly interpolates between two values.
