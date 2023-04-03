@@ -2,6 +2,7 @@ use crate::graphics::bitmap::Bitmap;
 use crate::graphics::Pixel;
 use crate::math::vector2::Vector2;
 use crate::math::NearlyEqual;
+use crate::prelude::Rect;
 
 #[inline]
 pub fn edge_function(a: Vector2, b: Vector2, c: Vector2) -> f32 {
@@ -37,15 +38,15 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 
 	// TODO: implement fill rules, probably using top-left ordering as most 3d APIs do i guess
 
-	let min_x = a.x.min(b.x).min(c.x).floor() as i32;
-	let min_y = a.y.min(b.y).min(c.y).floor() as i32;
-	let max_x = a.x.max(b.x).max(c.x).ceil() as i32;
-	let max_y = a.y.max(b.y).max(c.y).ceil() as i32;
-
-	let min_x = std::cmp::max(dest.clip_region().x, min_x);
-	let min_y = std::cmp::max(dest.clip_region().y, min_y);
-	let max_x = std::cmp::min(dest.clip_region().right(), max_x);
-	let max_y = std::cmp::min(dest.clip_region().bottom(), max_y);
+	let mut bounds = Rect::from_coords(
+		a.x.min(b.x).min(c.x).floor() as i32,
+		a.y.min(b.y).min(c.y).floor() as i32,
+		a.x.max(b.x).max(c.x).ceil() as i32,
+		a.y.max(b.y).max(c.y).ceil() as i32,
+	);
+	if !bounds.clamp_to(dest.clip_region()) {
+		return;
+	}
 
 	let a01 = a.y - b.y;
 	let b01 = b.x - a.x;
@@ -58,16 +59,16 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 	let is_ac_bottom_right = is_bottom_right_edge(a, c);
 	let is_ba_bottom_right = is_bottom_right_edge(b, a);
 
-	let p = Vector2::new(min_x as f32 + 0.5, min_y as f32 + 0.5);
+	let p = Vector2::new(bounds.x as f32 + 0.5, bounds.y as f32 + 0.5);
 	let mut w0_row = edge_function(b, c, p);
 	let mut w1_row = edge_function(c, a, p);
 	let mut w2_row = edge_function(a, b, p);
 
-	let draw_width = (max_x - min_x + 1) as usize;
+	let draw_width = bounds.width as usize;
 	let next_row_inc = dest.width() as usize;
-	let mut pixels = unsafe { dest.pixels_at_mut_ptr_unchecked(min_x, min_y) };
+	let mut pixels = unsafe { dest.pixels_at_mut_ptr_unchecked(bounds.x, bounds.y) };
 
-	for _ in min_y..=max_y {
+	for _ in bounds.y..=bounds.bottom() {
 		let mut w0 = w0_row;
 		let mut w1 = w1_row;
 		let mut w2 = w2_row;
