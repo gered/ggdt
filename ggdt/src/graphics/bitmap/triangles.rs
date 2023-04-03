@@ -36,8 +36,6 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 	// https://www.scratchapixel.com/lessons/3d-basic-rendering/rasterization-practical-implementation/rasterization-stage.html
 	// https://kitsunegames.com/post/development/2016/07/28/software-3d-rendering-in-javascript-pt2/
 
-	// TODO: implement fill rules, probably using top-left ordering as most 3d APIs do i guess
-
 	let mut bounds = Rect::from_coords(
 		a.x.min(b.x).min(c.x).floor() as i32,
 		a.y.min(b.y).min(c.y).floor() as i32,
@@ -77,16 +75,13 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 		for pixel in row_pixels.iter_mut() {
 			// skip bottom-right edge pixels so we only draw pixels inside the triangle as well as those that lie
 			// on the top-left edges. this fixes seam issues with triangles drawn with blending that share an edge
-			if (w0.nearly_equal(0.0, f32::EPSILON) && is_cb_bottom_right)
+			let is_on_bottom_right_edge = (w0.nearly_equal(0.0, f32::EPSILON) && is_cb_bottom_right)
 				|| (w1.nearly_equal(0.0, f32::EPSILON) && is_ac_bottom_right)
-				|| (w2.nearly_equal(0.0, f32::EPSILON) && is_ba_bottom_right)
-			{
-				continue;
-			}
+				|| (w2.nearly_equal(0.0, f32::EPSILON) && is_ba_bottom_right);
 
 			// note that for a counter-clockwise vertex winding order with the direction of Y+ going down instead
 			// of up, we need to test for *negative* area when checking if we're inside the triangle
-			if w0 <= 0.0 && w1 <= 0.0 && w2 <= 0.0 {
+			if !is_on_bottom_right_edge && w0 <= 0.0 && w1 <= 0.0 && w2 <= 0.0 {
 				pixel_fn(pixel, w0, w1, w2);
 			}
 
