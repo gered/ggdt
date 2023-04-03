@@ -65,6 +65,7 @@ impl Vector2 {
 	}
 
 	/// Returns a normalized vector from this vector.
+	#[inline]
 	pub fn normalize(&self) -> Vector2 {
 		let inverse_length = 1.0 / self.length();
 		Vector2 {
@@ -75,6 +76,7 @@ impl Vector2 {
 
 	/// Returns an extended (or shrunk) vector from this vector, where the returned vector will
 	/// have a length exactly matching the specified length, but will retain the same direction.
+	#[inline]
 	pub fn extend(&self, length: f32) -> Vector2 {
 		*self * (length / self.length())
 	}
@@ -233,7 +235,7 @@ impl DivAssign<f32> for Vector2 {
 impl NearlyEqual for Vector2 {
 	type Output = Self;
 
-	#[inline(always)]
+	#[inline]
 	fn nearly_equal(self, other: Self::Output, epsilon: f32) -> bool {
 		nearly_equal(self.x, other.x, epsilon) && nearly_equal(self.y, other.y, epsilon)
 	}

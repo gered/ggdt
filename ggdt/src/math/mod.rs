@@ -150,7 +150,7 @@ pub trait NearlyEqual {
 impl NearlyEqual for f32 {
 	type Output = f32;
 
-	#[inline(always)]
+	#[inline]
 	fn nearly_equal(self, other: Self::Output, epsilon: f32) -> bool {
 		nearly_equal(self, other, epsilon)
 	}
@@ -171,6 +171,7 @@ pub trait WrappingRadians {
 impl WrappingRadians for f32 {
 	type Type = f32;
 
+	#[inline]
 	fn wrapping_radians_add(self, other: Self::Type) -> Self::Type {
 		let result = self + other;
 		if result < RADIANS_0 {
@@ -182,6 +183,7 @@ impl WrappingRadians for f32 {
 		}
 	}
 
+	#[inline]
 	fn wrapping_radians_sub(self, other: Self::Type) -> Self::Type {
 		let result = self - other;
 		if result < RADIANS_0 {

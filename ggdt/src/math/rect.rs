@@ -23,6 +23,7 @@ impl Rect {
 	/// * `top`: the top y coordinate
 	/// * `right`: the right x coordinate
 	/// * `bottom`: the bottom y coordinate
+	#[inline]
 	pub fn from_coords(left: i32, top: i32, right: i32, bottom: i32) -> Rect {
 		let x;
 		let y;
@@ -53,6 +54,7 @@ impl Rect {
 		}
 	}
 
+	#[inline]
 	pub fn set_from_coords(&mut self, left: i32, top: i32, right: i32, bottom: i32) {
 		if left <= right {
 			self.x = left;
@@ -92,11 +94,13 @@ impl Rect {
 	}
 
 	/// Returns true if the given point is contained within the bounds of this rect.
+	#[inline]
 	pub fn contains_point(&self, x: i32, y: i32) -> bool {
 		(self.x <= x) && (self.right() >= x) && (self.y <= y) && (self.bottom() >= y)
 	}
 
 	/// Returns true if the given rect is contained completely within the bounds of this rect.
+	#[inline]
 	pub fn contains_rect(&self, other: &Rect) -> bool {
 		(other.x >= self.x && other.x < self.right())
 			&& (other.right() > self.x && other.right() <= self.right())
@@ -105,6 +109,7 @@ impl Rect {
 	}
 
 	/// Returns true if the given rect at least partially overlaps the bounds of this rect.
+	#[inline]
 	pub fn overlaps(&self, other: &Rect) -> bool {
 		(self.x <= other.right())
 			&& (self.right() >= other.x)

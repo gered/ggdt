@@ -76,6 +76,7 @@ pub fn to_argb32(a: u8, r: u8, g: u8, b: u8) -> u32 {
 /// * `b`: the normalized blue component (0.0 to 1.0)
 ///
 /// returns: the u32 packed color
+#[inline]
 pub fn to_argb32_normalized(a: f32, r: f32, g: f32, b: f32) -> u32 {
 	(((b * 255.0) as u32) & 0xff)
 		+ ((((g * 255.0) as u32) & 0xff) << 8)
@@ -108,6 +109,7 @@ pub fn from_argb32(argb: u32) -> (u8, u8, u8, u8) {
 /// * `argb`: the 32-bit packed color
 ///
 /// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: alpha, red, green, blue
+#[inline]
 pub fn from_argb32_normalized(argb: u32) -> (f32, f32, f32, f32) {
 	let a = ((argb & 0xff000000) >> 24) as f32 / 255.0;
 	let r = ((argb & 0x00ff0000) >> 16) as f32 / 255.0;
@@ -141,6 +143,7 @@ pub fn to_rgb32(r: u8, g: u8, b: u8) -> u32 {
 /// * `b`: the normalized blue component (0.0 to 1.0)
 ///
 /// returns: the u32 packed color
+#[inline]
 pub fn to_rgb32_normalized(r: f32, g: f32, b: f32) -> u32 {
 	to_argb32_normalized(1.0, r, g, b)
 }
@@ -170,6 +173,7 @@ pub fn from_rgb32(rgb: u32) -> (u8, u8, u8) {
 /// * `argb`: the 32-bit packed color
 ///
 /// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: red, green, blue
+#[inline]
 pub fn from_rgb32_normalized(rgb: u32) -> (f32, f32, f32) {
 	// ignore alpha component at 0xff000000 ...
 	let r = ((rgb & 0x00ff0000) >> 16) as f32 / 255.0;
@@ -234,6 +238,7 @@ pub fn blend_argb32(src: u32, dest: u32) -> u32 {
 ///            alpha value used for blending the source and destination color's RGB components.
 ///
 /// returns: the blended result
+#[inline]
 pub fn blend_source_by_value(src: u32, dest: u32, alpha: u8) -> u32 {
 	let (src_a, src_r, src_g, src_b) = from_argb32(src);
 	let (dest_r, dest_g, dest_b) = from_rgb32(dest);
@@ -257,6 +262,7 @@ pub fn blend_source_by_value(src: u32, dest: u32, alpha: u8) -> u32 {
 /// * `tint`: the tint to be applied to the color, where the alpha component represents the tint strength
 ///
 /// returns: the resulting tinted color
+#[inline]
 pub fn tint_argb32(color: u32, tint: u32) -> u32 {
 	let (color_a, color_r, color_g, color_b) = from_argb32(color);
 	let (tint_a, tint_r, tint_g, tint_b) = from_argb32(tint);

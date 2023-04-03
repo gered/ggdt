@@ -154,7 +154,7 @@ impl Matrix3x3 {
 	/// # Arguments
 	///
 	/// * `radians`: angle to rotate by (in radians)
-	#[inline(always)]
+	#[inline]
 	pub fn new_2d_rotation(radians: f32) -> Matrix3x3 {
 		Matrix3x3::new_rotation_z(radians)
 	}

@@ -150,12 +150,14 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// # Arguments
 	///
 	/// * `region`: the new clipping region
+	#[inline]
 	pub fn set_clip_region(&mut self, region: &Rect) {
 		self.clip_region = *region;
 		self.clip_region.clamp_to(&self.full_bounds());
 	}
 
 	/// Resets the bitmaps clipping region back to the default (full boundaries of the bitmap).
+	#[inline]
 	pub fn reset_clip_region(&mut self) {
 		self.clip_region = self.full_bounds();
 	}
