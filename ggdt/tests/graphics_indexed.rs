@@ -1923,3 +1923,367 @@ fn rotozoom_transparent_offset_blits() {
 	//screen.to_png_file(path.as_path(), &palette).unwrap();
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
+
+#[test]
+fn triangle_2d() {
+	use IndexedTriangle2d::*;
+
+	let (mut screen, palette) = setup();
+	screen.clear(0);
+
+	let color = 1;
+	let v1 = Vector2::new(32.0, 36.0);
+	let v2 = Vector2::new(32.0, 63.0);
+	let v3 = Vector2::new(73.0, 36.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(50.0, 0.0), //
+			v2 - Vector2::new(50.0, 0.0),
+			v3 - Vector2::new(50.0, 0.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, 50.0), //
+			v2 - Vector2::new(0.0, 50.0),
+			v3 - Vector2::new(0.0, 50.0),
+		],
+		color,
+	});
+
+	let color = 2;
+	let v1 = Vector2::new(123.0, 60.0);
+	let v2 = Vector2::new(162.0, 60.0);
+	let v3 = Vector2::new(144.0, 32.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, 45.0), //
+			v2 - Vector2::new(0.0, 45.0),
+			v3 - Vector2::new(0.0, 45.0),
+		],
+		color,
+	});
+
+	let color = 3;
+	let v1 = Vector2::new(265.0, 74.0);
+	let v2 = Vector2::new(265.0, 37.0);
+	let v3 = Vector2::new(231.0, 37.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(-70.0, 0.0), //
+			v2 - Vector2::new(-70.0, 0.0),
+			v3 - Vector2::new(-70.0, 0.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, 55.0), //
+			v2 - Vector2::new(0.0, 55.0),
+			v3 - Vector2::new(0.0, 55.0),
+		],
+		color,
+	});
+
+	let color = 4;
+	let v1 = Vector2::new(33.0, 108.0);
+	let v2 = Vector2::new(33.0, 137.0);
+	let v3 = Vector2::new(59.0, 122.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(45.0, 0.0), //
+			v2 - Vector2::new(45.0, 0.0),
+			v3 - Vector2::new(45.0, 0.0),
+		],
+		color,
+	});
+
+	let color = 5;
+	let v1 = Vector2::new(161.0, 132.0);
+	let v2 = Vector2::new(145.0, 92.0);
+	let v3 = Vector2::new(120.0, 115.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+
+	let color = 6;
+	let v1 = Vector2::new(237.0, 120.0);
+	let v2 = Vector2::new(267.0, 136.0);
+	let v3 = Vector2::new(267.0, 105.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(-70.0, 0.0), //
+			v2 - Vector2::new(-70.0, 0.0),
+			v3 - Vector2::new(-70.0, 0.0),
+		],
+		color,
+	});
+
+	let color = 7;
+	let v1 = Vector2::new(29.0, 194.0);
+	let v2 = Vector2::new(62.0, 194.0);
+	let v3 = Vector2::new(29.0, 163.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(45.0, 0.0), //
+			v2 - Vector2::new(45.0, 0.0),
+			v3 - Vector2::new(45.0, 0.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, -55.0), //
+			v2 - Vector2::new(0.0, -55.0),
+			v3 - Vector2::new(0.0, -55.0),
+		],
+		color,
+	});
+
+	let color = 8;
+	let v1 = Vector2::new(130.0, 164.0);
+	let v2 = Vector2::new(155.0, 190.0);
+	let v3 = Vector2::new(177.0, 164.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, -60.0), //
+			v2 - Vector2::new(0.0, -60.0),
+			v3 - Vector2::new(0.0, -60.0),
+		],
+		color,
+	});
+
+	let color = 9;
+	let v1 = Vector2::new(235.0, 193.0);
+	let v2 = Vector2::new(269.0, 193.0);
+	let v3 = Vector2::new(269.0, 163.0);
+	screen.triangle_2d(&Solid { position: [v1, v2, v3], color });
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(-70.0, 0.0), //
+			v2 - Vector2::new(-70.0, 0.0),
+			v3 - Vector2::new(-70.0, 0.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			v1 - Vector2::new(0.0, -60.0), //
+			v2 - Vector2::new(0.0, -60.0),
+			v3 - Vector2::new(0.0, -60.0),
+		],
+		color,
+	});
+
+	// totally off screen
+
+	let color = 12;
+
+	screen.triangle_2d(&Solid {
+		position: [
+			Vector2::new(-32.0, 36.0), //
+			Vector2::new(-32.0, 63.0),
+			Vector2::new(-73.0, 36.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			Vector2::new(265.0, -26.0), //
+			Vector2::new(265.0, -63.0),
+			Vector2::new(231.0, -63.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			Vector2::new(29.0, 294.0), //
+			Vector2::new(62.0, 294.0),
+			Vector2::new(29.0, 263.0),
+		],
+		color,
+	});
+	screen.triangle_2d(&Solid {
+		position: [
+			Vector2::new(335.0, 193.0), //
+			Vector2::new(369.0, 193.0),
+			Vector2::new(369.0, 163.0),
+		],
+		color,
+	});
+
+	// wrong vertex winding (clockwise instead of counter-clockwise)
+
+	let color = 12;
+
+	screen.triangle_2d(&Solid {
+		position: [
+			Vector2::new(120.0, 115.0), //
+			Vector2::new(145.0, 92.0),
+			Vector2::new(161.0, 132.0),
+		],
+		color,
+	});
+
+	let path = reference_file(Path::new("triangle_2d.png"));
+	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum TriangleType {
+	Solid = 0,
+	SolidBlended = 1,
+	SolidTextured = 2,
+	SolidTexturedBlended = 3,
+}
+
+fn get_quad<'a>(
+	mode: TriangleType,
+	texture: Option<&'a IndexedBitmap>,
+	blendmap: Option<&'a BlendMap>,
+	transform: Matrix3x3,
+	top_left: Vector2,
+	top_right: Vector2,
+	bottom_left: Vector2,
+	bottom_right: Vector2,
+) -> [IndexedTriangle2d<'a>; 2] {
+	let top_left = transform * top_left;
+	let top_right = transform * top_right;
+	let bottom_left = transform * bottom_left;
+	let bottom_right = transform * bottom_right;
+
+	let positions_1 = [top_left, bottom_left, bottom_right];
+	let positions_2 = [top_left, bottom_right, top_right];
+	let texcoords_1 = [Vector2::new(0.0, 0.0), Vector2::new(0.0, 1.0), Vector2::new(1.0, 1.0)];
+	let texcoords_2 = [Vector2::new(0.0, 0.0), Vector2::new(1.0, 1.0), Vector2::new(1.0, 0.0)];
+	let color = 5;
+
+	match mode {
+		TriangleType::Solid => [
+			IndexedTriangle2d::Solid { position: positions_1, color },
+			IndexedTriangle2d::Solid { position: positions_2, color },
+		],
+		TriangleType::SolidBlended => [
+			IndexedTriangle2d::SolidBlended { position: positions_1, color, blendmap: blendmap.unwrap() },
+			IndexedTriangle2d::SolidBlended { position: positions_2, color, blendmap: blendmap.unwrap() },
+		],
+		TriangleType::SolidTextured => [
+			IndexedTriangle2d::SolidTextured { position: positions_1, texcoord: texcoords_1, bitmap: texture.unwrap() },
+			IndexedTriangle2d::SolidTextured { position: positions_2, texcoord: texcoords_2, bitmap: texture.unwrap() },
+		],
+		TriangleType::SolidTexturedBlended => [
+			IndexedTriangle2d::SolidTexturedBlended {
+				position: positions_1,
+				texcoord: texcoords_1,
+				bitmap: texture.unwrap(),
+				blendmap: blendmap.unwrap(),
+			},
+			IndexedTriangle2d::SolidTexturedBlended {
+				position: positions_2,
+				texcoord: texcoords_2,
+				bitmap: texture.unwrap(),
+				blendmap: blendmap.unwrap(),
+			},
+		],
+	}
+}
+
+#[rustfmt::skip]
+#[test]
+fn triangle_2d_solid_textured() {
+	let (mut screen, palette) = setup();
+	screen.clear(247);
+
+	let texture = generate_bitmap(32, 32);
+
+	let top_left = Vector2::new(0.0, 0.0);
+	let top_right = Vector2::new(32.0, 0.0);
+	let bottom_left = Vector2::new(0.0, 32.0);
+	let bottom_right = Vector2::new(32.0, 32.0);
+
+	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
+	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
+
+	let mode = TriangleType::SolidTextured;
+
+	let triangles = get_quad(mode, Some(&texture), None, Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, Some(&texture), None, scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, Some(&texture), None, scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let path = reference_file(Path::new("triangle_2d_solid_textured.png"));
+	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[rustfmt::skip]
+#[test]
+fn triangle_2d_solid_blended() {
+	let (mut screen, palette, blend_map) = setup_for_blending();
+
+	let top_left = Vector2::new(0.0, 0.0);
+	let top_right = Vector2::new(32.0, 0.0);
+	let bottom_left = Vector2::new(0.0, 32.0);
+	let bottom_right = Vector2::new(32.0, 32.0);
+
+	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
+	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
+
+	let mode = TriangleType::SolidBlended;
+
+	let triangles = get_quad(mode, None, Some(&blend_map), Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, None, Some(&blend_map), scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, None, Some(&blend_map), scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let path = reference_file(Path::new("triangle_2d_solid_blended.png"));
+	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
+
+#[rustfmt::skip]
+#[test]
+fn triangle_2d_solid_textured_blended() {
+	let (mut screen, palette, blend_map) = setup_for_blending();
+
+	let texture = generate_bitmap(32, 32);
+
+	let top_left = Vector2::new(0.0, 0.0);
+	let top_right = Vector2::new(32.0, 0.0);
+	let bottom_left = Vector2::new(0.0, 32.0);
+	let bottom_right = Vector2::new(32.0, 32.0);
+
+	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
+	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
+
+	let mode = TriangleType::SolidTexturedBlended;
+
+	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
+	screen.triangle_list_2d(&triangles);
+
+	let path = reference_file(Path::new("triangle_2d_solid_textured_blended.png"));
+	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
+}
