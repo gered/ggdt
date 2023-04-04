@@ -368,3 +368,112 @@ fn brightness(mut luminance: f32) -> f32 {
 pub fn greyscale(r: u8, b: u8, g: u8) -> u8 {
 	(brightness(luminance(r, g, b)) * 255.0) as u8
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::math::NearlyEqual;
+
+	#[test]
+	fn argb_conversions() {
+		let argb = to_argb32(0x11, 0x22, 0x33, 0x44);
+		assert_eq!(argb, 0x11223344);
+
+		let argb = to_rgb32(0x22, 0x33, 0x44);
+		assert_eq!(argb, 0xff223344);
+
+		let (a, r, g, b) = from_argb32(0x11223344);
+		assert_eq!(0x11, a);
+		assert_eq!(0x22, r);
+		assert_eq!(0x33, g);
+		assert_eq!(0x44, b);
+
+		let (r, g, b) = from_rgb32(0x11223344);
+		assert_eq!(0x22, r);
+		assert_eq!(0x33, g);
+		assert_eq!(0x44, b);
+	}
+
+	#[test]
+	fn normalized_argb_conversions() {
+		let argb = to_argb32_normalized(0.5, 0.1, 0.2, 0.3);
+		assert_eq!(argb, 0x7f19334c);
+
+		let argb = to_rgb32_normalized(0.1, 0.2, 0.3);
+		assert_eq!(argb, 0xff19334c);
+
+		// floating-point accuracy is a real bitch here ... lol.
+		// the low-accuracy epsilon values in these asserts is not an accident or oversight
+
+		let (a, r, g, b) = from_argb32_normalized(0x7f19334c);
+		assert!(a.nearly_equal(0.5, 0.01));
+		assert!(r.nearly_equal(0.1, 0.01));
+		assert!(g.nearly_equal(0.2, 0.01));
+		assert!(b.nearly_equal(0.3, 0.01));
+
+		let (r, g, b) = from_rgb32_normalized(0x7f19334c);
+		assert!(r.nearly_equal(0.1, 0.01));
+		assert!(g.nearly_equal(0.2, 0.01));
+		assert!(b.nearly_equal(0.3, 0.01));
+	}
+
+	#[test]
+	fn blending() {
+		// TODO: for blend_argb32, is this really the behaviour we want? the output value's alpha
+		//       is blended, but the source color's alpha is what is ultimately used to control
+		//       the blend operation. what is best here? the output RGB color looks correct at
+		//       any rate, just not sure what the proper output alpha component *should* be in
+		//       all cases.
+
+		assert_eq!(0xff112233, blend_argb32(0xff112233, 0xff555555));
+		assert_eq!(0xbf333b44, blend_argb32(0x7f112233, 0xff555555));
+		assert_eq!(0xff555555, blend_argb32(0x00112233, 0xff555555));
+
+		assert_eq!(0xff112233, blend_argb32(0xff112233, 0x7f555555));
+		assert_eq!(0x7f333b44, blend_argb32(0x7f112233, 0x7f555555));
+		assert_eq!(0x7f555555, blend_argb32(0x00112233, 0x7f555555));
+
+		assert_eq!(0xff112233, blend_source_by_value(0xff112233, 0xff555555, 255));
+		assert_eq!(0x7f333b44, blend_source_by_value(0x7f112233, 0xff555555, 255));
+		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 255));
+
+		assert_eq!(0xff112233, blend_source_by_value(0xff112233, 0x7f555555, 255));
+		assert_eq!(0x7f333b44, blend_source_by_value(0x7f112233, 0x7f555555, 255));
+		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0x7f555555, 255));
+
+		assert_eq!(0x80323b43, blend_source_by_value(0xff112233, 0xff555555, 128));
+		assert_eq!(0x3f44484c, blend_source_by_value(0x7f112233, 0xff555555, 128));
+		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 128));
+
+		assert_eq!(0x00555555, blend_source_by_value(0xff112233, 0xff555555, 0));
+		assert_eq!(0x00555555, blend_source_by_value(0x7f112233, 0xff555555, 0));
+		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 0));
+	}
+
+	#[test]
+	fn tinting() {
+		assert_eq!(0xff112233, tint_argb32(0xffffffff, 0xff112233));
+		assert_eq!(0xff889099, tint_argb32(0xffffffff, 0x7f112233));
+		assert_eq!(0xffffffff, tint_argb32(0xffffffff, 0x00112233));
+	}
+
+	#[test]
+	fn multiplying() {
+		assert_eq!(0xff112233, multiply_argb32(0xffffffff, 0xff112233));
+		assert_eq!(0xff112233, multiply_argb32(0xff112233, 0xffffffff));
+
+		assert_eq!(0x7f030014, multiply_argb32(0x7f330066, 0xff112233));
+		assert_eq!(0x7f030014, multiply_argb32(0xff112233, 0x7f330066));
+	}
+
+	#[test]
+	fn lerping() {
+		assert_eq!(0x7f112233, lerp_argb32(0x7f112233, 0xffaabbcc, 0.0));
+		assert_eq!(0xbf5d6e7f, lerp_argb32(0x7f112233, 0xffaabbcc, 0.5));
+		assert_eq!(0xffaabbcc, lerp_argb32(0x7f112233, 0xffaabbcc, 1.0));
+
+		assert_eq!(0xff112233, lerp_rgb32(0x7f112233, 0xffaabbcc, 0.0));
+		assert_eq!(0xff5d6e7f, lerp_rgb32(0x7f112233, 0xffaabbcc, 0.5));
+		assert_eq!(0xffaabbcc, lerp_rgb32(0x7f112233, 0xffaabbcc, 1.0));
+	}
+}

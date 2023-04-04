@@ -508,26 +508,6 @@ mod tests {
 	}
 
 	#[test]
-	fn argb_conversions() {
-		let argb = to_argb32(0x11, 0x22, 0x33, 0x44);
-		assert_eq!(argb, 0x11223344);
-
-		let argb = to_rgb32(0x22, 0x33, 0x44);
-		assert_eq!(argb, 0xff223344);
-
-		let (a, r, g, b) = from_argb32(0x11223344);
-		assert_eq!(0x11, a);
-		assert_eq!(0x22, r);
-		assert_eq!(0x33, g);
-		assert_eq!(0x44, b);
-
-		let (r, g, b) = from_rgb32(0x11223344);
-		assert_eq!(0x22, r);
-		assert_eq!(0x33, g);
-		assert_eq!(0x44, b);
-	}
-
-	#[test]
 	fn get_and_set_colors() {
 		let mut palette = Palette::new();
 		assert_eq!(0, palette[0]);
