@@ -238,9 +238,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		if region.clamp_to(&self.clip_region) {
 			unsafe {
 				let dest = &mut self.pixels_at_mut_unchecked(region.x, region.y)[0..region.width as usize];
-				for pixel in dest.iter_mut() {
-					*pixel = color;
-				}
+				dest.fill(color);
 			}
 		}
 	}
@@ -310,9 +308,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		if y1 == region.y {
 			unsafe {
 				let dest = &mut self.pixels_at_mut_unchecked(region.x, region.y)[0..region.width as usize];
-				for pixel in dest.iter_mut() {
-					*pixel = color;
-				}
+				dest.fill(color);
 			}
 		}
 
@@ -320,9 +316,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		if y2 == region.bottom() {
 			unsafe {
 				let dest = &mut self.pixels_at_mut_unchecked(region.x, region.bottom())[0..region.width as usize];
-				for pixel in dest.iter_mut() {
-					*pixel = color;
-				}
+				dest.fill(color);
 			}
 		}
 
@@ -444,10 +438,8 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 				let mut dest = self.pixels_at_mut_ptr_unchecked(region.x, region.y);
 				for _ in 0..region.height {
 					// write the pixels horizontally for the entire width
-					for x in 0..region.width as isize {
-						let dest_x = dest.offset(x);
-						*dest_x = color;
-					}
+					let row_pixels = std::slice::from_raw_parts_mut(dest, region.width as usize);
+					row_pixels.fill(color);
 					// move original pointer to the next row
 					dest = dest.add(self.width as usize);
 				}
@@ -469,9 +461,9 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 				let mut dest = self.pixels_at_mut_ptr_unchecked(region.x, region.y);
 				for _ in 0..region.height {
 					// write the pixels horizontally for the entire width
-					for x in 0..region.width as isize {
-						let dest_x = dest.offset(x);
-						*dest_x = pixel_fn(*dest_x);
+					let row_pixels = std::slice::from_raw_parts_mut(dest, region.width as usize);
+					for pixel in row_pixels.iter_mut() {
+						*pixel = pixel_fn(*pixel);
 					}
 					// move original pointer to the next row
 					dest = dest.add(self.width as usize);
