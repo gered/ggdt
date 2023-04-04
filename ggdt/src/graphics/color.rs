@@ -40,7 +40,7 @@ impl BlendFunction {
 		use BlendFunction::*;
 		match self {
 			Blend => blend_argb32(src, dest),
-			BlendSourceWithAlpha(opacity) => blend_source_by_value(src, dest, *opacity),
+			BlendSourceWithAlpha(opacity) => blend_argb32_source_by(src, dest, *opacity),
 			TintedBlend(tint) => {
 				let tinted = tint_argb32(src, *tint);
 				blend_argb32(tinted, dest)
@@ -239,7 +239,7 @@ pub fn blend_argb32(src: u32, dest: u32) -> u32 {
 ///
 /// returns: the blended result
 #[inline]
-pub fn blend_source_by_value(src: u32, dest: u32, alpha: u8) -> u32 {
+pub fn blend_argb32_source_by(src: u32, dest: u32, alpha: u8) -> u32 {
 	let (src_a, src_r, src_g, src_b) = from_argb32(src);
 	let (dest_r, dest_g, dest_b) = from_rgb32(dest);
 	let alpha = ((alpha as u16 * src_a as u16) / 255) as u8;
@@ -433,21 +433,21 @@ mod tests {
 		assert_eq!(0x7f333b44, blend_argb32(0x7f112233, 0x7f555555));
 		assert_eq!(0x7f555555, blend_argb32(0x00112233, 0x7f555555));
 
-		assert_eq!(0xff112233, blend_source_by_value(0xff112233, 0xff555555, 255));
-		assert_eq!(0x7f333b44, blend_source_by_value(0x7f112233, 0xff555555, 255));
-		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 255));
+		assert_eq!(0xff112233, blend_argb32_source_by(0xff112233, 0xff555555, 255));
+		assert_eq!(0x7f333b44, blend_argb32_source_by(0x7f112233, 0xff555555, 255));
+		assert_eq!(0x00555555, blend_argb32_source_by(0x00112233, 0xff555555, 255));
 
-		assert_eq!(0xff112233, blend_source_by_value(0xff112233, 0x7f555555, 255));
-		assert_eq!(0x7f333b44, blend_source_by_value(0x7f112233, 0x7f555555, 255));
-		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0x7f555555, 255));
+		assert_eq!(0xff112233, blend_argb32_source_by(0xff112233, 0x7f555555, 255));
+		assert_eq!(0x7f333b44, blend_argb32_source_by(0x7f112233, 0x7f555555, 255));
+		assert_eq!(0x00555555, blend_argb32_source_by(0x00112233, 0x7f555555, 255));
 
-		assert_eq!(0x80323b43, blend_source_by_value(0xff112233, 0xff555555, 128));
-		assert_eq!(0x3f44484c, blend_source_by_value(0x7f112233, 0xff555555, 128));
-		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 128));
+		assert_eq!(0x80323b43, blend_argb32_source_by(0xff112233, 0xff555555, 128));
+		assert_eq!(0x3f44484c, blend_argb32_source_by(0x7f112233, 0xff555555, 128));
+		assert_eq!(0x00555555, blend_argb32_source_by(0x00112233, 0xff555555, 128));
 
-		assert_eq!(0x00555555, blend_source_by_value(0xff112233, 0xff555555, 0));
-		assert_eq!(0x00555555, blend_source_by_value(0x7f112233, 0xff555555, 0));
-		assert_eq!(0x00555555, blend_source_by_value(0x00112233, 0xff555555, 0));
+		assert_eq!(0x00555555, blend_argb32_source_by(0xff112233, 0xff555555, 0));
+		assert_eq!(0x00555555, blend_argb32_source_by(0x7f112233, 0xff555555, 0));
+		assert_eq!(0x00555555, blend_argb32_source_by(0x00112233, 0xff555555, 0));
 	}
 
 	#[test]
