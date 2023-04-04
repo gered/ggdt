@@ -23,6 +23,7 @@ pub enum BlendFunction {
 	Blend,
 	BlendSourceWithAlpha(u8),
 	TintedBlend(u32),
+	MultipliedBlend(u32),
 }
 
 impl BlendFunction {
@@ -44,6 +45,10 @@ impl BlendFunction {
 			TintedBlend(tint) => {
 				let tinted = tint_argb32(src, *tint);
 				blend_argb32(tinted, dest)
+			}
+			MultipliedBlend(color) => {
+				let multiplied = multiply_argb32(src, *color);
+				blend_argb32(multiplied, dest)
 			}
 		}
 	}
