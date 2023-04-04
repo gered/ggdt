@@ -1,4 +1,5 @@
 use num_traits::{PrimInt, Unsigned};
+use std::fmt::Display;
 
 pub mod bitmap;
 pub mod bitmapatlas;
@@ -10,5 +11,5 @@ pub mod palette;
 pub mod prelude;
 
 /// Common trait to represent single pixel/colour values.
-pub trait Pixel: PrimInt + Unsigned + Default {}
-impl<T> Pixel for T where T: PrimInt + Unsigned + Default {}
+pub trait Pixel: PrimInt + Unsigned + Default + Display {}
+impl<T> Pixel for T where T: PrimInt + Unsigned + Default + Display {}
