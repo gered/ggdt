@@ -243,4 +243,10 @@ impl RgbaBitmap {
 			}
 		}
 	}
+
+	pub fn triangle_list_2d(&mut self, triangles: &[RgbaTriangle2d]) {
+		for triangle in triangles.iter() {
+			self.triangle_2d(triangle);
+		}
+	}
 }
