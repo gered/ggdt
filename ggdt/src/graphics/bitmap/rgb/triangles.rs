@@ -4,7 +4,7 @@ use crate::graphics::color::{from_rgb32_normalized, multiply_argb32, tint_argb32
 use crate::math::vector2::Vector2;
 use crate::prelude::{from_argb32_normalized, to_argb32_normalized};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RgbaTriangle2d<'a> {
 	Solid {
 		position: [Vector2; 3], //

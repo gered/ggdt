@@ -3,7 +3,7 @@ use crate::graphics::bitmap::triangles::{edge_function, per_pixel_triangle_2d};
 use crate::graphics::blendmap::BlendMap;
 use crate::math::vector2::Vector2;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum IndexedTriangle2d<'a> {
 	Solid {
 		position: [Vector2; 3], //
