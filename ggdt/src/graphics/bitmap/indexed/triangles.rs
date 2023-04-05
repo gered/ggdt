@@ -53,29 +53,29 @@ impl IndexedBitmap {
 				)
 			}
 			SolidTextured { position, texcoord, bitmap } => {
-				let inverse_area = 1.0 / edge_function(position[0], position[1], position[2]);
+				let area = edge_function(position[0], position[1], position[2]);
 				per_pixel_triangle_2d(
 					self, //
 					position[0],
 					position[1],
 					position[2],
 					|dest_pixels, w0, w1, w2| {
-						let u = (w0 * texcoord[0].x + w1 * texcoord[1].x + w2 * texcoord[2].x) * inverse_area;
-						let v = (w0 * texcoord[0].y + w1 * texcoord[1].y + w2 * texcoord[2].y) * inverse_area;
+						let u = (w0 * texcoord[0].x + w1 * texcoord[1].x + w2 * texcoord[2].x) / area;
+						let v = (w0 * texcoord[0].y + w1 * texcoord[1].y + w2 * texcoord[2].y) / area;
 						*dest_pixels = bitmap.sample_at(u, v);
 					},
 				)
 			}
 			SolidTexturedBlended { position, texcoord, bitmap, blendmap } => {
-				let inverse_area = 1.0 / edge_function(position[0], position[1], position[2]);
+				let area = edge_function(position[0], position[1], position[2]);
 				per_pixel_triangle_2d(
 					self, //
 					position[0],
 					position[1],
 					position[2],
 					|dest_pixels, w0, w1, w2| {
-						let u = (w0 * texcoord[0].x + w1 * texcoord[1].x + w2 * texcoord[2].x) * inverse_area;
-						let v = (w0 * texcoord[0].y + w1 * texcoord[1].y + w2 * texcoord[2].y) * inverse_area;
+						let u = (w0 * texcoord[0].x + w1 * texcoord[1].x + w2 * texcoord[2].x) / area;
+						let v = (w0 * texcoord[0].y + w1 * texcoord[1].y + w2 * texcoord[2].y) / area;
 						let texel = bitmap.sample_at(u, v);
 						*dest_pixels =
 							if let Some(blended) = blendmap.blend(texel, *dest_pixels) { blended } else { texel };
