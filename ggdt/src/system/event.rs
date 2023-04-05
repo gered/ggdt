@@ -15,7 +15,7 @@ use crate::system::input_devices::keyboard::codes::Keycode;
 use crate::system::input_devices::keyboard::scancodes::Scancode;
 use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum WindowEvent {
 	Shown,
 	Hidden,
@@ -95,7 +95,7 @@ pub enum KeyboardEvent {
 	},
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum MouseEvent {
 	MouseMotion {
 		x: i32, //
