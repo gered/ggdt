@@ -76,7 +76,7 @@ bitflags! {
 	}
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum KeyboardEvent {
 	KeyUp {
 		keycode: Option<Keycode>, //
@@ -89,6 +89,9 @@ pub enum KeyboardEvent {
 		scancode: Option<Scancode>,
 		keymod: KeyModifiers,
 		repeat: bool,
+	},
+	TextInput {
+		text: String,
 	},
 }
 
@@ -115,7 +118,7 @@ pub enum MouseEvent {
 	},
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum SystemEvent {
 	Quit,
 	AppTerminating,
@@ -159,6 +162,7 @@ impl From<sdl2::event::Event> for SystemEvent {
 					repeat,
 				})
 			}
+			sdl2::event::Event::TextInput { text, .. } => SystemEvent::Keyboard(KeyboardEvent::TextInput { text }),
 			sdl2::event::Event::MouseMotion { mousestate, x, y, xrel, yrel, .. } => {
 				SystemEvent::Mouse(MouseEvent::MouseMotion {
 					x,
