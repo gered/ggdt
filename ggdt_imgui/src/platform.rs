@@ -145,6 +145,19 @@ impl Platform {
 		imgui.set_ini_filename(None);
 		imgui.set_platform_name(Some(String::from("ggdt")));
 
+		// most of these rounding values default to 0.0 anyway, but explicitly defaulting them all to 0.0 for us
+		// purely just to simplify the geometry. our triangle renderer isn't some super powerhouse after all ;-)
+		imgui.style_mut().tab_rounding = 0.0;
+		imgui.style_mut().grab_rounding = 0.0;
+		imgui.style_mut().scrollbar_rounding = 0.0;
+		imgui.style_mut().frame_rounding = 0.0;
+		imgui.style_mut().popup_rounding = 0.0;
+		imgui.style_mut().window_rounding = 0.0;
+		imgui.style_mut().child_rounding = 0.0;
+
+		// these cause some visible issues in window bordering rendering (maybe other places too).
+		// TODO: investigate this more. my best guess is this is a problem with texture/bitmap sampling in
+		//       the current texture_2d implementation...
 		imgui.style_mut().anti_aliased_lines = false;
 		imgui.style_mut().anti_aliased_lines_use_tex = false;
 
