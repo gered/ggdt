@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "ggdt",
+    "ggdt_imgui",
     "examples/*",
 ]
 
