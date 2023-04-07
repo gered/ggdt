@@ -43,10 +43,7 @@ impl Renderer {
 							(cmd_params.clip_rect[2] - draw_data.display_pos[0]) as i32,
 							(cmd_params.clip_rect[3] - draw_data.display_pos[1]) as i32,
 						);
-						if clip_rect.x > dest.right() as i32
-							|| clip_rect.y > dest.bottom() as i32
-							|| clip_rect.right() < 0 || clip_rect.bottom() < 0
-						{
+						if !clip_rect.overlaps(&dest.full_bounds()) {
 							continue;
 						}
 
@@ -55,34 +52,30 @@ impl Renderer {
 
 						let idx_buffer = draw_list.idx_buffer();
 						let vtx_buffer = draw_list.vtx_buffer();
-						let mut idx = 0;
-						while idx < count {
+						for idx in (0..count).step_by(3) {
 							let v1 = vtx_buffer[idx_buffer[cmd_params.idx_offset + idx] as usize];
 							let v2 = vtx_buffer[idx_buffer[cmd_params.idx_offset + idx + 1] as usize];
 							let v3 = vtx_buffer[idx_buffer[cmd_params.idx_offset + idx + 2] as usize];
 
-							let triangle = RgbaTriangle2d::SolidTexturedMultiColoredBlended {
-								position: [
+							dest.solid_textured_multicolor_blended_triangle_2d(
+								&[
 									Vector2::new(v2.pos[0], v2.pos[1]),
 									Vector2::new(v1.pos[0], v1.pos[1]),
 									Vector2::new(v3.pos[0], v3.pos[1]),
 								],
-								texcoord: [
+								&[
 									Vector2::new(v2.uv[0], v2.uv[1]),
 									Vector2::new(v1.uv[0], v1.uv[1]),
 									Vector2::new(v3.uv[0], v3.uv[1]),
 								],
-								color: [
+								&[
 									to_argb32(v2.col[3], v2.col[0], v2.col[1], v2.col[2]),
 									to_argb32(v1.col[3], v1.col[0], v1.col[1], v1.col[2]),
 									to_argb32(v3.col[3], v3.col[0], v3.col[1], v3.col[2]),
 								],
 								bitmap,
-								blend: BlendFunction::Blend,
-							};
-							dest.triangle_2d(&triangle);
-
-							idx += 3;
+								BlendFunction::Blend,
+							);
 						}
 					}
 					imgui::DrawCmd::RawCallback { callback, raw_cmd } => {
