@@ -1,4 +1,3 @@
-use ggdt::graphics::bitmap::rgb::triangles::RgbaTriangle2d;
 use ggdt::graphics::bitmap::rgb::{RgbaBitmap, RgbaPixelFormat};
 use ggdt::graphics::color::{to_argb32, BlendFunction};
 use ggdt::math::rect::Rect;
@@ -78,13 +77,8 @@ impl Renderer {
 							);
 						}
 					}
-					imgui::DrawCmd::RawCallback { callback, raw_cmd } => {
-						//dbg!("DrawCmd::RawCallback");
-						unsafe { callback(draw_list.raw(), raw_cmd) }
-					}
+					imgui::DrawCmd::RawCallback { callback, raw_cmd } => unsafe { callback(draw_list.raw(), raw_cmd) },
 					imgui::DrawCmd::ResetRenderState => {
-						// todo
-						//dbg!("DrawCmd::ResetRenderState");
 						dest.set_clip_region(&original_clip_rect);
 					}
 				}
