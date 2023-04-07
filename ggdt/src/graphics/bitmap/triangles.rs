@@ -1,8 +1,8 @@
 use crate::graphics::bitmap::Bitmap;
 use crate::graphics::Pixel;
+use crate::math::rect::Rect;
 use crate::math::vector2::Vector2;
 use crate::math::NearlyEqual;
-use crate::prelude::Rect;
 
 #[inline]
 pub fn edge_function(a: Vector2, b: Vector2, c: Vector2) -> f32 {
