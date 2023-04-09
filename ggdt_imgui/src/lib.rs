@@ -2,8 +2,6 @@ use crate::platform::Platform;
 use crate::renderer::Renderer;
 use ggdt::graphics::bitmap::rgb::RgbaBitmap;
 use ggdt::system::event::{SystemEvent, SystemEventHandler};
-use ggdt::system::res::standard::Standard;
-use ggdt::system::System;
 
 pub mod platform;
 pub mod renderer;
@@ -24,8 +22,8 @@ impl ImGui {
 		ImGui { context, platform, renderer }
 	}
 
-	pub fn new_frame(&mut self, system: &mut System<Standard>) -> &mut imgui::Ui {
-		self.platform.prepare_frame(&mut self.context, system);
+	pub fn new_frame(&mut self, dest: &RgbaBitmap) -> &mut imgui::Ui {
+		self.platform.prepare_frame(&mut self.context, dest);
 		self.context.new_frame()
 	}
 

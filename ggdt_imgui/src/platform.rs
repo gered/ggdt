@@ -1,9 +1,7 @@
+use ggdt::graphics::bitmap::rgb::RgbaBitmap;
 use ggdt::system::event::{KeyModifiers, KeyboardEvent, MouseEvent, SystemEvent};
 use ggdt::system::input_devices::keyboard::scancodes::Scancode;
 use ggdt::system::input_devices::mouse::buttons::MouseButton;
-use ggdt::system::res::standard::Standard;
-use ggdt::system::res::SystemResources;
-use ggdt::system::System;
 use std::time::Instant;
 
 fn handle_key(io: &mut imgui::Io, key: Scancode, down: bool) {
@@ -201,14 +199,14 @@ impl Platform {
 		}
 	}
 
-	pub fn prepare_frame(&mut self, context: &mut imgui::Context, system: &System<Standard>) {
+	pub fn prepare_frame(&mut self, context: &mut imgui::Context, dest: &RgbaBitmap) {
 		let io = context.io_mut();
 
 		let now = Instant::now();
 		io.update_delta_time(now.duration_since(self.last_frame));
 		self.last_frame = now;
 
-		io.display_size = [system.res.width() as f32, system.res.height() as f32];
+		io.display_size = [dest.width() as f32, dest.height() as f32];
 		io.display_framebuffer_scale = [1.0, 1.0];
 	}
 }
