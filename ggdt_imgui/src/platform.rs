@@ -136,6 +136,7 @@ fn handle_mouse_button_event(io: &mut imgui::Io, button: MouseButton, down: bool
 	}
 }
 
+#[derive(Debug)]
 pub struct Platform {
 	last_frame: Instant,
 }

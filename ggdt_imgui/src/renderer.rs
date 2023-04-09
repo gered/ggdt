@@ -4,6 +4,7 @@ use ggdt::math::rect::Rect;
 use ggdt::math::vector2::Vector2;
 use imgui::internal::RawWrapper;
 
+#[derive(Debug)]
 pub struct Renderer {
 	pub texture_map: imgui::Textures<RgbaBitmap>,
 }
