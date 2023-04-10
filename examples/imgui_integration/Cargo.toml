@@ -1,0 +1,12 @@
+[package]
+name = "imgui_integration"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "=1.0.55"
+ggdt = { path = "../../ggdt" }
+ggdt_imgui = { path = "../../ggdt_imgui" }
+imgui = "0.11.0"
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0.79"
