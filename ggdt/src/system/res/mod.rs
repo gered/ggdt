@@ -2,6 +2,7 @@ use thiserror::Error;
 
 use crate::audio::device::AudioDeviceError;
 use crate::audio::AudioError;
+use crate::graphics::Pixel;
 use crate::system::event::SystemEvent;
 use crate::system::framebuffer::SdlFramebufferError;
 
@@ -41,6 +42,8 @@ pub trait SystemResourcesConfig {
 /// Trait used to implement structs which get used by [`System`] to provide access to hardware resources like
 /// audio, video and input devices.
 pub trait SystemResources: std::fmt::Debug {
+	type PixelType: Pixel;
+
 	/// Perform any per-frame hardware resource updates. You should prefer to call [`System::update`] instead of this
 	/// in your main loop.
 	fn update(&mut self) -> Result<(), SystemResourcesError>;
