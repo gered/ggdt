@@ -48,3 +48,14 @@ impl SystemEventHandler for ImGui {
 		self.platform.handle_event(&mut self.context, event)
 	}
 }
+
+pub trait UiSupport {
+	fn is_mouse_over_any(&self) -> bool;
+}
+
+impl UiSupport for imgui::Ui {
+	fn is_mouse_over_any(&self) -> bool {
+		self.is_window_focused_with_flags(imgui::WindowFocusedFlags::ANY_WINDOW)
+			|| self.is_window_hovered_with_flags(imgui::WindowHoveredFlags::ANY_WINDOW)
+	}
+}
