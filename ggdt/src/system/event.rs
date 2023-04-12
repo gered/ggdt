@@ -59,20 +59,21 @@ impl From<sdl2::event::WindowEvent> for WindowEvent {
 
 bitflags! {
 	#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+	#[repr(transparent)]
 	pub struct KeyModifiers: u16 {
-		const NOMOD = 0x0000;
-		const LSHIFTMOD = 0x0001;
-		const RSHIFTMOD = 0x0002;
-		const LCTRLMOD = 0x0040;
-		const RCTRLMOD = 0x0080;
-		const LALTMOD = 0x0100;
-		const RALTMOD = 0x0200;
-		const LGUIMOD = 0x0400;
-		const RGUIMOD = 0x0800;
-		const NUMMOD = 0x1000;
-		const CAPSMOD = 0x2000;
-		const MODEMOD = 0x4000;
-		const RESERVEDMOD = 0x8000;
+		const NOMOD = sdl2::keyboard::Mod::NOMOD.bits();
+		const LSHIFTMOD = sdl2::keyboard::Mod::LSHIFTMOD.bits();
+		const RSHIFTMOD = sdl2::keyboard::Mod::RSHIFTMOD.bits();
+		const LCTRLMOD = sdl2::keyboard::Mod::LCTRLMOD.bits();
+		const RCTRLMOD = sdl2::keyboard::Mod::RCTRLMOD.bits();
+		const LALTMOD = sdl2::keyboard::Mod::LALTMOD.bits();
+		const RALTMOD = sdl2::keyboard::Mod::RALTMOD.bits();
+		const LGUIMOD = sdl2::keyboard::Mod::LGUIMOD.bits();
+		const RGUIMOD = sdl2::keyboard::Mod::RGUIMOD.bits();
+		const NUMMOD = sdl2::keyboard::Mod::NUMMOD.bits();
+		const CAPSMOD = sdl2::keyboard::Mod::CAPSMOD.bits();
+		const MODEMOD = sdl2::keyboard::Mod::MODEMOD.bits();
+		const RESERVEDMOD = sdl2::keyboard::Mod::RESERVEDMOD.bits();
 	}
 }
 
