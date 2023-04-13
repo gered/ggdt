@@ -1,4 +1,5 @@
 use bitflags::bitflags;
+use num_derive::FromPrimitive;
 
 // equivalent to SDL's "SDL_BUTTON" macro
 #[inline]
@@ -18,7 +19,7 @@ bitflags! {
 	}
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, FromPrimitive)]
 #[repr(u8)]
 pub enum MouseButton {
 	Unknown = 0,

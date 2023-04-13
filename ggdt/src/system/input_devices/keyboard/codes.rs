@@ -1,6 +1,8 @@
+use num_derive::FromPrimitive;
+
 // ugh
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, FromPrimitive)]
 #[repr(i32)]
 pub enum Keycode {
 	Backspace = sdl2::keyboard::Keycode::Backspace as i32,
