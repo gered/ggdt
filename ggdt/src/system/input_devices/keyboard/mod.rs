@@ -5,7 +5,7 @@ use crate::system::input_devices::{ButtonState, InputDevice};
 pub mod codes;
 pub mod scancodes;
 
-const MAX_KEYS: usize = 256;
+const MAX_KEYS: usize = 512;
 
 /// Holds the current state of the keyboard.
 ///
