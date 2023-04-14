@@ -50,12 +50,16 @@ impl SystemEventHandler for ImGui {
 }
 
 pub trait UiSupport {
-	fn is_mouse_over_any(&self) -> bool;
+	fn is_any_hovered(&self) -> bool;
+	fn is_any_focused(&self) -> bool;
 }
 
 impl UiSupport for imgui::Ui {
-	fn is_mouse_over_any(&self) -> bool {
+	fn is_any_hovered(&self) -> bool {
+		self.is_window_hovered_with_flags(imgui::WindowHoveredFlags::ANY_WINDOW)
+	}
+
+	fn is_any_focused(&self) -> bool {
 		self.is_window_focused_with_flags(imgui::WindowFocusedFlags::ANY_WINDOW)
-			|| self.is_window_hovered_with_flags(imgui::WindowHoveredFlags::ANY_WINDOW)
 	}
 }
