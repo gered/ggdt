@@ -205,6 +205,8 @@ impl std::fmt::Debug for Standard {
 }
 
 impl SystemResources for Standard {
+	type PixelType = u32;
+
 	fn update(&mut self) -> Result<(), SystemResourcesError> {
 		self.cursor.update(&self.mouse);
 

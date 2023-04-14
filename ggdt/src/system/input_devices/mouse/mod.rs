@@ -62,26 +62,26 @@ impl Mouse {
 
 	/// Returns true if the given button was just pressed or is being held down.
 	#[inline]
-	pub fn is_button_down(&self, button: usize) -> bool {
-		matches!(self.buttons[button], ButtonState::Pressed | ButtonState::Held)
+	pub fn is_button_down(&self, button: MouseButton) -> bool {
+		matches!(self.buttons[button as usize], ButtonState::Pressed | ButtonState::Held)
 	}
 
 	/// Returns true if the given button was not just pressed and is not being held down.
 	#[inline]
-	pub fn is_button_up(&self, button: usize) -> bool {
-		matches!(self.buttons[button], ButtonState::Released | ButtonState::Idle)
+	pub fn is_button_up(&self, button: MouseButton) -> bool {
+		matches!(self.buttons[button as usize], ButtonState::Released | ButtonState::Idle)
 	}
 
 	/// Returns true if the given button was just pressed (not being held down, yet).
 	#[inline]
-	pub fn is_button_pressed(&self, button: usize) -> bool {
-		self.buttons[button] == ButtonState::Pressed
+	pub fn is_button_pressed(&self, button: MouseButton) -> bool {
+		self.buttons[button as usize] == ButtonState::Pressed
 	}
 
 	/// Returns true if the given button was just released.
 	#[inline]
-	pub fn is_button_released(&self, button: usize) -> bool {
-		self.buttons[button] == ButtonState::Released
+	pub fn is_button_released(&self, button: MouseButton) -> bool {
+		self.buttons[button as usize] == ButtonState::Released
 	}
 
 	fn update_button_state(&mut self, button: u32, is_pressed: bool) {

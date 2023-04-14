@@ -251,6 +251,8 @@ impl std::fmt::Debug for DosLike {
 }
 
 impl SystemResources for DosLike {
+	type PixelType = u8;
+
 	fn update(&mut self) -> Result<(), SystemResourcesError> {
 		self.cursor.update(&self.mouse);
 

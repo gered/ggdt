@@ -1,6 +1,8 @@
+use num_derive::FromPrimitive;
+
 // ugh
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, FromPrimitive)]
 #[repr(i32)]
 pub enum Scancode {
 	A = sdl2::keyboard::Scancode::A as i32,
