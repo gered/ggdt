@@ -11,7 +11,12 @@ use crate::tilemap::{TILE_HEIGHT, TILE_WIDTH};
 use ggdt::prelude::*;
 use ggdt_imgui::UiSupport;
 
-pub struct DemoState;
+#[derive(Default)]
+pub struct DemoState {
+	new_x_buffer: String,
+	new_y_buffer: String,
+	selected_entity: EntityId,
+}
 
 impl AppState<GameContext> for DemoState {
 	fn update(&mut self, _state: State, context: &mut GameContext) -> Option<StateChange<GameContext>> {
@@ -28,14 +33,40 @@ impl AppState<GameContext> for DemoState {
 
 				ui.separator();
 				ui.text_colored([1.0, 1.0, 0.0, 1.0], "Slimes");
-				let positions = context.core.entities.components::<Position>().unwrap();
+				let mut positions = context.core.entities.components_mut::<Position>().unwrap();
 				for (slime, _) in context.core.entities.components::<Slime>().unwrap().iter() {
 					let position = positions.get(slime).unwrap();
 					ui.text(format!("{:2} @ {:3.0},{:3.0}", *slime, position.0.x, position.0.y));
+					ui.same_line();
+					if ui.button("Move") {
+						self.new_x_buffer.clear();
+						self.new_y_buffer.clear();
+						self.selected_entity = *slime;
+						ui.open_popup("Move Entity");
+					}
+				}
+
+				if let Some(_token) = ui.modal_popup_config("Move Entity").always_auto_resize(true).begin_popup() {
+					ui.input_text("New X:", &mut self.new_x_buffer).chars_decimal(true).chars_noblank(true).build();
+					ui.input_text("New Y:", &mut self.new_y_buffer).chars_decimal(true).chars_noblank(true).build();
+					if ui.button("Move") {
+						let new_x = self.new_x_buffer.parse::<i32>();
+						let new_y = self.new_y_buffer.parse::<i32>();
+						if !new_x.is_err() && !new_y.is_err() {
+							let position = positions.get_mut(&self.selected_entity).unwrap();
+							position.0.x = new_x.unwrap() as f32;
+							position.0.y = new_y.unwrap() as f32;
+						}
+						ui.close_current_popup();
+					}
+					ui.same_line();
+					if ui.button("Cancel") {
+						ui.close_current_popup();
+					}
 				}
 			});
 
-		if !ui.is_any_hovered() {
+		if !ui.is_any_hovered() && !ui.is_any_focused() {
 			if context.core.system.res.mouse.is_button_down(MouseButton::Right) {
 				context.core.camera_x -= context.core.system.res.mouse.x_delta() * 2;
 				context.core.camera_y -= context.core.system.res.mouse.y_delta() * 2;
@@ -93,7 +124,7 @@ fn main() -> Result<()> {
 	let mut game = GameContext::new(system)?;
 
 	let mut states = States::new();
-	states.push(DemoState)?;
+	states.push(DemoState::default())?;
 
 	let mut last_ticks = game.core.system.ticks();
 
