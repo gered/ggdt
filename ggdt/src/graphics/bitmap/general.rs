@@ -11,6 +11,7 @@ use crate::graphics::bitmap::indexed::IndexedBitmap;
 use crate::graphics::bitmap::rgb::blit::RgbaBlitMethod;
 use crate::graphics::bitmap::rgb::RgbaBitmap;
 use crate::graphics::bitmap::BitmapError;
+use crate::graphics::font::{Font, FontRenderOpts};
 use crate::graphics::Pixel;
 use crate::math::rect::Rect;
 
@@ -34,6 +35,12 @@ pub trait GeneralBitmap: Sized + Clone {
 
 	/// Returns the height of the bitmap in pixels.
 	fn height(&self) -> u32;
+
+	/// Returns the right x coordinate of the bitmap.
+	fn right(&self) -> u32;
+
+	/// Returns the bottom x coordinate of the bitmap.
+	fn bottom(&self) -> u32;
 
 	/// Returns the current clipping region set on this bitmap.
 	fn clip_region(&self) -> &Rect;
@@ -81,6 +88,12 @@ pub trait GeneralBitmap: Sized + Clone {
 	/// Draws a filled circle formed by the center point and radius given.
 	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType);
 
+	/// Renders a single character using the font given.
+	fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T);
+
+	/// Renders the string of text using the font given.
+	fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T);
+
 	fn blit_region(
 		&mut self,
 		method: GeneralBlitMethod<Self::PixelType>,
@@ -109,6 +122,14 @@ impl GeneralBitmap for IndexedBitmap {
 
 	fn height(&self) -> u32 {
 		self.height()
+	}
+
+	fn right(&self) -> u32 {
+		self.right()
+	}
+
+	fn bottom(&self) -> u32 {
+		self.bottom()
 	}
 
 	fn clip_region(&self) -> &Rect {
@@ -157,6 +178,14 @@ impl GeneralBitmap for IndexedBitmap {
 
 	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.filled_circle(center_x, center_y, radius, color)
+	}
+
+	fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
+		self.print_char(ch, x, y, opts, font);
+	}
+
+	fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
+		self.print_string(text, x, y, opts, font);
 	}
 
 	fn blit_region(
@@ -190,6 +219,14 @@ impl GeneralBitmap for RgbaBitmap {
 		self.height()
 	}
 
+	fn right(&self) -> u32 {
+		self.right()
+	}
+
+	fn bottom(&self) -> u32 {
+		self.bottom()
+	}
+
 	fn clip_region(&self) -> &Rect {
 		self.clip_region()
 	}
@@ -236,6 +273,14 @@ impl GeneralBitmap for RgbaBitmap {
 
 	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.filled_circle(center_x, center_y, radius, color)
+	}
+
+	fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
+		self.print_char(ch, x, y, opts, font);
+	}
+
+	fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
+		self.print_string(text, x, y, opts, font);
 	}
 
 	fn blit_region(
