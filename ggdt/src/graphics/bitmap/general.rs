@@ -112,78 +112,97 @@ pub trait GeneralBitmap: Sized + Clone {
 impl GeneralBitmap for IndexedBitmap {
 	type PixelType = u8;
 
+	#[inline]
 	fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
 		Self::new(width, height)
 	}
 
+	#[inline]
 	fn width(&self) -> u32 {
 		self.width()
 	}
 
+	#[inline]
 	fn height(&self) -> u32 {
 		self.height()
 	}
 
+	#[inline]
 	fn right(&self) -> u32 {
 		self.right()
 	}
 
+	#[inline]
 	fn bottom(&self) -> u32 {
 		self.bottom()
 	}
 
+	#[inline]
 	fn clip_region(&self) -> &Rect {
 		self.clip_region()
 	}
 
+	#[inline]
 	fn full_bounds(&self) -> Rect {
 		self.full_bounds()
 	}
 
+	#[inline]
 	fn clear(&mut self, color: Self::PixelType) {
 		self.clear(color)
 	}
 
+	#[inline]
 	fn set_pixel(&mut self, x: i32, y: i32, color: Self::PixelType) {
 		self.set_pixel(x, y, color)
 	}
 
+	#[inline]
 	fn get_pixel(&self, x: i32, y: i32) -> Option<Self::PixelType> {
 		self.get_pixel(x, y)
 	}
 
+	#[inline]
 	fn line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.line(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: Self::PixelType) {
 		self.horiz_line(x1, x2, y, color)
 	}
 
+	#[inline]
 	fn vert_line(&mut self, x: i32, y1: i32, y2: i32, color: Self::PixelType) {
 		self.vert_line(x, y1, y2, color)
 	}
 
+	#[inline]
 	fn rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.rect(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.filled_rect(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.circle(center_x, center_y, radius, color)
 	}
 
+	#[inline]
 	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.filled_circle(center_x, center_y, radius, color)
 	}
 
+	#[inline]
 	fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
 		self.print_char(ch, x, y, opts, font);
 	}
 
+	#[inline]
 	fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
 		self.print_string(text, x, y, opts, font);
 	}
@@ -207,78 +226,97 @@ impl GeneralBitmap for IndexedBitmap {
 impl GeneralBitmap for RgbaBitmap {
 	type PixelType = u32;
 
+	#[inline]
 	fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
 		Self::new(width, height)
 	}
 
+	#[inline]
 	fn width(&self) -> u32 {
 		self.width()
 	}
 
+	#[inline]
 	fn height(&self) -> u32 {
 		self.height()
 	}
 
+	#[inline]
 	fn right(&self) -> u32 {
 		self.right()
 	}
 
+	#[inline]
 	fn bottom(&self) -> u32 {
 		self.bottom()
 	}
 
+	#[inline]
 	fn clip_region(&self) -> &Rect {
 		self.clip_region()
 	}
 
+	#[inline]
 	fn full_bounds(&self) -> Rect {
 		self.full_bounds()
 	}
 
+	#[inline]
 	fn clear(&mut self, color: Self::PixelType) {
 		self.clear(color)
 	}
 
+	#[inline]
 	fn set_pixel(&mut self, x: i32, y: i32, color: Self::PixelType) {
 		self.set_pixel(x, y, color)
 	}
 
+	#[inline]
 	fn get_pixel(&self, x: i32, y: i32) -> Option<Self::PixelType> {
 		self.get_pixel(x, y)
 	}
 
+	#[inline]
 	fn line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.line(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn horiz_line(&mut self, x1: i32, x2: i32, y: i32, color: Self::PixelType) {
 		self.horiz_line(x1, x2, y, color)
 	}
 
+	#[inline]
 	fn vert_line(&mut self, x: i32, y1: i32, y2: i32, color: Self::PixelType) {
 		self.vert_line(x, y1, y2, color)
 	}
 
+	#[inline]
 	fn rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.rect(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn filled_rect(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, color: Self::PixelType) {
 		self.filled_rect(x1, y1, x2, y2, color)
 	}
 
+	#[inline]
 	fn circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.circle(center_x, center_y, radius, color)
 	}
 
+	#[inline]
 	fn filled_circle(&mut self, center_x: i32, center_y: i32, radius: u32, color: Self::PixelType) {
 		self.filled_circle(center_x, center_y, radius, color)
 	}
 
+	#[inline]
 	fn print_char<T: Font>(&mut self, ch: char, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
 		self.print_char(ch, x, y, opts, font);
 	}
 
+	#[inline]
 	fn print_string<T: Font>(&mut self, text: &str, x: i32, y: i32, opts: FontRenderOpts<Self::PixelType>, font: &T) {
 		self.print_string(text, x, y, opts, font);
 	}
