@@ -261,7 +261,7 @@ pub enum Event {
 
 fn event_handler(event: &Event, context: &mut CoreContext) -> bool {
 	match event {
-		Event::AnimationFinished(entity) => {
+		Event::AnimationFinished(_entity) => {
 			// no-op
 		}
 		Event::MoveForward(entity) => {
@@ -471,7 +471,7 @@ fn update_system_pushing(context: &mut CoreContext) {
 		let pusher_bounds = bounds.get(pusher_entity).unwrap();
 		let pusher_circle = Circle::new(pusher_position.0.x as i32, pusher_position.0.y as i32, pusher_bounds.radius);
 
-		for (pushable_entity, pushable) in pushable.iter() {
+		for (pushable_entity, _pushable) in pushable.iter() {
 			// don't push ourself ...
 			if *pushable_entity == *pusher_entity {
 				continue;
@@ -633,7 +633,6 @@ fn update_system_current_entity_activity(context: &mut CoreContext) {
 						context.event_publisher.queue(Event::SetActivity(*entity, EntityActivity::Idle));
 					}
 				}
-				_ => {}
 			}
 		}
 	}
@@ -648,7 +647,7 @@ fn render_system_sprites(context: &mut CoreContext) {
 	// build up list of entities to be rendered with their positions so we can sort them
 	// and render these entities with a proper y-based sort order
 	for (entity, _) in sprites.iter() {
-		let mut blit_method = RgbaBlitMethod::Transparent(context.transparent_color);
+		let blit_method = RgbaBlitMethod::Transparent(context.transparent_color);
 
 		let position = positions.get(entity).unwrap();
 		context.sprite_render_list.push((*entity, position.0, blit_method));

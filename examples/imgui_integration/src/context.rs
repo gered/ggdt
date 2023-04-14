@@ -86,7 +86,7 @@ impl AppContext<Standard> for GameContext {
 }
 
 impl GameContext {
-	pub fn new(mut system: System<Standard>) -> Result<Self> {
+	pub fn new(system: System<Standard>) -> Result<Self> {
 		let palette = load_palette(Path::new("./assets/db16.pal"))?;
 
 		let font = load_font(Path::new("./assets/dp.fnt"))?;
@@ -97,7 +97,7 @@ impl GameContext {
 		let blue_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/blue_slime.pcx"))?);
 		let orange_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/orange_slime.pcx"))?);
 
-		let mut tilemap = TileMap::load_from(Path::new("./assets/arena.map.json"))?;
+		let tilemap = TileMap::load_from(Path::new("./assets/arena.map.json"))?;
 
 		let entities = Entities::new();
 		let component_systems = ComponentSystems::new();
