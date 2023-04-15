@@ -6,7 +6,7 @@ mod tilemap;
 use anyhow::Result;
 
 use crate::context::GameContext;
-use crate::entities::{Position, Slime};
+use crate::entities::{Forces, Position, Slime};
 use crate::tilemap::{TILE_HEIGHT, TILE_WIDTH};
 use ggdt::prelude::*;
 use ggdt_imgui::UiSupport;
@@ -27,7 +27,7 @@ impl AppState<GameContext> for DemoState {
 		let ui = context.support.imgui.new_frame(&context.core.system.res.video);
 		ui.window("Entities")
 			.position([10.0, 10.0], imgui::Condition::FirstUseEver)
-			.size([160.0, 200.0], imgui::Condition::FirstUseEver)
+			.size([200.0, 200.0], imgui::Condition::FirstUseEver)
 			.build(|| {
 				ui.text(format!("Camera: {}, {}", context.core.camera_x, context.core.camera_y));
 
@@ -37,6 +37,7 @@ impl AppState<GameContext> for DemoState {
 				for (slime, _) in context.core.entities.components::<Slime>().unwrap().iter() {
 					let position = positions.get(slime).unwrap();
 					ui.text(format!("{:2} @ {:3.0},{:3.0}", *slime, position.0.x, position.0.y));
+
 					ui.same_line();
 					let clicked = {
 						let _id = ui.push_id_ptr(slime);
@@ -47,6 +48,17 @@ impl AppState<GameContext> for DemoState {
 						self.new_y = 0;
 						self.selected_entity = *slime;
 						ui.open_popup("Move Entity");
+					}
+
+					ui.same_line();
+					let clicked = {
+						let _id = ui.push_id_ptr(slime);
+						ui.button("Push")
+					};
+					if clicked {
+						let mut forces = context.core.entities.components_mut::<Forces>().unwrap();
+						let slime_forces = forces.get_mut(slime).unwrap();
+						slime_forces.add(Vector2::from_angle(rnd_value(RADIANS_0, RADIANS_360)) * 5.0, 0.8);
 					}
 				}
 
