@@ -13,8 +13,8 @@ use ggdt_imgui::UiSupport;
 
 #[derive(Default)]
 pub struct DemoState {
-	new_x_buffer: String,
-	new_y_buffer: String,
+	new_x: i32,
+	new_y: i32,
 	selected_entity: EntityId,
 }
 
@@ -38,25 +38,26 @@ impl AppState<GameContext> for DemoState {
 					let position = positions.get(slime).unwrap();
 					ui.text(format!("{:2} @ {:3.0},{:3.0}", *slime, position.0.x, position.0.y));
 					ui.same_line();
-					if ui.button("Move") {
-						self.new_x_buffer.clear();
-						self.new_y_buffer.clear();
+					let clicked = {
+						let _id = ui.push_id_ptr(slime);
+						ui.button("Move")
+					};
+					if clicked {
+						self.new_x = 0;
+						self.new_y = 0;
 						self.selected_entity = *slime;
 						ui.open_popup("Move Entity");
 					}
 				}
 
 				if let Some(_token) = ui.modal_popup_config("Move Entity").always_auto_resize(true).begin_popup() {
-					ui.input_text("New X:", &mut self.new_x_buffer).chars_decimal(true).chars_noblank(true).build();
-					ui.input_text("New Y:", &mut self.new_y_buffer).chars_decimal(true).chars_noblank(true).build();
+					ui.text(format!("Move entity {} to:", self.selected_entity));
+					ui.input_int("X", &mut self.new_x).step(16).build();
+					ui.input_int("Y", &mut self.new_y).step(16).build();
 					if ui.button("Move") {
-						let new_x = self.new_x_buffer.parse::<i32>();
-						let new_y = self.new_y_buffer.parse::<i32>();
-						if !new_x.is_err() && !new_y.is_err() {
-							let position = positions.get_mut(&self.selected_entity).unwrap();
-							position.0.x = new_x.unwrap() as f32;
-							position.0.y = new_y.unwrap() as f32;
-						}
+						let position = positions.get_mut(&self.selected_entity).unwrap();
+						position.0.x = self.new_x as f32;
+						position.0.y = self.new_y as f32;
 						ui.close_current_popup();
 					}
 					ui.same_line();
