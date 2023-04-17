@@ -524,7 +524,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use super::*;
 
 	#[rustfmt::skip]

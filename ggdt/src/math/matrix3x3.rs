@@ -278,7 +278,7 @@ impl Mul<Vector2> for Matrix3x3 {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use crate::math::*;
 
 	use super::*;

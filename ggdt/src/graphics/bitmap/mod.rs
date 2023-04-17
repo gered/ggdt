@@ -284,7 +284,7 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use claim::assert_matches;
 
 	use super::*;

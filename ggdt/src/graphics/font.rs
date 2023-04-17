@@ -237,7 +237,7 @@ impl Font for BitmaskFont {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use std::path::PathBuf;
 
 	use super::*;

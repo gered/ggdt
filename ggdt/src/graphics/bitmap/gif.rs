@@ -547,7 +547,7 @@ impl RgbaBitmap {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use std::path::PathBuf;
 
 	use tempfile::TempDir;

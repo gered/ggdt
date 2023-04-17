@@ -13,7 +13,7 @@ pub mod prelude;
 // using this to hold common unit test helper functions
 // (since apparently rust doesn't really have a great alternative ... ?)
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use std::fs::File;
 	use std::io;
 	use std::io::{BufReader, Read};

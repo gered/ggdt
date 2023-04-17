@@ -133,7 +133,7 @@ where
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use claim::*;
 
 	use crate::graphics::bitmap::indexed::IndexedBitmap;

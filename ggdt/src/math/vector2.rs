@@ -253,7 +253,7 @@ impl MulAssign<Matrix3x3> for Vector2 {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
 	use crate::math::*;
 
 	use super::*;
