@@ -6,10 +6,8 @@
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
-use crate::graphics::bitmap::indexed::blit::IndexedBlitMethod;
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::rgb::blit::RgbaBlitMethod;
-use crate::graphics::bitmap::rgb::RgbaBitmap;
+use crate::graphics::bitmap::indexed::{IndexedBitmap, IndexedBlitMethod};
+use crate::graphics::bitmap::rgb::{RgbaBitmap, RgbaBlitMethod};
 use crate::graphics::bitmap::BitmapError;
 use crate::graphics::font::{Font, FontRenderOpts};
 use crate::graphics::Pixel;

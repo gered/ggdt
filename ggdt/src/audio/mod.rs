@@ -8,8 +8,6 @@ pub mod buffer;
 pub mod device;
 pub mod queue;
 
-pub mod prelude;
-
 /// The number of simultaneously playing audio channels supported by this library currently.
 pub const NUM_CHANNELS: usize = 8;
 

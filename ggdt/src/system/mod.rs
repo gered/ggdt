@@ -9,7 +9,6 @@ pub mod input_devices;
 pub mod res;
 
 mod framebuffer;
-pub mod prelude;
 
 fn is_x11_compositor_skipping_problematic() -> bool {
 	/*

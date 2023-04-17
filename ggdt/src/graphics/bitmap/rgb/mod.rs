@@ -5,9 +5,13 @@ use crate::graphics::bitmap::{Bitmap, BitmapError};
 use crate::graphics::color::{to_argb32, to_rgb32};
 use crate::graphics::palette::Palette;
 
-pub mod blit;
-pub mod primitives;
-pub mod triangles;
+mod blit;
+mod primitives;
+mod triangles;
+
+pub use blit::*;
+pub use primitives::*;
+pub use triangles::*;
 
 pub type RgbaBitmap = Bitmap<u32>;
 

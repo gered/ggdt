@@ -5,8 +5,6 @@ pub mod matrix3x3;
 pub mod rect;
 pub mod vector2;
 
-pub mod prelude;
-
 pub const PI: f32 = std::f32::consts::PI;
 // 180 degrees
 pub const HALF_PI: f32 = PI / 2.0;

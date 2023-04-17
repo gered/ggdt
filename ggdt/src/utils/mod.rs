@@ -9,8 +9,6 @@ pub mod io;
 pub mod lzwgif;
 pub mod packbits;
 
-pub mod prelude;
-
 pub fn rnd_value<N: SampleUniform + PartialOrd>(low: N, high: N) -> N {
 	rand::thread_rng().gen_range(low..=high)
 }
