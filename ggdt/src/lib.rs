@@ -21,9 +21,12 @@ mod tests {
 
 	use byteorder::{LittleEndian, ReadBytesExt};
 
+	#[allow(dead_code)]
 	const ASSETS_PATH: &str = "./assets/";
+
 	const TEST_ASSETS_PATH: &str = "./test-assets/";
 
+	#[allow(dead_code)]
 	pub fn assets_file(file: &Path) -> PathBuf {
 		PathBuf::from(ASSETS_PATH).join(file)
 	}
