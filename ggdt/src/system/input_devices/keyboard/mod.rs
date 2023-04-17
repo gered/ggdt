@@ -1,9 +1,10 @@
-use crate::system::event::{KeyboardEvent, SystemEvent, SystemEventHandler};
-use crate::system::input_devices::keyboard::scancodes::Scancode;
-use crate::system::input_devices::{ButtonState, InputDevice};
+use crate::system::{ButtonState, InputDevice, KeyboardEvent, SystemEvent, SystemEventHandler};
 
-pub mod codes;
-pub mod scancodes;
+mod codes;
+mod scancodes;
+
+pub use codes::*;
+pub use scancodes::*;
 
 const MAX_KEYS: usize = 512;
 

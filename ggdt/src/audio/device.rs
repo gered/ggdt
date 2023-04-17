@@ -3,8 +3,7 @@ use std::ops::{Index, IndexMut};
 use sdl2::audio::AudioCallback;
 use thiserror::Error;
 
-use crate::audio::buffer::AudioBuffer;
-use crate::audio::{AudioGenerator, AudioSpec, NUM_CHANNELS};
+use crate::audio::{AudioBuffer, AudioGenerator, AudioSpec, NUM_CHANNELS};
 
 /// Represents a "channel" of audio playback that will be mixed together with all of the other
 /// actively playing audio channels to get the final audio playback.

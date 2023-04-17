@@ -1,7 +1,5 @@
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::triangles::{edge_function, per_pixel_triangle_2d};
-use crate::graphics::blendmap::BlendMap;
-use crate::math::vector2::Vector2;
+use crate::graphics::{edge_function, per_pixel_triangle_2d, BlendMap, IndexedBitmap};
+use crate::math::Vector2;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum IndexedTriangle2d<'a> {

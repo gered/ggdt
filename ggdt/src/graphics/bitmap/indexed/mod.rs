@@ -1,8 +1,6 @@
 use std::path::Path;
 
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::bitmap::{Bitmap, BitmapError};
-use crate::graphics::palette::Palette;
+use crate::graphics::{Bitmap, BitmapError, Palette, RgbaBitmap};
 
 mod blit;
 mod primitives;

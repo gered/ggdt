@@ -1,5 +1,8 @@
-pub mod keyboard;
-pub mod mouse;
+mod keyboard;
+mod mouse;
+
+pub use keyboard::*;
+pub use mouse::*;
 
 #[derive(Clone, Copy, Eq, PartialEq, Debug)]
 pub enum ButtonState {

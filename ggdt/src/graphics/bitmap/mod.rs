@@ -1,18 +1,29 @@
 use thiserror::Error;
 
 use crate::graphics::Pixel;
-use crate::math::rect::Rect;
+use crate::math::Rect;
 
-pub mod blit;
-pub mod general;
-pub mod gif;
-pub mod iff;
-pub mod indexed;
-pub mod pcx;
-pub mod png;
-pub mod primitives;
-pub mod rgb;
-pub mod triangles;
+mod blit;
+mod general;
+mod gif;
+mod iff;
+mod indexed;
+mod pcx;
+mod png;
+mod primitives;
+mod rgb;
+mod triangles;
+
+pub use blit::*;
+pub use general::*;
+pub use gif::*;
+pub use iff::*;
+pub use indexed::*;
+pub use pcx::*;
+pub use png::*;
+pub use primitives::*;
+pub use rgb::*;
+pub use triangles::*;
 
 #[derive(Error, Debug)]
 pub enum BitmapError {

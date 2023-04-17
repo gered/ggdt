@@ -7,9 +7,8 @@ use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use sdl2::audio::AudioFormat;
 use thiserror::Error;
 
-use crate::audio::buffer::AudioBuffer;
-use crate::audio::AudioSpec;
-use crate::utils::io::StreamSize;
+use crate::audio::{AudioBuffer, AudioSpec};
+use crate::utils::StreamSize;
 
 #[derive(Error, Debug)]
 pub enum WavError {

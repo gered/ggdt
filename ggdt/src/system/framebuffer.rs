@@ -1,9 +1,7 @@
 use byte_slice_cast::AsByteSlice;
 use thiserror::Error;
 
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::palette::Palette;
+use crate::graphics::{IndexedBitmap, Palette, RgbaBitmap};
 
 pub fn calculate_logical_screen_size(window_width: u32, window_height: u32, scale_factor: u32) -> (u32, u32) {
 	let logical_width = (window_width as f32 / scale_factor as f32).ceil() as u32;

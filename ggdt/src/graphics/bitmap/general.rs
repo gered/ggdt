@@ -6,12 +6,10 @@
 //!
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
-use crate::graphics::bitmap::indexed::{IndexedBitmap, IndexedBlitMethod};
-use crate::graphics::bitmap::rgb::{RgbaBitmap, RgbaBlitMethod};
-use crate::graphics::bitmap::BitmapError;
-use crate::graphics::font::{Font, FontRenderOpts};
-use crate::graphics::Pixel;
-use crate::math::rect::Rect;
+use crate::graphics::{
+	BitmapError, Font, FontRenderOpts, IndexedBitmap, IndexedBlitMethod, Pixel, RgbaBitmap, RgbaBlitMethod,
+};
+use crate::math::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum GeneralBlitMethod<PixelType: Pixel> {

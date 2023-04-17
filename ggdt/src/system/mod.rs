@@ -1,14 +1,15 @@
 use thiserror::Error;
 
 use crate::audio::AudioError;
-use crate::system::event::{SystemEvent, SystemEventPump};
-use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
 
-pub mod event;
-pub mod input_devices;
-pub mod res;
-
+mod event;
 mod framebuffer;
+mod input_devices;
+mod res;
+
+pub use event::*;
+pub use input_devices::*;
+pub use res::*;
 
 fn is_x11_compositor_skipping_problematic() -> bool {
 	/*

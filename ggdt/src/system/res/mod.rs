@@ -1,13 +1,15 @@
 use thiserror::Error;
 
-use crate::audio::device::AudioDeviceError;
-use crate::audio::AudioError;
+use crate::audio::{AudioDeviceError, AudioError};
 use crate::graphics::Pixel;
-use crate::system::event::SystemEvent;
 use crate::system::framebuffer::SdlFramebufferError;
+use crate::system::SystemEvent;
 
-pub mod dos_like;
-pub mod standard;
+mod dos_like;
+mod standard;
+
+pub use dos_like::*;
+pub use standard::*;
 
 #[derive(Error, Debug)]
 pub enum SystemResourcesError {

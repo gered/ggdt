@@ -5,10 +5,8 @@ use std::path::Path;
 use byteorder::{LittleEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
-use crate::utils::lzwgif::{lzw_decode, lzw_encode, LzwError};
+use crate::graphics::{IndexedBitmap, Palette, PaletteError, PaletteFormat, RgbaBitmap};
+use crate::utils::{lzw_decode, lzw_encode, LzwError};
 
 const BITS_FOR_256_COLORS: u32 = 7; // formula is `2 ^ (bits + 1) = num_colors`
 

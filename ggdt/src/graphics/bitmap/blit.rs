@@ -1,6 +1,5 @@
-use crate::graphics::bitmap::Bitmap;
-use crate::graphics::Pixel;
-use crate::math::rect::Rect;
+use crate::graphics::{Bitmap, Pixel};
+use crate::math::Rect;
 
 /// Clips the region for a source bitmap to be used in a subsequent blit operation. The source
 /// region will be clipped against the clipping region given for the destination bitmap. The

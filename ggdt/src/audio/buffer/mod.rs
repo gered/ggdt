@@ -2,7 +2,9 @@ use thiserror::Error;
 
 use crate::audio::AudioSpec;
 
-pub mod wav;
+mod wav;
+
+pub use wav::*;
 
 #[derive(Error, Debug)]
 pub enum AudioBufferError {

@@ -131,11 +131,10 @@
 
 use thiserror::Error;
 
-use crate::audio::device::AudioDeviceError;
+use crate::audio::AudioDeviceError;
 use crate::events::{EventListeners, EventPublisher};
 use crate::states::{AppState, StateError, States};
-use crate::system::res::SystemResources;
-use crate::system::{System, SystemError};
+use crate::system::{System, SystemError, SystemResources};
 
 pub trait CoreState<SystemResType>
 where

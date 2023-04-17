@@ -1,10 +1,14 @@
+use ggdt::graphics::RgbaBitmap;
+use ggdt::system::{SystemEvent, SystemEventHandler};
+
 use crate::platform::Platform;
 use crate::renderer::Renderer;
-use ggdt::graphics::bitmap::rgb::RgbaBitmap;
-use ggdt::system::event::{SystemEvent, SystemEventHandler};
 
-pub mod platform;
-pub mod renderer;
+mod platform;
+mod renderer;
+
+pub use platform::*;
+pub use renderer::*;
 
 #[derive(Debug)]
 pub struct ImGui {

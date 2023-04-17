@@ -1,10 +1,9 @@
 use std::rc::Rc;
 
-use crate::graphics::bitmap::blit::{clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit};
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmapatlas::BitmapAtlas;
-use crate::graphics::blendmap::BlendMap;
-use crate::math::rect::Rect;
+use crate::graphics::{
+	clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit, BitmapAtlas, BlendMap, IndexedBitmap,
+};
+use crate::math::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum IndexedBlitMethod {

@@ -2,11 +2,15 @@ use sdl2::audio::{AudioFormat, AudioFormatNum, AudioSpecDesired};
 use sdl2::AudioSubsystem;
 use thiserror::Error;
 
-use crate::audio::device::AudioDevice;
+use crate::audio::AudioDevice;
 
-pub mod buffer;
-pub mod device;
-pub mod queue;
+mod buffer;
+mod device;
+mod queue;
+
+pub use buffer::*;
+pub use device::*;
+pub use queue::*;
 
 /// The number of simultaneously playing audio channels supported by this library currently.
 pub const NUM_CHANNELS: usize = 8;

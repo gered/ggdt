@@ -1,7 +1,5 @@
-use ggdt::graphics::bitmap::rgb::{RgbaBitmap, RgbaPixelFormat};
-use ggdt::graphics::color::{to_argb32, BlendFunction};
-use ggdt::math::rect::Rect;
-use ggdt::math::vector2::Vector2;
+use ggdt::graphics::{to_argb32, BlendFunction, RgbaBitmap, RgbaPixelFormat};
+use ggdt::math::{Rect, Vector2};
 use imgui::internal::RawWrapper;
 
 #[derive(Debug)]

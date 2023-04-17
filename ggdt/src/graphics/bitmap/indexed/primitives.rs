@@ -1,5 +1,4 @@
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::blendmap::BlendMap;
+use crate::graphics::{BlendMap, IndexedBitmap};
 
 impl IndexedBitmap {
 	/// Sets the pixel at the given coordinates using a blended color via the specified blend map,

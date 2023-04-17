@@ -7,13 +7,11 @@ use std::path::Path;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::bitmap::Bitmap;
-use crate::graphics::color::{from_argb32, from_rgb32, to_argb32, to_rgb32};
-use crate::graphics::palette::{Palette, PaletteError, PaletteFormat};
-use crate::graphics::Pixel;
-use crate::utils::bytes::ReadFixedLengthByteArray;
+use crate::graphics::{
+	from_argb32, from_rgb32, to_argb32, to_rgb32, Bitmap, IndexedBitmap, Palette, PaletteError, PaletteFormat, Pixel,
+	RgbaBitmap,
+};
+use crate::utils::ReadFixedLengthByteArray;
 
 const PNG_HEADER: [u8; 8] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 

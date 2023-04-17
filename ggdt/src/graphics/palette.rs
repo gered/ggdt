@@ -7,8 +7,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::color::{from_rgb32, lerp_rgb32, to_argb32, to_rgb32};
+use crate::graphics::{from_rgb32, lerp_rgb32, to_argb32, to_rgb32, IndexedBitmap};
 use crate::utils::abs_diff;
 
 const NUM_COLORS: usize = 256;

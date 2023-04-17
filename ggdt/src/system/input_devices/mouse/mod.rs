@@ -1,9 +1,10 @@
-use crate::system::event::{MouseEvent, SystemEvent, SystemEventHandler};
-use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
-use crate::system::input_devices::{ButtonState, InputDevice};
+use crate::system::{ButtonState, InputDevice, MouseEvent, SystemEvent, SystemEventHandler};
 
-pub mod buttons;
-pub mod cursor;
+mod buttons;
+mod cursor;
+
+pub use buttons::*;
+pub use cursor::*;
 
 const MAX_BUTTONS: usize = 32;
 

@@ -2,8 +2,8 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::graphics::bitmap::general::GeneralBitmap;
-use crate::math::rect::Rect;
+use crate::graphics::GeneralBitmap;
+use crate::math::Rect;
 
 #[derive(Error, Debug)]
 pub enum BitmapAtlasError {
@@ -136,7 +136,7 @@ where
 mod tests {
 	use claim::*;
 
-	use crate::graphics::bitmap::indexed::IndexedBitmap;
+	use crate::graphics::IndexedBitmap;
 
 	use super::*;
 

@@ -5,10 +5,9 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::color::{from_rgb32, luminance};
-use crate::graphics::palette::Palette;
+use crate::graphics::{from_rgb32, luminance, Palette};
 use crate::math::lerp;
-use crate::utils::bytes::ReadFixedLengthByteArray;
+use crate::utils::ReadFixedLengthByteArray;
 
 #[derive(Error, Debug)]
 pub enum BlendMapError {

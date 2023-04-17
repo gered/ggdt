@@ -1,10 +1,7 @@
 use std::mem::swap;
 
-use crate::graphics::bitmap::Bitmap;
-use crate::graphics::font::{Character, Font, FontRenderOpts};
-use crate::graphics::Pixel;
-use crate::math::lerp;
-use crate::math::rect::Rect;
+use crate::graphics::{Bitmap, Character, Font, FontRenderOpts, Pixel};
+use crate::math::{lerp, Rect};
 
 impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// Fills the entire bitmap with the given color.

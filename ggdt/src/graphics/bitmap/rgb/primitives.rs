@@ -1,5 +1,4 @@
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::color::BlendFunction;
+use crate::graphics::{BlendFunction, RgbaBitmap};
 
 impl RgbaBitmap {
 	/// Sets the pixel at the given coordinates using a blended color via the specified blend function

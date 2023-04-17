@@ -1,52 +1,9 @@
-pub use crate::{
-	//
-	audio::{
-		buffer::{wav::*, *},
-		device::*,
-		queue::*,
-		*,
-	},
-	base::*,
-	entities::*,
-	events::*,
-	graphics::{
-		//
-		bitmap::{
-			blit::*, general::*, gif::*, iff::*, indexed::*, pcx::*, png::*, primitives::*, rgb::*, triangles::*, *,
-		},
-		bitmapatlas::*,
-		blendmap::*,
-		color::*,
-		font::*,
-		palette::*,
-		*,
-	},
-	math::{
-		//
-		circle::*,
-		matrix3x3::*,
-		rect::*,
-		vector2::*,
-		*,
-	},
-	states::*,
-	system::{
-		event::*, //
-		input_devices::{
-			keyboard::{codes::*, scancodes::*, *},
-			mouse::{buttons::*, cursor::*, *},
-			*,
-		},
-		res::{dos_like::*, standard::*, *},
-		*,
-	},
-	utils::{
-		//
-		bytes::*,
-		io::*,
-		lzwgif::*,
-		packbits::*,
-		*,
-	},
-	*,
-};
+pub use crate::audio::*;
+pub use crate::base::*;
+pub use crate::entities::*;
+pub use crate::events::*;
+pub use crate::graphics::*;
+pub use crate::math::*;
+pub use crate::states::*;
+pub use crate::system::*;
+pub use crate::utils::*;

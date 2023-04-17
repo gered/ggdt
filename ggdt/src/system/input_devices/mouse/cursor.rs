@@ -1,8 +1,6 @@
-use crate::graphics::bitmap::general::{GeneralBitmap, GeneralBlitMethod};
-use crate::graphics::bitmap::indexed::IndexedBitmap;
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::math::rect::Rect;
-use crate::system::input_devices::mouse::Mouse;
+use crate::graphics::{GeneralBitmap, GeneralBlitMethod, IndexedBitmap, RgbaBitmap};
+use crate::math::Rect;
+use crate::system::Mouse;
 
 const DEFAULT_MOUSE_CURSOR_HOTSPOT_X: u32 = 0;
 const DEFAULT_MOUSE_CURSOR_HOTSPOT_Y: u32 = 0;

@@ -1,9 +1,8 @@
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::bitmap::triangles::{edge_function, per_pixel_triangle_2d};
-use crate::graphics::color::{
-	from_argb32, from_rgb32, multiply_argb32, tint_argb32, to_argb32, to_rgb32, BlendFunction,
+use crate::graphics::{
+	edge_function, from_argb32, from_rgb32, multiply_argb32, per_pixel_triangle_2d, tint_argb32, to_argb32, to_rgb32,
+	BlendFunction, RgbaBitmap,
 };
-use crate::math::vector2::Vector2;
+use crate::math::Vector2;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RgbaTriangle2d<'a> {

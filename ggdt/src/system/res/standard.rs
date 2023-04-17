@@ -1,14 +1,10 @@
-use crate::audio::queue::AudioQueue;
-use crate::audio::{Audio, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::font::BitmaskFont;
-use crate::system::event::{SystemEvent, SystemEventHandler, WindowEvent};
+use crate::audio::{Audio, AudioQueue, TARGET_AUDIO_CHANNELS, TARGET_AUDIO_FREQUENCY};
+use crate::graphics::{BitmaskFont, RgbaBitmap};
 use crate::system::framebuffer::{calculate_logical_screen_size, SdlFramebuffer};
-use crate::system::input_devices::keyboard::Keyboard;
-use crate::system::input_devices::mouse::cursor::CustomMouseCursor;
-use crate::system::input_devices::mouse::Mouse;
-use crate::system::input_devices::InputDevice;
-use crate::system::res::{SystemResources, SystemResourcesConfig, SystemResourcesError};
+use crate::system::{
+	CustomMouseCursor, InputDevice, Keyboard, Mouse, SystemEvent, SystemEventHandler, SystemResources,
+	SystemResourcesConfig, SystemResourcesError, WindowEvent,
+};
 
 const DEFAULT_SCREEN_WIDTH: u32 = 320;
 const DEFAULT_SCREEN_HEIGHT: u32 = 240;

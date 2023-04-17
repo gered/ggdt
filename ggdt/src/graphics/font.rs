@@ -5,9 +5,8 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::bitmap::Bitmap;
-use crate::graphics::Pixel;
-use crate::math::rect::Rect;
+use crate::graphics::{Bitmap, Pixel};
+use crate::math::Rect;
 
 pub static VGA_FONT_BYTES: &[u8] = include_bytes!("../../assets/vga.fnt");
 

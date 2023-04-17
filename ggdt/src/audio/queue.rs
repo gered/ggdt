@@ -1,9 +1,7 @@
 use std::collections::VecDeque;
 use std::rc::Rc;
 
-use crate::audio::buffer::AudioBuffer;
-use crate::audio::device::{AudioDevice, AudioDeviceError};
-use crate::audio::{Audio, AudioGenerator, AudioSpec, NUM_CHANNELS};
+use crate::audio::{Audio, AudioBuffer, AudioDevice, AudioDeviceError, AudioGenerator, AudioSpec, NUM_CHANNELS};
 
 pub enum AudioCommand {
 	StopChannel(usize),

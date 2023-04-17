@@ -1,7 +1,6 @@
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
-use crate::math::matrix3x3::Matrix3x3;
-use crate::math::{angle_between, angle_to_direction, nearly_equal, NearlyEqual};
+use crate::math::{angle_between, angle_to_direction, nearly_equal, Matrix3x3, NearlyEqual};
 
 /// Represents a 2D vector and provides common methods for vector math.
 #[derive(Debug, Copy, Clone, PartialEq)]

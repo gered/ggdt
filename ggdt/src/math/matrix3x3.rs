@@ -1,7 +1,6 @@
 use std::ops::{Mul, MulAssign};
 
-use crate::math::nearly_equal;
-use crate::math::vector2::Vector2;
+use crate::math::{nearly_equal, Vector2};
 
 /// Represents a 3x3 column-major matrix and provides common methods for matrix math.
 #[derive(Debug, Copy, Clone, PartialEq)]

@@ -4,10 +4,15 @@ use num_traits::Unsigned;
 use rand::distributions::uniform::SampleUniform;
 use rand::Rng;
 
-pub mod bytes;
-pub mod io;
-pub mod lzwgif;
-pub mod packbits;
+mod bytes;
+mod io;
+mod lzwgif;
+mod packbits;
+
+pub use bytes::*;
+pub use io::*;
+pub use lzwgif::*;
+pub use packbits::*;
 
 pub fn rnd_value<N: SampleUniform + PartialOrd>(low: N, high: N) -> N {
 	rand::thread_rng().gen_range(low..=high)

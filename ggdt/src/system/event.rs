@@ -11,9 +11,7 @@
 
 use bitflags::bitflags;
 
-use crate::system::input_devices::keyboard::codes::Keycode;
-use crate::system::input_devices::keyboard::scancodes::Scancode;
-use crate::system::input_devices::mouse::buttons::{MouseButton, MouseButtons};
+use crate::system::{Keycode, MouseButton, MouseButtons, Scancode};
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum WindowEvent {

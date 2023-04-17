@@ -1,8 +1,7 @@
-use ggdt::graphics::bitmap::rgb::RgbaBitmap;
-use ggdt::system::event::{KeyModifiers, KeyboardEvent, MouseEvent, SystemEvent};
-use ggdt::system::input_devices::keyboard::scancodes::Scancode;
-use ggdt::system::input_devices::mouse::buttons::MouseButton;
 use std::time::Instant;
+
+use ggdt::graphics::RgbaBitmap;
+use ggdt::system::{KeyModifiers, KeyboardEvent, MouseButton, MouseEvent, Scancode, SystemEvent};
 
 fn handle_key(io: &mut imgui::Io, key: Scancode, down: bool) {
 	let key = match key {

@@ -1,5 +1,4 @@
-use crate::math::vector2::Vector2;
-use crate::math::{distance_between, distance_squared_between};
+use crate::math::{distance_between, distance_squared_between, Vector2};
 
 /// Represents a 2D circle, using integer center coordinates and radius.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]

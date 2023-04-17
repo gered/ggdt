@@ -1,8 +1,8 @@
-use crate::graphics::bitmap::blit::{clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit};
-use crate::graphics::bitmap::rgb::RgbaBitmap;
-use crate::graphics::bitmapatlas::BitmapAtlas;
-use crate::graphics::color::{tint_argb32, BlendFunction};
-use crate::math::rect::Rect;
+use crate::graphics::{
+	clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit, tint_argb32, BitmapAtlas,
+	BlendFunction, RgbaBitmap,
+};
+use crate::math::Rect;
 
 #[derive(Clone, PartialEq)]
 pub enum RgbaBlitMethod {

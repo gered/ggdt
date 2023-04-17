@@ -1,9 +1,7 @@
 use byteorder::ReadBytesExt;
 use std::path::Path;
 
-use crate::graphics::bitmap::{Bitmap, BitmapError};
-use crate::graphics::color::{to_argb32, to_rgb32};
-use crate::graphics::palette::Palette;
+use crate::graphics::{to_argb32, to_rgb32, Bitmap, BitmapError, Palette};
 
 mod blit;
 mod primitives;
