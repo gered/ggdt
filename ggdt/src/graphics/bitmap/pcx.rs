@@ -242,7 +242,7 @@ impl IndexedBitmap {
 
 		for i in 0..=255 {
 			let argb = palette[i];
-			let (r, g, b) = from_rgb32(argb);
+			let [r, g, b] = from_rgb32(argb);
 			writer.write_u8(r)?;
 			writer.write_u8(g)?;
 			writer.write_u8(b)?;

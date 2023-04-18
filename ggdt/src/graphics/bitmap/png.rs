@@ -340,14 +340,14 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
-				Ok(to_rgb32(r, g, b))
+				Ok(to_rgb32([r, g, b]))
 			}
 			ColorFormat::RGBA => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				let a = self.current[offset + 3];
-				Ok(to_argb32(a, r, g, b))
+				Ok(to_argb32([a, r, g, b]))
 			}
 			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
@@ -357,14 +357,14 @@ impl ScanlinePixelConverter<u32> for ScanlineBuffer {
 		let offset = x * self.bpp;
 		match self.format {
 			ColorFormat::RGB => {
-				let (r, g, b) = from_rgb32(pixel);
+				let [r, g, b] = from_rgb32(pixel);
 				self.current[offset] = r;
 				self.current[offset + 1] = g;
 				self.current[offset + 2] = b;
 				Ok(())
 			}
 			ColorFormat::RGBA => {
-				let (a, r, g, b) = from_argb32(pixel);
+				let [a, r, g, b] = from_argb32(pixel);
 				self.current[offset] = r;
 				self.current[offset + 1] = g;
 				self.current[offset + 2] = b;

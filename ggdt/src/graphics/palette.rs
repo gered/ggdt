@@ -33,12 +33,12 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [to_argb32(255, 0, 0, 0); NUM_COLORS];
+	let mut colors = [to_argb32([255, 0, 0, 0]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32(from_6bit(r), from_6bit(g), from_6bit(b));
+		let color = to_rgb32([from_6bit(r), from_6bit(g), from_6bit(b)]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -53,7 +53,7 @@ fn write_palette_6bit<T: WriteBytesExt>(
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let (r, g, b) = from_rgb32(colors[i]);
+		let [r, g, b] = from_rgb32(colors[i]);
 		writer.write_u8(to_6bit(r))?;
 		writer.write_u8(to_6bit(g))?;
 		writer.write_u8(to_6bit(b))?;
@@ -66,12 +66,12 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [to_argb32(255, 0, 0, 0); NUM_COLORS];
+	let mut colors = [to_argb32([255, 0, 0, 0]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32(r, g, b);
+		let color = to_rgb32([r, g, b]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -86,7 +86,7 @@ fn write_palette_8bit<T: WriteBytesExt>(
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let (r, g, b) = from_rgb32(colors[i]);
+		let [r, g, b] = from_rgb32(colors[i]);
 		writer.write_u8(r)?;
 		writer.write_u8(g)?;
 		writer.write_u8(b)?;
@@ -125,7 +125,7 @@ impl Palette {
 
 	/// Creates a new Palette with all initial colors having the RGB values specified.
 	pub fn new_with_default(r: u8, g: u8, b: u8) -> Palette {
-		let rgb = to_rgb32(r, g, b);
+		let rgb = to_rgb32([r, g, b]);
 		Palette { colors: [rgb; NUM_COLORS] }
 	}
 
@@ -295,7 +295,7 @@ impl Palette {
 	pub fn fade_color_toward_rgb(&mut self, color: u8, target_r: u8, target_g: u8, target_b: u8, step: u8) -> bool {
 		let mut modified = false;
 
-		let (mut r, mut g, mut b) = from_rgb32(self.colors[color as usize]);
+		let [mut r, mut g, mut b] = from_rgb32(self.colors[color as usize]);
 
 		if r != target_r {
 			modified = true;
@@ -328,7 +328,7 @@ impl Palette {
 		}
 
 		if modified {
-			self.colors[color as usize] = to_rgb32(r, g, b);
+			self.colors[color as usize] = to_rgb32([r, g, b]);
 		}
 
 		(target_r == r) && (target_g == g) && (target_b == b)
@@ -381,7 +381,7 @@ impl Palette {
 	pub fn fade_colors_toward_palette<T: ColorRange>(&mut self, colors: T, palette: &Palette, step: u8) -> bool {
 		let mut all_faded = true;
 		for color in colors {
-			let (r, g, b) = from_rgb32(palette[color]);
+			let [r, g, b] = from_rgb32(palette[color]);
 			if !self.fade_color_toward_rgb(color, r, g, b, step) {
 				all_faded = false;
 			}
@@ -439,7 +439,7 @@ impl Palette {
 		let mut closest = 0;
 
 		for (index, color) in self.colors.iter().enumerate() {
-			let (this_r, this_g, this_b) = from_rgb32(*color);
+			let [this_r, this_g, this_b] = from_rgb32(*color);
 
 			if r == this_r && g == this_g && b == this_b {
 				return index as u8;

@@ -62,7 +62,7 @@ fn mouse_with_custom_cursor() {
 		system.update().unwrap();
 
 		display_mouse_state(&mut system);
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32(255, 0, 255));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
 
 		system.display().unwrap();
 	}
@@ -91,7 +91,7 @@ fn mouse_with_os_cursor() {
 		system.update().unwrap();
 
 		display_mouse_state(&mut system);
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32(255, 0, 255));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
 
 		system.display().unwrap();
 	}

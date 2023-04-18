@@ -40,7 +40,7 @@ fn system_events_display() {
 				&format!("{:?}", event),
 				2,
 				system.res.video.height() as i32 - 10 - (idx as i32 * 10),
-				FontRenderOpts::Color(to_rgb32(255, 255, 255)),
+				FontRenderOpts::Color(to_rgb32([255, 255, 255])),
 				&system.res.font,
 			);
 		}

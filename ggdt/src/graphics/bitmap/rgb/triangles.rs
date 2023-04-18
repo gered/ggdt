@@ -92,9 +92,9 @@ impl RgbaBitmap {
 
 	pub fn solid_multicolor_triangle_2d(&mut self, positions: &[Vector2; 3], colors: &[u32; 3]) {
 		let area = edge_function(positions[0], positions[1], positions[2]);
-		let (r1, g1, b1) = from_rgb32(colors[0]);
-		let (r2, g2, b2) = from_rgb32(colors[1]);
-		let (r3, g3, b3) = from_rgb32(colors[2]);
+		let [r1, g1, b1] = from_rgb32(colors[0]);
+		let [r2, g2, b2] = from_rgb32(colors[1]);
+		let [r3, g3, b3] = from_rgb32(colors[2]);
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -104,7 +104,7 @@ impl RgbaBitmap {
 				let r = ((w0 * r1 as f32 + w1 * r2 as f32 + w2 * r3 as f32) / area) as u8;
 				let g = ((w0 * g1 as f32 + w1 * g2 as f32 + w2 * g3 as f32) / area) as u8;
 				let b = ((w0 * b1 as f32 + w1 * b2 as f32 + w2 * b3 as f32) / area) as u8;
-				*dest_pixels = to_rgb32(r, g, b)
+				*dest_pixels = to_rgb32([r, g, b])
 			},
 		)
 	}
@@ -116,9 +116,9 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		let area = edge_function(positions[0], positions[1], positions[2]);
-		let (a1, r1, g1, b1) = from_argb32(colors[0]);
-		let (a2, r2, g2, b2) = from_argb32(colors[1]);
-		let (a3, r3, g3, b3) = from_argb32(colors[2]);
+		let [a1, r1, g1, b1] = from_argb32(colors[0]);
+		let [a2, r2, g2, b2] = from_argb32(colors[1]);
+		let [a3, r3, g3, b3] = from_argb32(colors[2]);
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -129,7 +129,7 @@ impl RgbaBitmap {
 				let r = ((w0 * r1 as f32 + w1 * r2 as f32 + w2 * r3 as f32) / area) as u8;
 				let g = ((w0 * g1 as f32 + w1 * g2 as f32 + w2 * g3 as f32) / area) as u8;
 				let b = ((w0 * b1 as f32 + w1 * b2 as f32 + w2 * b3 as f32) / area) as u8;
-				*dest_pixels = blend.blend(to_argb32(a, r, g, b), *dest_pixels)
+				*dest_pixels = blend.blend(to_argb32([a, r, g, b]), *dest_pixels)
 			},
 		)
 	}
@@ -201,9 +201,9 @@ impl RgbaBitmap {
 		bitmap: &Self,
 	) {
 		let area = edge_function(positions[0], positions[1], positions[2]);
-		let (r1, g1, b1) = from_rgb32(colors[0]);
-		let (r2, g2, b2) = from_rgb32(colors[1]);
-		let (r3, g3, b3) = from_rgb32(colors[2]);
+		let [r1, g1, b1] = from_rgb32(colors[0]);
+		let [r2, g2, b2] = from_rgb32(colors[1]);
+		let [r3, g3, b3] = from_rgb32(colors[2]);
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -215,7 +215,7 @@ impl RgbaBitmap {
 				let b = ((w0 * b1 as f32 + w1 * b2 as f32 + w2 * b3 as f32) / area) as u8;
 				let u = (w0 * texcoords[0].x + w1 * texcoords[1].x + w2 * texcoords[2].x) / area;
 				let v = (w0 * texcoords[0].y + w1 * texcoords[1].y + w2 * texcoords[2].y) / area;
-				*dest_pixels = multiply_argb32(bitmap.sample_at(u, v), to_rgb32(r, g, b))
+				*dest_pixels = multiply_argb32(bitmap.sample_at(u, v), to_rgb32([r, g, b]))
 			},
 		)
 	}
@@ -229,9 +229,9 @@ impl RgbaBitmap {
 		blend: BlendFunction,
 	) {
 		let area = edge_function(positions[0], positions[1], positions[2]);
-		let (a1, r1, g1, b1) = from_argb32(colors[0]);
-		let (a2, r2, g2, b2) = from_argb32(colors[1]);
-		let (a3, r3, g3, b3) = from_argb32(colors[2]);
+		let [a1, r1, g1, b1] = from_argb32(colors[0]);
+		let [a2, r2, g2, b2] = from_argb32(colors[1]);
+		let [a3, r3, g3, b3] = from_argb32(colors[2]);
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -244,7 +244,7 @@ impl RgbaBitmap {
 				let b = ((w0 * b1 as f32 + w1 * b2 as f32 + w2 * b3 as f32) / area) as u8;
 				let u = (w0 * texcoords[0].x + w1 * texcoords[1].x + w2 * texcoords[2].x) / area;
 				let v = (w0 * texcoords[0].y + w1 * texcoords[1].y + w2 * texcoords[2].y) / area;
-				let src = multiply_argb32(bitmap.sample_at(u, v), to_argb32(a, r, g, b));
+				let src = multiply_argb32(bitmap.sample_at(u, v), to_argb32([a, r, g, b]));
 				*dest_pixels = blend.blend(src, *dest_pixels)
 			},
 		)

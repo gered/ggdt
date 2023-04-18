@@ -67,9 +67,9 @@ impl Renderer {
 									Vector2::new(v3.uv[0], v3.uv[1]),
 								],
 								&[
-									to_argb32(v2.col[3], v2.col[0], v2.col[1], v2.col[2]),
-									to_argb32(v1.col[3], v1.col[0], v1.col[1], v1.col[2]),
-									to_argb32(v3.col[3], v3.col[0], v3.col[1], v3.col[2]),
+									to_argb32([v2.col[3], v2.col[0], v2.col[1], v2.col[2]]),
+									to_argb32([v1.col[3], v1.col[0], v1.col[1], v1.col[2]]),
+									to_argb32([v3.col[3], v3.col[0], v3.col[1], v3.col[2]]),
 								],
 								bitmap,
 								BlendFunction::Blend,

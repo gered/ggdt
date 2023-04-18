@@ -22,9 +22,9 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	let texcoord_0_1 = Vector2::new(0.0, 1.0);
 	let texcoord_1_1 = Vector2::new(1.0, 1.0);
 
-	let color_1 = to_argb32(255, 255, 0, 0);
-	let color_2 = to_argb32(255, 0, 255, 0);
-	let color_3 = to_argb32(255, 0, 0, 255);
+	let color_1 = to_argb32([255, 255, 0, 0]);
+	let color_2 = to_argb32([255, 0, 255, 0]);
+	let color_3 = to_argb32([255, 0, 0, 255]);
 
 	c.bench_function("rgbabitmap_triangle_2d_solid_color", |b| {
 		let triangle = RgbaTriangle2d::Solid { position: [big_v1, big_v2, big_v3], color: 5 };

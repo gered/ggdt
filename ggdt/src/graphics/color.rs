@@ -59,15 +59,15 @@ impl BlendFunction {
 ///
 /// # Arguments
 ///
-/// * `a`: the alpha component (0-255)
-/// * `r`: the red component (0-255)
-/// * `g`: the green component (0-255)
-/// * `b`: the blue component (0-255)
+/// * `argb` the 4 color components (0-255) in the order: alpha, red, green, blue
 ///
 /// returns: the u32 packed color
 #[inline]
-pub fn to_argb32(a: u8, r: u8, g: u8, b: u8) -> u32 {
-	(b as u32) + ((g as u32) << 8) + ((r as u32) << 16) + ((a as u32) << 24)
+pub fn to_argb32(argb: [u8; 4]) -> u32 {
+	(argb[3] as u32) // b
+		+ ((argb[2] as u32) << 8) // g
+		+ ((argb[1] as u32) << 16) // r
+		+ ((argb[0] as u32) << 24) // a
 }
 
 /// Converts a set of individual ARGB normalized components to a combined 32-bit color value,
@@ -75,18 +75,15 @@ pub fn to_argb32(a: u8, r: u8, g: u8, b: u8) -> u32 {
 ///
 /// # Arguments
 ///
-/// * `a`: the normalized alpha component (0.0 to 1.0)
-/// * `r`: the normalized red component (0.0 to 1.0)
-/// * `g`: the normalized green component (0.0 to 1.0)
-/// * `b`: the normalized blue component (0.0 to 1.0)
+/// * `argb` the 4 normalized color components (0.0 to 1.0) in the order: alpha, red, green, blue
 ///
 /// returns: the u32 packed color
 #[inline]
-pub fn to_argb32_normalized(a: f32, r: f32, g: f32, b: f32) -> u32 {
-	(((b * 255.0) as u32) & 0xff)
-		+ ((((g * 255.0) as u32) & 0xff) << 8)
-		+ ((((r * 255.0) as u32) & 0xff) << 16)
-		+ ((((a * 255.0) as u32) & 0xff) << 24)
+pub fn to_argb32_normalized(argb: [f32; 4]) -> u32 {
+	(((argb[3] * 255.0) as u32) & 0xff) // b
+		+ ((((argb[2] * 255.0) as u32) & 0xff) << 8) // g
+		+ ((((argb[1] * 255.0) as u32) & 0xff) << 16) // r
+		+ ((((argb[0] * 255.0) as u32) & 0xff) << 24) // a
 }
 
 /// Extracts the individual ARGB components out of a combined 32-bit color value which is in the
@@ -98,12 +95,13 @@ pub fn to_argb32_normalized(a: f32, r: f32, g: f32, b: f32) -> u32 {
 ///
 /// returns: the individual ARGB color components (0-255 each) in order: alpha, red, green, blue
 #[inline]
-pub fn from_argb32(argb: u32) -> (u8, u8, u8, u8) {
-	let a = ((argb & 0xff000000) >> 24) as u8;
-	let r = ((argb & 0x00ff0000) >> 16) as u8;
-	let g = ((argb & 0x0000ff00) >> 8) as u8;
-	let b = (argb & 0x000000ff) as u8;
-	(a, r, g, b)
+pub fn from_argb32(argb: u32) -> [u8; 4] {
+	[
+		((argb & 0xff000000) >> 24) as u8, // a
+		((argb & 0x00ff0000) >> 16) as u8, // r
+		((argb & 0x0000ff00) >> 8) as u8,  // g
+		(argb & 0x000000ff) as u8,         // b
+	]
 }
 
 /// Extracts the individual ARGB normalized components out of a combined 32-bit color value which
@@ -115,12 +113,13 @@ pub fn from_argb32(argb: u32) -> (u8, u8, u8, u8) {
 ///
 /// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: alpha, red, green, blue
 #[inline]
-pub fn from_argb32_normalized(argb: u32) -> (f32, f32, f32, f32) {
-	let a = ((argb & 0xff000000) >> 24) as f32 / 255.0;
-	let r = ((argb & 0x00ff0000) >> 16) as f32 / 255.0;
-	let g = ((argb & 0x0000ff00) >> 8) as f32 / 255.0;
-	let b = (argb & 0x000000ff) as f32 / 255.0;
-	(a, r, g, b)
+pub fn from_argb32_normalized(argb: u32) -> [f32; 4] {
+	[
+		((argb & 0xff000000) >> 24) as f32 / 255.0, // a
+		((argb & 0x00ff0000) >> 16) as f32 / 255.0, // r
+		((argb & 0x0000ff00) >> 8) as f32 / 255.0,  // g
+		(argb & 0x000000ff) as f32 / 255.0,         // b
+	]
 }
 
 /// Converts a set of individual RGB components to a combined 32-bit color value, packed into
@@ -128,14 +127,12 @@ pub fn from_argb32_normalized(argb: u32) -> (f32, f32, f32, f32) {
 ///
 /// # Arguments
 ///
-/// * `r`: the red component (0-255)
-/// * `g`: the green component (0-255)
-/// * `b`: the blue component (0-255)
+/// * `rgb` the 3 color components (0-255) in the order: red, green, blue
 ///
 /// returns: the u32 packed color
 #[inline]
-pub fn to_rgb32(r: u8, g: u8, b: u8) -> u32 {
-	to_argb32(255, r, g, b)
+pub fn to_rgb32(rgb: [u8; 3]) -> u32 {
+	to_argb32([255, rgb[0], rgb[1], rgb[2]])
 }
 
 /// Converts a set of individual RGB normalized components to a combined 32-bit color value, packed
@@ -143,14 +140,12 @@ pub fn to_rgb32(r: u8, g: u8, b: u8) -> u32 {
 ///
 /// # Arguments
 ///
-/// * `r`: the normalized red component (0.0 to 1.0)
-/// * `g`: the normalized green component (0.0 to 1.0)
-/// * `b`: the normalized blue component (0.0 to 1.0)
+/// * `rgb` the 3 normalized color components (0.0 to 1.0) in the order: red, green, blue
 ///
 /// returns: the u32 packed color
 #[inline]
-pub fn to_rgb32_normalized(r: f32, g: f32, b: f32) -> u32 {
-	to_argb32_normalized(1.0, r, g, b)
+pub fn to_rgb32_normalized(rgb: [f32; 3]) -> u32 {
+	to_argb32_normalized([1.0, rgb[0], rgb[1], rgb[2]])
 }
 
 /// Extracts the individual RGB components out of a combined 32-bit color value which is in the
@@ -162,12 +157,13 @@ pub fn to_rgb32_normalized(r: f32, g: f32, b: f32) -> u32 {
 ///
 /// returns: the individual ARGB color components (0-255 each) in order: red, green, blue
 #[inline]
-pub fn from_rgb32(rgb: u32) -> (u8, u8, u8) {
+pub fn from_rgb32(rgb: u32) -> [u8; 3] {
 	// ignore alpha component at 0xff000000 ...
-	let r = ((rgb & 0x00ff0000) >> 16) as u8;
-	let g = ((rgb & 0x0000ff00) >> 8) as u8;
-	let b = (rgb & 0x000000ff) as u8;
-	(r, g, b)
+	[
+		((rgb & 0x00ff0000) >> 16) as u8, // r
+		((rgb & 0x0000ff00) >> 8) as u8,  // g
+		(rgb & 0x000000ff) as u8,         // b
+	]
 }
 
 /// Extracts the individual RGB normalized components out of a combined 32-bit color value which
@@ -179,12 +175,13 @@ pub fn from_rgb32(rgb: u32) -> (u8, u8, u8) {
 ///
 /// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: red, green, blue
 #[inline]
-pub fn from_rgb32_normalized(rgb: u32) -> (f32, f32, f32) {
+pub fn from_rgb32_normalized(rgb: u32) -> [f32; 3] {
 	// ignore alpha component at 0xff000000 ...
-	let r = ((rgb & 0x00ff0000) >> 16) as f32 / 255.0;
-	let g = ((rgb & 0x0000ff00) >> 8) as f32 / 255.0;
-	let b = (rgb & 0x000000ff) as f32 / 255.0;
-	(r, g, b)
+	[
+		((rgb & 0x00ff0000) >> 16) as f32 / 255.0, // r
+		((rgb & 0x0000ff00) >> 8) as f32 / 255.0,  // g
+		(rgb & 0x000000ff) as f32 / 255.0,         // b
+	]
 }
 
 /// Blends two color components together using a "strength" factor to control how much of the source
@@ -216,14 +213,14 @@ pub fn blend_components(strength: u8, src: u8, dest: u8) -> u8 {
 /// returns: the blended result
 #[inline]
 pub fn blend_argb32(src: u32, dest: u32) -> u32 {
-	let (src_a, src_r, src_g, src_b) = from_argb32(src);
-	let (dest_a, dest_r, dest_g, dest_b) = from_argb32(dest);
-	to_argb32(
+	let [src_a, src_r, src_g, src_b] = from_argb32(src);
+	let [dest_a, dest_r, dest_g, dest_b] = from_argb32(dest);
+	to_argb32([
 		blend_components(src_a, src_a, dest_a),
 		blend_components(src_a, src_r, dest_r),
 		blend_components(src_a, src_g, dest_g),
 		blend_components(src_a, src_b, dest_b),
-	)
+	])
 }
 
 /// Blends the source and destination colors together, where the alpha value used to blend the two
@@ -245,15 +242,15 @@ pub fn blend_argb32(src: u32, dest: u32) -> u32 {
 /// returns: the blended result
 #[inline]
 pub fn blend_argb32_source_by(src: u32, dest: u32, alpha: u8) -> u32 {
-	let (src_a, src_r, src_g, src_b) = from_argb32(src);
-	let (dest_r, dest_g, dest_b) = from_rgb32(dest);
+	let [src_a, src_r, src_g, src_b] = from_argb32(src);
+	let [dest_r, dest_g, dest_b] = from_rgb32(dest);
 	let alpha = ((alpha as u16 * src_a as u16) / 255) as u8;
-	to_argb32(
+	to_argb32([
 		alpha,
 		blend_components(alpha, src_r, dest_r),
 		blend_components(alpha, src_g, dest_g),
 		blend_components(alpha, src_b, dest_b),
-	)
+	])
 }
 
 /// Applies a tint to a color, using the tint color's alpha component as the strength of the tint,
@@ -269,14 +266,14 @@ pub fn blend_argb32_source_by(src: u32, dest: u32, alpha: u8) -> u32 {
 /// returns: the resulting tinted color
 #[inline]
 pub fn tint_argb32(color: u32, tint: u32) -> u32 {
-	let (color_a, color_r, color_g, color_b) = from_argb32(color);
-	let (tint_a, tint_r, tint_g, tint_b) = from_argb32(tint);
-	to_argb32(
+	let [color_a, color_r, color_g, color_b] = from_argb32(color);
+	let [tint_a, tint_r, tint_g, tint_b] = from_argb32(tint);
+	to_argb32([
 		color_a,
 		blend_components(tint_a, tint_r, color_r),
 		blend_components(tint_a, tint_g, color_g),
 		blend_components(tint_a, tint_b, color_b),
-	)
+	])
 }
 
 /// Multiplies two colors together, returing the result. The multiplication is performed by
@@ -291,14 +288,14 @@ pub fn tint_argb32(color: u32, tint: u32) -> u32 {
 /// returns: the resulting color from the multiplication
 #[inline]
 pub fn multiply_argb32(a: u32, b: u32) -> u32 {
-	let (a_a, a_r, a_g, a_b) = from_argb32(a);
-	let (b_a, b_r, b_g, b_b) = from_argb32(b);
-	to_argb32(
+	let [a_a, a_r, a_g, a_b] = from_argb32(a);
+	let [b_a, b_r, b_g, b_b] = from_argb32(b);
+	to_argb32([
 		((a_a as u32 * b_a as u32) / 255) as u8,
 		((a_r as u32 * b_r as u32) / 255) as u8,
 		((a_g as u32 * b_g as u32) / 255) as u8,
 		((a_b as u32 * b_b as u32) / 255) as u8,
-	)
+	])
 }
 
 /// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB.
@@ -310,14 +307,14 @@ pub fn multiply_argb32(a: u32, b: u32) -> u32 {
 /// * `t`: the amount to interpolate between the two values, specified as a fraction.
 #[inline]
 pub fn lerp_argb32(a: u32, b: u32, t: f32) -> u32 {
-	let (a1, r1, g1, b1) = from_argb32(a);
-	let (a2, r2, g2, b2) = from_argb32(b);
-	to_argb32(
+	let [a1, r1, g1, b1] = from_argb32(a);
+	let [a2, r2, g2, b2] = from_argb32(b);
+	to_argb32([
 		((a1 as f32) + ((a2 as f32) - (a1 as f32)) * t) as u8,
 		((r1 as f32) + ((r2 as f32) - (r1 as f32)) * t) as u8,
 		((g1 as f32) + ((g2 as f32) - (g1 as f32)) * t) as u8,
 		((b1 as f32) + ((b2 as f32) - (b1 as f32)) * t) as u8,
-	)
+	])
 }
 
 /// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB. Ignores the
@@ -330,13 +327,13 @@ pub fn lerp_argb32(a: u32, b: u32, t: f32) -> u32 {
 /// * `t`: the amount to interpolate between the two values, specified as a fraction.
 #[inline]
 pub fn lerp_rgb32(a: u32, b: u32, t: f32) -> u32 {
-	let (r1, g1, b1) = from_rgb32(a);
-	let (r2, g2, b2) = from_rgb32(b);
-	to_rgb32(
+	let [r1, g1, b1] = from_rgb32(a);
+	let [r2, g2, b2] = from_rgb32(b);
+	to_rgb32([
 		((r1 as f32) + ((r2 as f32) - (r1 as f32)) * t) as u8,
 		((g1 as f32) + ((g2 as f32) - (g1 as f32)) * t) as u8,
 		((b1 as f32) + ((b2 as f32) - (b1 as f32)) * t) as u8,
-	)
+	])
 }
 
 const LUMINANCE_RED: f32 = 0.212655;
@@ -353,10 +350,10 @@ fn srgb_to_linearized(color_channel: u8) -> f32 {
 }
 
 /// Calculates the given sRGB color's luminance, returned as a value between 0.0 and 1.0.
-pub fn luminance(r: u8, g: u8, b: u8) -> f32 {
-	(LUMINANCE_RED * srgb_to_linearized(r))
-		+ (LUMINANCE_GREEN * srgb_to_linearized(g))
-		+ (LUMINANCE_BLUE * srgb_to_linearized(b))
+pub fn luminance(rgb: [u8; 3]) -> f32 {
+	(LUMINANCE_RED * srgb_to_linearized(rgb[0]))
+		+ (LUMINANCE_GREEN * srgb_to_linearized(rgb[1]))
+		+ (LUMINANCE_BLUE * srgb_to_linearized(rgb[2]))
 }
 
 fn brightness(mut luminance: f32) -> f32 {
@@ -370,8 +367,8 @@ fn brightness(mut luminance: f32) -> f32 {
 
 /// Calculates the approximate "brightness" / grey-scale value for the given sRGB color, returned
 /// as a value between 0 and 255.
-pub fn greyscale(r: u8, b: u8, g: u8) -> u8 {
-	(brightness(luminance(r, g, b)) * 255.0) as u8
+pub fn greyscale(rgb: [u8; 3]) -> u8 {
+	(brightness(luminance(rgb)) * 255.0) as u8
 }
 
 #[cfg(test)]
@@ -381,19 +378,19 @@ mod tests {
 
 	#[test]
 	fn argb_conversions() {
-		let argb = to_argb32(0x11, 0x22, 0x33, 0x44);
+		let argb = to_argb32([0x11, 0x22, 0x33, 0x44]);
 		assert_eq!(argb, 0x11223344);
 
-		let argb = to_rgb32(0x22, 0x33, 0x44);
+		let argb = to_rgb32([0x22, 0x33, 0x44]);
 		assert_eq!(argb, 0xff223344);
 
-		let (a, r, g, b) = from_argb32(0x11223344);
+		let [a, r, g, b] = from_argb32(0x11223344);
 		assert_eq!(0x11, a);
 		assert_eq!(0x22, r);
 		assert_eq!(0x33, g);
 		assert_eq!(0x44, b);
 
-		let (r, g, b) = from_rgb32(0x11223344);
+		let [r, g, b] = from_rgb32(0x11223344);
 		assert_eq!(0x22, r);
 		assert_eq!(0x33, g);
 		assert_eq!(0x44, b);
@@ -401,22 +398,22 @@ mod tests {
 
 	#[test]
 	fn normalized_argb_conversions() {
-		let argb = to_argb32_normalized(0.5, 0.1, 0.2, 0.3);
+		let argb = to_argb32_normalized([0.5, 0.1, 0.2, 0.3]);
 		assert_eq!(argb, 0x7f19334c);
 
-		let argb = to_rgb32_normalized(0.1, 0.2, 0.3);
+		let argb = to_rgb32_normalized([0.1, 0.2, 0.3]);
 		assert_eq!(argb, 0xff19334c);
 
 		// floating-point accuracy is a real bitch here ... lol.
 		// the low-accuracy epsilon values in these asserts is not an accident or oversight
 
-		let (a, r, g, b) = from_argb32_normalized(0x7f19334c);
+		let [a, r, g, b] = from_argb32_normalized(0x7f19334c);
 		assert!(a.nearly_equal(0.5, 0.01));
 		assert!(r.nearly_equal(0.1, 0.01));
 		assert!(g.nearly_equal(0.2, 0.01));
 		assert!(b.nearly_equal(0.3, 0.01));
 
-		let (r, g, b) = from_rgb32_normalized(0x7f19334c);
+		let [r, g, b] = from_rgb32_normalized(0x7f19334c);
 		assert!(r.nearly_equal(0.1, 0.01));
 		assert!(g.nearly_equal(0.2, 0.01));
 		assert!(b.nearly_equal(0.3, 0.01));

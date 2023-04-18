@@ -29,7 +29,7 @@ impl RgbaBitmap {
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
 	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
-		Self::internal_new(width, height, to_rgb32(0, 0, 0))
+		Self::internal_new(width, height, to_rgb32([0, 0, 0]))
 	}
 
 	pub fn from_bytes<T: ReadBytesExt>(
@@ -46,14 +46,14 @@ impl RgbaBitmap {
 					let g = reader.read_u8()?;
 					let b = reader.read_u8()?;
 					let a = reader.read_u8()?;
-					to_argb32(a, r, g, b)
+					to_argb32([a, r, g, b])
 				}
 				RgbaPixelFormat::ARGB => {
 					let a = reader.read_u8()?;
 					let r = reader.read_u8()?;
 					let g = reader.read_u8()?;
 					let b = reader.read_u8()?;
-					to_argb32(a, r, g, b)
+					to_argb32([a, r, g, b])
 				}
 			};
 		}

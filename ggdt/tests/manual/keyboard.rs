@@ -87,7 +87,7 @@ fn keyboard_state() {
 			display_key_state(*key, &mut system, 2, 160 + (idx as i32 * 10));
 		}
 
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32(255, 0, 255));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
 
 		system.display().unwrap();
 	}
