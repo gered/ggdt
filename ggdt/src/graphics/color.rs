@@ -52,7 +52,7 @@ impl BlendFunction {
 	/// * `dest`: the destination color to blend the source color over
 	///
 	/// returns: the blended color
-	pub fn blend(&self, src: Color1u32, dest: Color1u32) -> Color1u32 {
+	pub fn blend_1u32(&self, src: Color1u32, dest: Color1u32) -> Color1u32 {
 		use BlendFunction::*;
 		match self {
 			Blend => blend_argb32(src, dest),
@@ -64,6 +64,23 @@ impl BlendFunction {
 			MultipliedBlend(color) => {
 				let multiplied = multiply_argb32(src, *color);
 				blend_argb32(multiplied, dest)
+			}
+		}
+	}
+
+	#[inline]
+	pub fn blend_4u8(&self, src: Color4u8, dest: Color4u8) -> Color4u8 {
+		use BlendFunction::*;
+		match self {
+			Blend => blend_argb(src, dest),
+			BlendSourceWithAlpha(opacity) => blend_argb_source_by(src, dest, *opacity),
+			TintedBlend(tint) => {
+				let tinted = tint_argb(src, from_argb32(*tint));
+				blend_argb(tinted, dest)
+			}
+			MultipliedBlend(color) => {
+				let multiplied = multiply_argb(src, from_argb32(*color));
+				blend_argb(multiplied, dest)
 			}
 		}
 	}

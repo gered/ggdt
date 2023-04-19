@@ -146,7 +146,7 @@ impl RgbaBitmap {
 			dest_x,
 			dest_y,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+				*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
 			},
 		);
 	}
@@ -170,7 +170,7 @@ impl RgbaBitmap {
 			horizontal_flip,
 			vertical_flip,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+				*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
 			},
 		);
 	}
@@ -239,7 +239,7 @@ impl RgbaBitmap {
 			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+					*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
 				}
 			},
 		);
@@ -293,7 +293,7 @@ impl RgbaBitmap {
 			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
+					*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
 				}
 			},
 		);
@@ -347,7 +347,7 @@ impl RgbaBitmap {
 			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
-					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
+					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend_1u32(src_pixel, dest_pixel))
 				}
 			},
 		);
@@ -406,7 +406,7 @@ impl RgbaBitmap {
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
-						dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
+						dest_bitmap.set_pixel(draw_x, draw_y, blend.blend_1u32(src_pixel, dest_pixel))
 					}
 				}
 			},

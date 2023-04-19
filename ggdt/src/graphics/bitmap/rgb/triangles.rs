@@ -86,7 +86,7 @@ impl RgbaBitmap {
 			positions[0],
 			positions[1],
 			positions[2],
-			|dest_pixels, _w0, _w1, _w2| *dest_pixels = blend.blend(color, *dest_pixels),
+			|dest_pixels, _w0, _w1, _w2| *dest_pixels = blend.blend_1u32(color, *dest_pixels),
 		)
 	}
 
@@ -129,7 +129,7 @@ impl RgbaBitmap {
 				let r = ((w0 * r1 as f32 + w1 * r2 as f32 + w2 * r3 as f32) / area) as u8;
 				let g = ((w0 * g1 as f32 + w1 * g2 as f32 + w2 * g3 as f32) / area) as u8;
 				let b = ((w0 * b1 as f32 + w1 * b2 as f32 + w2 * b3 as f32) / area) as u8;
-				*dest_pixels = blend.blend(to_argb32([a, r, g, b]), *dest_pixels)
+				*dest_pixels = blend.blend_1u32(to_argb32([a, r, g, b]), *dest_pixels)
 			},
 		)
 	}
@@ -188,7 +188,7 @@ impl RgbaBitmap {
 				let u = (w0 * texcoords[0].x + w1 * texcoords[1].x + w2 * texcoords[2].x) / area;
 				let v = (w0 * texcoords[0].y + w1 * texcoords[1].y + w2 * texcoords[2].y) / area;
 				let src = multiply_argb32(bitmap.sample_at(u, v), color);
-				*dest_pixels = blend.blend(src, *dest_pixels)
+				*dest_pixels = blend.blend_1u32(src, *dest_pixels)
 			},
 		)
 	}
@@ -245,7 +245,7 @@ impl RgbaBitmap {
 				let u = (w0 * texcoords[0].x + w1 * texcoords[1].x + w2 * texcoords[2].x) / area;
 				let v = (w0 * texcoords[0].y + w1 * texcoords[1].y + w2 * texcoords[2].y) / area;
 				let src = multiply_argb32(bitmap.sample_at(u, v), to_argb32([a, r, g, b]));
-				*dest_pixels = blend.blend(src, *dest_pixels)
+				*dest_pixels = blend.blend_1u32(src, *dest_pixels)
 			},
 		)
 	}
@@ -287,7 +287,7 @@ impl RgbaBitmap {
 			|dest_pixels, w0, w1, w2| {
 				let u = (w0 * texcoords[0].x + w1 * texcoords[1].x + w2 * texcoords[2].x) / area;
 				let v = (w0 * texcoords[0].y + w1 * texcoords[1].y + w2 * texcoords[2].y) / area;
-				*dest_pixels = blend.blend(bitmap.sample_at(u, v), *dest_pixels);
+				*dest_pixels = blend.blend_1u32(bitmap.sample_at(u, v), *dest_pixels);
 			},
 		)
 	}

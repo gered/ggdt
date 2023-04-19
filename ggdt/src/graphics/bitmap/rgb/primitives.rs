@@ -8,7 +8,7 @@ impl RgbaBitmap {
 		self.set_custom_pixel(
 			x, //
 			y,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -20,7 +20,7 @@ impl RgbaBitmap {
 		self.set_custom_pixel_unchecked(
 			x, //
 			y,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -31,7 +31,7 @@ impl RgbaBitmap {
 			y1,
 			x2,
 			y2,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -42,7 +42,7 @@ impl RgbaBitmap {
 			x1, //
 			x2,
 			y,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -53,7 +53,7 @@ impl RgbaBitmap {
 			x, //
 			y1,
 			y2,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -66,7 +66,7 @@ impl RgbaBitmap {
 			y1,
 			x2,
 			y2,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 
@@ -79,7 +79,7 @@ impl RgbaBitmap {
 			y1,
 			x2,
 			y2,
-			|dest_color| blend.blend(color, dest_color),
+			|dest_color| blend.blend_1u32(color, dest_color),
 		);
 	}
 }
