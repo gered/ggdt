@@ -1,3 +1,5 @@
+#![feature(portable_simd)]
+
 pub mod audio;
 pub mod base;
 pub mod entities;
