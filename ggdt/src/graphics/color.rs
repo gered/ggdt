@@ -1,29 +1,44 @@
+/// Packed 32-bit color, in the format: 0xAARRGGBB
+pub type Color1u32 = u32;
+
+/// Unpacked 24-bit color as 8-bit color components in the order: red, green, blue
+pub type Color3u8 = [u8; 3];
+
+/// Unpacked 32-bit color as 8-bit color components in the order: alpha, red, green, blue
+pub type Color4u8 = [u8; 4];
+
+/// Unpacked 24-bit color as normalized f32 color components (0.0 to 1.0) in the order: red, green, blue
+pub type Color3f32 = [f32; 3];
+
+/// Unpacked 32-bit color as normalized f32 color components (0.0 to 1.0) in the order: alpha, red, green, blue
+pub type Color4f32 = [f32; 4];
+
 // these colours are taken from the default VGA palette
 
-pub const COLOR_BLACK: u32 = 0xff000000;
-pub const COLOR_BLUE: u32 = 0xff0000aa;
-pub const COLOR_GREEN: u32 = 0xff00aa00;
-pub const COLOR_CYAN: u32 = 0xff00aaaa;
-pub const COLOR_RED: u32 = 0xffaa0000;
-pub const COLOR_MAGENTA: u32 = 0xffaa00aa;
-pub const COLOR_BROWN: u32 = 0xffaa5500;
-pub const COLOR_LIGHT_GRAY: u32 = 0xffaaaaaa;
-pub const COLOR_DARK_GRAY: u32 = 0xff555555;
-pub const COLOR_BRIGHT_BLUE: u32 = 0xff5555ff;
-pub const COLOR_BRIGHT_GREEN: u32 = 0xff55ff55;
-pub const COLOR_BRIGHT_CYAN: u32 = 0xff55ffff;
-pub const COLOR_BRIGHT_RED: u32 = 0xffff5555;
-pub const COLOR_BRIGHT_MAGENTA: u32 = 0xffff55ff;
-pub const COLOR_BRIGHT_YELLOW: u32 = 0xffffff55;
-pub const COLOR_BRIGHT_WHITE: u32 = 0xffffffff;
+pub const COLOR_BLACK: Color1u32 = 0xff000000;
+pub const COLOR_BLUE: Color1u32 = 0xff0000aa;
+pub const COLOR_GREEN: Color1u32 = 0xff00aa00;
+pub const COLOR_CYAN: Color1u32 = 0xff00aaaa;
+pub const COLOR_RED: Color1u32 = 0xffaa0000;
+pub const COLOR_MAGENTA: Color1u32 = 0xffaa00aa;
+pub const COLOR_BROWN: Color1u32 = 0xffaa5500;
+pub const COLOR_LIGHT_GRAY: Color1u32 = 0xffaaaaaa;
+pub const COLOR_DARK_GRAY: Color1u32 = 0xff555555;
+pub const COLOR_BRIGHT_BLUE: Color1u32 = 0xff5555ff;
+pub const COLOR_BRIGHT_GREEN: Color1u32 = 0xff55ff55;
+pub const COLOR_BRIGHT_CYAN: Color1u32 = 0xff55ffff;
+pub const COLOR_BRIGHT_RED: Color1u32 = 0xffff5555;
+pub const COLOR_BRIGHT_MAGENTA: Color1u32 = 0xffff55ff;
+pub const COLOR_BRIGHT_YELLOW: Color1u32 = 0xffffff55;
+pub const COLOR_BRIGHT_WHITE: Color1u32 = 0xffffffff;
 
 // TODO: probably should name these better, after i do much more reading on the subject :-)
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BlendFunction {
 	Blend,
 	BlendSourceWithAlpha(u8),
-	TintedBlend(u32),
-	MultipliedBlend(u32),
+	TintedBlend(Color1u32),
+	MultipliedBlend(Color1u32),
 }
 
 impl BlendFunction {
@@ -37,7 +52,7 @@ impl BlendFunction {
 	/// * `dest`: the destination color to blend the source color over
 	///
 	/// returns: the blended color
-	pub fn blend(&self, src: u32, dest: u32) -> u32 {
+	pub fn blend(&self, src: Color1u32, dest: Color1u32) -> Color1u32 {
 		use BlendFunction::*;
 		match self {
 			Blend => blend_argb32(src, dest),
@@ -54,48 +69,45 @@ impl BlendFunction {
 	}
 }
 
-/// Converts a set of individual ARGB components to a combined 32-bit color value, packed into
-/// the format 0xAARRGGBB
+/// Packs a set of individual ARGB components to a packed 32-bit color value.
 ///
 /// # Arguments
 ///
 /// * `argb` the 4 color components (0-255) in the order: alpha, red, green, blue
 ///
-/// returns: the u32 packed color
+/// returns: the 32-bit packed color
 #[inline]
-pub fn to_argb32(argb: [u8; 4]) -> u32 {
+pub fn to_argb32(argb: Color4u8) -> Color1u32 {
 	(argb[3] as u32) // b
 		+ ((argb[2] as u32) << 8) // g
 		+ ((argb[1] as u32) << 16) // r
 		+ ((argb[0] as u32) << 24) // a
 }
 
-/// Converts a set of individual ARGB normalized components to a combined 32-bit color value,
-/// packed into the format 0xAARRGGBB.
+/// Packs a set of individual ARGB normalized components to a packed 32-bit color value.
 ///
 /// # Arguments
 ///
 /// * `argb` the 4 normalized color components (0.0 to 1.0) in the order: alpha, red, green, blue
 ///
-/// returns: the u32 packed color
+/// returns: the 32-bit packed color
 #[inline]
-pub fn to_argb32_normalized(argb: [f32; 4]) -> u32 {
+pub fn to_argb32_normalized(argb: Color4f32) -> Color1u32 {
 	(((argb[3] * 255.0) as u32) & 0xff) // b
 		+ ((((argb[2] * 255.0) as u32) & 0xff) << 8) // g
 		+ ((((argb[1] * 255.0) as u32) & 0xff) << 16) // r
 		+ ((((argb[0] * 255.0) as u32) & 0xff) << 24) // a
 }
 
-/// Extracts the individual ARGB components out of a combined 32-bit color value which is in the
-/// format 0xAARRGGBB
+/// Unpacks the individual ARGB components out of a packed 32-bit color value.
 ///
 /// # Arguments
 ///
-/// * `argb`: the 32-bit packed color
+/// * `argb`: the 32-bit packed color to unpack
 ///
-/// returns: the individual ARGB color components (0-255 each) in order: alpha, red, green, blue
+/// returns: the unpacked ARGB color components (0-255 each) in order: alpha, red, green, blue
 #[inline]
-pub fn from_argb32(argb: u32) -> [u8; 4] {
+pub fn from_argb32(argb: Color1u32) -> Color4u8 {
 	[
 		((argb & 0xff000000) >> 24) as u8, // a
 		((argb & 0x00ff0000) >> 16) as u8, // r
@@ -104,16 +116,15 @@ pub fn from_argb32(argb: u32) -> [u8; 4] {
 	]
 }
 
-/// Extracts the individual ARGB normalized components out of a combined 32-bit color value which
-/// is in the format 0xAARRGGBB
+/// Unpacks the individual ARGB normalized components out of a packed 32-bit color value.
 ///
 /// # Arguments
 ///
-/// * `argb`: the 32-bit packed color
+/// * `argb`: the 32-bit packed color to unpack
 ///
-/// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: alpha, red, green, blue
+/// returns: the unpacked ARGB normalized color components (0.0 to 1.0 each) in order: alpha, red, green, blue
 #[inline]
-pub fn from_argb32_normalized(argb: u32) -> [f32; 4] {
+pub fn from_argb32_normalized(argb: Color1u32) -> Color4f32 {
 	[
 		((argb & 0xff000000) >> 24) as f32 / 255.0, // a
 		((argb & 0x00ff0000) >> 16) as f32 / 255.0, // r
@@ -122,42 +133,41 @@ pub fn from_argb32_normalized(argb: u32) -> [f32; 4] {
 	]
 }
 
-/// Converts a set of individual RGB components to a combined 32-bit color value, packed into
-/// the format 0xAARRGGBB. Substitutes a value of 255 for the missing alpha component.
+/// Packs a set of individual RGB components to a combined 32-bit color value. Substitutes a value of 255 for
+/// the missing alpha component.
 ///
 /// # Arguments
 ///
-/// * `rgb` the 3 color components (0-255) in the order: red, green, blue
+/// * `rgb` the 3 color components (0-255) to be packed, in the order: red, green, blue
 ///
-/// returns: the u32 packed color
+/// returns: the 32-bit packed color
 #[inline]
-pub fn to_rgb32(rgb: [u8; 3]) -> u32 {
+pub fn to_rgb32(rgb: Color3u8) -> Color1u32 {
 	to_argb32([255, rgb[0], rgb[1], rgb[2]])
 }
 
-/// Converts a set of individual RGB normalized components to a combined 32-bit color value, packed
-/// into the format 0xAARRGGBB. Substitutes a value of 1.0 for the missing alpha component.
+/// PAcks a set of individual RGB normalized components to a combined 32-bit color value. Substitutes a value of
+/// 1.0 for the missing alpha component.
 ///
 /// # Arguments
 ///
-/// * `rgb` the 3 normalized color components (0.0 to 1.0) in the order: red, green, blue
+/// * `rgb` the 3 normalized color components (0.0 to 1.0) to be packed, in the order: red, green, blue
 ///
 /// returns: the u32 packed color
 #[inline]
-pub fn to_rgb32_normalized(rgb: [f32; 3]) -> u32 {
+pub fn to_rgb32_normalized(rgb: Color3f32) -> Color1u32 {
 	to_argb32_normalized([1.0, rgb[0], rgb[1], rgb[2]])
 }
 
-/// Extracts the individual RGB components out of a combined 32-bit color value which is in the
-/// format 0xAARRGGBB. Ignores the alpha component.
+/// Unpacks the individual RGB components out of a combined 32-bit color value. Ignores the alpha component.
 ///
 /// # Arguments
 ///
 /// * `argb`: the 32-bit packed color
 ///
-/// returns: the individual ARGB color components (0-255 each) in order: red, green, blue
+/// returns: the unpacked ARGB color components (0-255 each) in order: red, green, blue
 #[inline]
-pub fn from_rgb32(rgb: u32) -> [u8; 3] {
+pub fn from_rgb32(rgb: Color1u32) -> Color3u8 {
 	// ignore alpha component at 0xff000000 ...
 	[
 		((rgb & 0x00ff0000) >> 16) as u8, // r
@@ -166,16 +176,15 @@ pub fn from_rgb32(rgb: u32) -> [u8; 3] {
 	]
 }
 
-/// Extracts the individual RGB normalized components out of a combined 32-bit color value which
-/// is in the format 0xAARRGGBB. Ignores the alpha component.
+/// Unpacks the individual RGB normalized components out of a combined 32-bit color value. Ignores the alpha component.
 ///
 /// # Arguments
 ///
 /// * `argb`: the 32-bit packed color
 ///
-/// returns: the individual ARGB normalized color components (0.0 to 1.0 each) in order: red, green, blue
+/// returns: the unpacked ARGB normalized color components (0.0 to 1.0 each) in order: red, green, blue
 #[inline]
-pub fn from_rgb32_normalized(rgb: u32) -> [f32; 3] {
+pub fn from_rgb32_normalized(rgb: Color1u32) -> Color3f32 {
 	// ignore alpha component at 0xff000000 ...
 	[
 		((rgb & 0x00ff0000) >> 16) as f32 / 255.0, // r
@@ -202,131 +211,210 @@ pub fn blend_components(strength: u8, src: u8, dest: u8) -> u8 {
 	(((src as u16 * strength as u16) + (dest as u16 * (255 - strength as u16))) / 255) as u8
 }
 
-/// Alpha blends the components of a source and destination color. Both colors should be 32-bit
-/// packed colors in the format 0xAARRGGBB.
+/// Alpha blends two colors together.
 ///
 /// # Arguments
 ///
-/// * `src`: the source color that is to be blended onto the destination
-/// * `dest`: the destination color that the source is being blended into
+/// * `src`: the 32-bit packed source color that is to be blended onto the destination
+/// * `dest`: the 32-bit packed destination color that the source is being blended into
 ///
-/// returns: the blended result
+/// returns: the 32-bit packed blended color result
 #[inline]
-pub fn blend_argb32(src: u32, dest: u32) -> u32 {
-	let [src_a, src_r, src_g, src_b] = from_argb32(src);
-	let [dest_a, dest_r, dest_g, dest_b] = from_argb32(dest);
-	to_argb32([
-		blend_components(src_a, src_a, dest_a),
-		blend_components(src_a, src_r, dest_r),
-		blend_components(src_a, src_g, dest_g),
-		blend_components(src_a, src_b, dest_b),
-	])
+pub fn blend_argb32(src: Color1u32, dest: Color1u32) -> Color1u32 {
+	let unpacked_src = from_argb32(src);
+	let unpacked_dest = from_argb32(dest);
+	to_argb32(blend_argb(unpacked_src, unpacked_dest))
+}
+
+/// Alpha blends two colors together.
+///
+/// # Arguments
+///
+/// * `src`: the 32-bit unpacked source color that is to be blended onto the destination
+/// * `dest`: the 32-bit unpacked destination color that the source is being blended into
+///
+/// returns: the 32-bit unpacked blended color result
+#[inline]
+pub fn blend_argb(src: Color4u8, dest: Color4u8) -> Color4u8 {
+	[
+		blend_components(src[0], src[0], dest[0]),
+		blend_components(src[0], src[1], dest[1]),
+		blend_components(src[0], src[2], dest[2]),
+		blend_components(src[0], src[3], dest[3]),
+	]
 }
 
 /// Blends the source and destination colors together, where the alpha value used to blend the two
 /// colors is derived from the given alpha value multiplied with the source color's alpha component.
 /// This allows for more flexibility in directly controling how transparent the source
-/// color is overtop of the destination. Both colors should be 32-bit packed colors in the format
-/// 0xAARRGGBB.
+/// color is overtop of the destination.
 ///
 /// # Arguments
 ///
-/// * `src`: the source color that is to be blended onto the destination. the alpha component of this
+/// * `src`: the 32-bit packed source color that is to be blended onto the destination. the alpha component of this
 ///          color is used during the blend.
-/// * `dest`: the destination color that the source is being blended into. the alpha component of this
+/// * `dest`: the 32-bit packed destination color that the source is being blended into. the alpha component of this
 ///           color is ignored.
 /// * `alpha`: the transparency or opacity of the source color over the destination color. this is
 ///            multipled together with the source color's alpha component to arrive at the final
 ///            alpha value used for blending the source and destination color's RGB components.
 ///
-/// returns: the blended result
+/// returns: the 32-bit packed blended color result
 #[inline]
-pub fn blend_argb32_source_by(src: u32, dest: u32, alpha: u8) -> u32 {
-	let [src_a, src_r, src_g, src_b] = from_argb32(src);
-	let [dest_r, dest_g, dest_b] = from_rgb32(dest);
-	let alpha = ((alpha as u16 * src_a as u16) / 255) as u8;
-	to_argb32([
+pub fn blend_argb32_source_by(src: Color1u32, dest: Color1u32, alpha: u8) -> Color1u32 {
+	let unpacked_src = from_argb32(src);
+	let unpacked_dest = from_argb32(dest);
+	to_argb32(blend_argb_source_by(unpacked_src, unpacked_dest, alpha))
+}
+
+/// Blends the source and destination colors together, where the alpha value used to blend the two
+/// colors is derived from the given alpha value multiplied with the source color's alpha component.
+/// This allows for more flexibility in directly controling how transparent the source
+/// color is overtop of the destination.
+///
+/// # Arguments
+///
+/// * `src`: the 32-bit unpacked source color that is to be blended onto the destination. the alpha component of this
+///          color is used during the blend.
+/// * `dest`: the 32-bit unpacked destination color that the source is being blended into. the alpha component of this
+///           color is ignored.
+/// * `alpha`: the transparency or opacity of the source color over the destination color. this is
+///            multipled together with the source color's alpha component to arrive at the final
+///            alpha value used for blending the source and destination color's RGB components.
+///
+/// returns: the 32-bit unpacked blended color result
+#[inline]
+pub fn blend_argb_source_by(src: Color4u8, dest: Color4u8, alpha: u8) -> Color4u8 {
+	let alpha = ((alpha as u16 * src[0] as u16) / 255) as u8;
+	[
 		alpha,
-		blend_components(alpha, src_r, dest_r),
-		blend_components(alpha, src_g, dest_g),
-		blend_components(alpha, src_b, dest_b),
-	])
+		blend_components(alpha, src[1], dest[1]),
+		blend_components(alpha, src[2], dest[2]),
+		blend_components(alpha, src[3], dest[3]),
+	]
 }
 
 /// Applies a tint to a color, using the tint color's alpha component as the strength of the tint,
 /// where 0 means no tint and 255 means full tint. The original color's alpha component is preserved in
-/// the result. Both the source color and tint color should be 32-bit packed colors in the format
-/// 0xAARRGGBB.
+/// the result.
 ///
 /// # Arguments
 ///
-/// * `color`: the color to be tinted
-/// * `tint`: the tint to be applied to the color, where the alpha component represents the tint strength
+/// * `color`: the 32-bit packed color to be tinted
+/// * `tint`: the 32-bit packed tint color to be applied to the color, where the alpha component represents
+///           the tint strength
 ///
-/// returns: the resulting tinted color
+/// returns: the resulting 32-bit packed tinted color
 #[inline]
-pub fn tint_argb32(color: u32, tint: u32) -> u32 {
-	let [color_a, color_r, color_g, color_b] = from_argb32(color);
-	let [tint_a, tint_r, tint_g, tint_b] = from_argb32(tint);
-	to_argb32([
-		color_a,
-		blend_components(tint_a, tint_r, color_r),
-		blend_components(tint_a, tint_g, color_g),
-		blend_components(tint_a, tint_b, color_b),
-	])
+pub fn tint_argb32(color: Color1u32, tint: Color1u32) -> Color1u32 {
+	let unpacked_color = from_argb32(color);
+	let unpacked_tint = from_argb32(tint);
+	to_argb32(tint_argb(unpacked_color, unpacked_tint))
+}
+
+/// Applies a tint to a color, using the tint color's alpha component as the strength of the tint,
+/// where 0 means no tint and 255 means full tint. The original color's alpha component is preserved in
+/// the result.
+///
+/// # Arguments
+///
+/// * `color`: the 32-bit unpacked color to be tinted
+/// * `tint`: the 32-bit unpacked tint color to be applied to the color, where the alpha component represents
+///           the tint strength
+///
+/// returns: the resulting 32-bit unpacked tinted color
+#[inline]
+pub fn tint_argb(color: Color4u8, tint: Color4u8) -> Color4u8 {
+	[
+		color[0],
+		blend_components(tint[0], tint[1], color[1]),
+		blend_components(tint[0], tint[2], color[2]),
+		blend_components(tint[0], tint[3], color[3]),
+	]
 }
 
 /// Multiplies two colors together, returing the result. The multiplication is performed by
 /// individually multiplying each color component using the formula `(component * component) / 255`.
-/// Both colors should be 32-bit packed colors in the format 0xAARRGGBB.
 ///
 /// # Arguments
 ///
 /// * `a`: the first 32-bit packed color
 /// * `b`: the second 32-bit packed color
 ///
-/// returns: the resulting color from the multiplication
+/// returns: the resulting 32-bit packed color from the multiplication
 #[inline]
-pub fn multiply_argb32(a: u32, b: u32) -> u32 {
-	let [a_a, a_r, a_g, a_b] = from_argb32(a);
-	let [b_a, b_r, b_g, b_b] = from_argb32(b);
-	to_argb32([
-		((a_a as u32 * b_a as u32) / 255) as u8,
-		((a_r as u32 * b_r as u32) / 255) as u8,
-		((a_g as u32 * b_g as u32) / 255) as u8,
-		((a_b as u32 * b_b as u32) / 255) as u8,
-	])
+pub fn multiply_argb32(a: Color1u32, b: Color1u32) -> Color1u32 {
+	let unpacked_a = from_argb32(a);
+	let unpacked_b = from_argb32(b);
+	to_argb32(multiply_argb(unpacked_a, unpacked_b))
 }
 
-/// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB.
+/// Multiplies two colors together, returing the result. The multiplication is performed by
+/// individually multiplying each color component using the formula `(component * component) / 255`.
+///
+/// # Arguments
+///
+/// * `a`: the first 32-bit unpacked color
+/// * `b`: the second 32-bit unpacked color
+///
+/// returns: the resulting 32-bit unpacked color from the multiplication
+#[inline]
+pub fn multiply_argb(a: Color4u8, b: Color4u8) -> Color4u8 {
+	[
+		((a[0] as u32 * b[0] as u32) / 255) as u8,
+		((a[1] as u32 * b[1] as u32) / 255) as u8,
+		((a[2] as u32 * b[2] as u32) / 255) as u8,
+		((a[3] as u32 * b[3] as u32) / 255) as u8,
+	]
+}
+
+/// Linearly interpolates between two colors.
 ///
 /// # Arguments
 ///
 /// * `a`: the first 32-bit packed color
 /// * `b`: the second 32-bit packed color
 /// * `t`: the amount to interpolate between the two values, specified as a fraction.
+///
+/// returns: the interpolated 32-bit packed color result
 #[inline]
-pub fn lerp_argb32(a: u32, b: u32, t: f32) -> u32 {
-	let [a1, r1, g1, b1] = from_argb32(a);
-	let [a2, r2, g2, b2] = from_argb32(b);
-	to_argb32([
-		((a1 as f32) + ((a2 as f32) - (a1 as f32)) * t) as u8,
-		((r1 as f32) + ((r2 as f32) - (r1 as f32)) * t) as u8,
-		((g1 as f32) + ((g2 as f32) - (g1 as f32)) * t) as u8,
-		((b1 as f32) + ((b2 as f32) - (b1 as f32)) * t) as u8,
-	])
+pub fn lerp_argb32(a: Color1u32, b: Color1u32, t: f32) -> Color1u32 {
+	let unpacked_a = from_argb32(a);
+	let unpacked_b = from_argb32(b);
+	to_argb32(lerp_argb(unpacked_a, unpacked_b, t))
 }
 
-/// Linearly interpolates between two 32-bit packed colors in the format 0xAARRGGBB. Ignores the
-/// alpha component, which will always be set to 255 in the return value.
+/// Linearly interpolates between two colors.
 ///
 /// # Arguments
 ///
-/// * `a`: the first 32-bit packed color
-/// * `b`: the second 32-bit packed color
+/// * `a`: the first 32-bit unpacked color
+/// * `b`: the second 32-bit unpacked color
 /// * `t`: the amount to interpolate between the two values, specified as a fraction.
+///
+/// returns: the interpolated 32-bit unpacked color result
 #[inline]
-pub fn lerp_rgb32(a: u32, b: u32, t: f32) -> u32 {
+pub fn lerp_argb(a: Color4u8, b: Color4u8, t: f32) -> Color4u8 {
+	[
+		((a[0] as f32) + ((b[0] as f32) - (a[0] as f32)) * t) as u8,
+		((a[1] as f32) + ((b[1] as f32) - (a[1] as f32)) * t) as u8,
+		((a[2] as f32) + ((b[2] as f32) - (a[2] as f32)) * t) as u8,
+		((a[3] as f32) + ((b[3] as f32) - (a[3] as f32)) * t) as u8,
+	]
+}
+
+/// Linearly interpolates between two colors. Ignores the alpha component, which will always be
+/// set to 255 in the return value.
+///
+/// # Arguments
+///
+/// * `a`: the first 32-bit unpacked color
+/// * `b`: the second 32-bit unpacked color
+/// * `t`: the amount to interpolate between the two values, specified as a fraction.
+///
+/// returns: the interpolated 32-bit unpacked color result, which will always have an alpha component of 255
+#[inline]
+pub fn lerp_rgb32(a: Color1u32, b: Color1u32, t: f32) -> Color1u32 {
 	let [r1, g1, b1] = from_rgb32(a);
 	let [r2, g2, b2] = from_rgb32(b);
 	to_rgb32([
