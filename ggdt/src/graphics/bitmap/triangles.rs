@@ -20,6 +20,61 @@ pub fn is_bottom_right_edge(v1: Vector2, v2: Vector2) -> bool {
 	edge.y < 0.0 || (edge.y.nearly_equal(0.0, f32::EPSILON) && edge.x > 0.0)
 }
 
+#[derive(Debug)]
+struct TriangleEdge {
+	x_inc: f32,
+	y_inc: f32,
+	is_bottom_right_edge: bool,
+	origin: f32,
+}
+
+impl TriangleEdge {
+	pub fn from(v1: Vector2, v2: Vector2, initial_sample_point: Vector2) -> Self {
+		let x_inc = v1.y - v2.y;
+		let y_inc = v2.x - v1.x;
+		Self {
+			x_inc,
+			y_inc,
+			is_bottom_right_edge: is_bottom_right_edge(v2, v1),
+			origin: edge_function(v1, v2, initial_sample_point),
+		}
+	}
+
+	#[inline]
+	pub fn is_inside(&self, value: f32) -> bool {
+		// note that for a counter-clockwise vertex winding order with the direction of Y+ going down instead
+		// of up, we need to test for *negative* area when checking if we're inside the triangle
+		value <= 0.0
+	}
+
+	#[inline]
+	pub fn is_on_fill_edge(&self, value: f32) -> bool {
+		// skip bottom-right edge pixels so we only draw pixels inside the triangle as well as those that lie
+		// on the top-left edges. this fixes seam issues with triangles drawn with blending that share an edge
+		!(self.is_bottom_right_edge && value.nearly_equal(0.0, f32::EPSILON))
+	}
+
+	#[inline]
+	pub fn evaluate(&self, value: f32) -> bool {
+		self.is_inside(value) && self.is_on_fill_edge(value)
+	}
+
+	#[inline]
+	pub fn step_x(&self, value: f32) -> f32 {
+		value + self.x_inc
+	}
+
+	#[inline]
+	pub fn step_y(&self, value: f32) -> f32 {
+		value + self.y_inc
+	}
+
+	#[inline]
+	pub fn origin(&self) -> f32 {
+		self.origin
+	}
+}
+
 #[inline]
 pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 	dest: &mut Bitmap<PixelType>,
@@ -43,21 +98,14 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 		return;
 	}
 
-	let a01 = a.y - b.y;
-	let b01 = b.x - a.x;
-	let a12 = b.y - c.y;
-	let b12 = c.x - b.x;
-	let a20 = c.y - a.y;
-	let b20 = a.x - c.x;
-
-	let is_cb_bottom_right = is_bottom_right_edge(c, b);
-	let is_ac_bottom_right = is_bottom_right_edge(a, c);
-	let is_ba_bottom_right = is_bottom_right_edge(b, a);
-
 	let p = Vector2::new(bounds.x as f32 + 0.5, bounds.y as f32 + 0.5);
-	let mut w0_row = edge_function(b, c, p);
-	let mut w1_row = edge_function(c, a, p);
-	let mut w2_row = edge_function(a, b, p);
+	let edge_bc = TriangleEdge::from(b, c, p);
+	let edge_ca = TriangleEdge::from(c, a, p);
+	let edge_ab = TriangleEdge::from(a, b, p);
+
+	let mut w0_row = edge_bc.origin();
+	let mut w1_row = edge_ca.origin();
+	let mut w2_row = edge_ab.origin();
 
 	let draw_width = bounds.width as usize;
 	let next_row_inc = dest.width() as usize;
@@ -70,26 +118,18 @@ pub fn per_pixel_triangle_2d<PixelType: Pixel>(
 
 		let row_pixels = unsafe { std::slice::from_raw_parts_mut(pixels, draw_width) };
 		for pixel in row_pixels.iter_mut() {
-			// skip bottom-right edge pixels so we only draw pixels inside the triangle as well as those that lie
-			// on the top-left edges. this fixes seam issues with triangles drawn with blending that share an edge
-			let is_on_bottom_right_edge = (w0.nearly_equal(0.0, f32::EPSILON) && is_cb_bottom_right)
-				|| (w1.nearly_equal(0.0, f32::EPSILON) && is_ac_bottom_right)
-				|| (w2.nearly_equal(0.0, f32::EPSILON) && is_ba_bottom_right);
-
-			// note that for a counter-clockwise vertex winding order with the direction of Y+ going down instead
-			// of up, we need to test for *negative* area when checking if we're inside the triangle
-			if !is_on_bottom_right_edge && w0 <= 0.0 && w1 <= 0.0 && w2 <= 0.0 {
-				pixel_fn(pixel, w0, w1, w2);
+			if edge_bc.evaluate(w0) && edge_ca.evaluate(w1) && edge_ab.evaluate(w2) {
+				pixel_fn(pixel, w0, w1, w2)
 			}
 
-			w0 += a12;
-			w1 += a20;
-			w2 += a01;
+			w0 = edge_bc.step_x(w0);
+			w1 = edge_ca.step_x(w1);
+			w2 = edge_ab.step_x(w2);
 		}
 
-		w0_row += b12;
-		w1_row += b20;
-		w2_row += b01;
+		w0_row = edge_bc.step_y(w0_row);
+		w1_row = edge_ca.step_y(w1_row);
+		w2_row = edge_ab.step_y(w2_row);
 		pixels = unsafe { pixels.add(next_row_inc) };
 	}
 }
