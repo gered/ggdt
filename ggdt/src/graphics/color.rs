@@ -1,3 +1,5 @@
+use std::simd;
+
 /// Packed 32-bit color, in the format: 0xAARRGGBB
 pub type Color1u32 = u32;
 
@@ -12,6 +14,12 @@ pub type Color3f32 = [f32; 3];
 
 /// Unpacked 32-bit color as normalized f32 color components (0.0 to 1.0) in the order: alpha, red, green, blue
 pub type Color4f32 = [f32; 4];
+
+/// Unpacked 32-bit color in a SIMD vector that is otherwise equivalent to [`Color4u8`]
+pub type SimdColor4u8 = simd::u8x4;
+
+/// Unpacked 32-bit color in a SIMD vector that is otherwise equivalent to [`Color4f32`]
+pub type SimdColor4f32 = simd::f32x4;
 
 // these colours are taken from the default VGA palette
 
@@ -72,6 +80,15 @@ impl BlendFunction {
 			MultipliedBlend(color) => multiplied_blend_argb(from_argb32(*color), src, dest),
 		}
 	}
+
+	#[inline]
+	pub fn blend_simd(&self, src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
+		use BlendFunction::*;
+		match self {
+			Blend => blend_argb_simd(src, dest),
+			BlendSourceWithAlpha(opacity) => blend_argb_simd_source_by(src, dest, *opacity),
+			TintedBlend(tint) => tinted_blend_argb_simd(from_argb32_simd(*tint), src, dest),
+			MultipliedBlend(color) => multiplied_blend_argb_simd(from_argb32_simd(*color), src, dest),
 		}
 	}
 }
@@ -91,6 +108,11 @@ pub fn to_argb32(argb: Color4u8) -> Color1u32 {
 		+ ((argb[0] as u32) << 24) // a
 }
 
+#[inline]
+pub fn to_argb32_simd(argb: SimdColor4u8) -> Color1u32 {
+	to_argb32(argb.to_array())
+}
+
 /// Packs a set of individual ARGB normalized components to a packed 32-bit color value.
 ///
 /// # Arguments
@@ -104,6 +126,11 @@ pub fn to_argb32_normalized(argb: Color4f32) -> Color1u32 {
 		+ ((((argb[2] * 255.0) as u32) & 0xff) << 8) // g
 		+ ((((argb[1] * 255.0) as u32) & 0xff) << 16) // r
 		+ ((((argb[0] * 255.0) as u32) & 0xff) << 24) // a
+}
+
+#[inline]
+pub fn to_argb32_normalized_simd(argb: SimdColor4f32) -> Color1u32 {
+	to_argb32_normalized(argb.to_array())
 }
 
 /// Unpacks the individual ARGB components out of a packed 32-bit color value.
@@ -123,6 +150,11 @@ pub fn from_argb32(argb: Color1u32) -> Color4u8 {
 	]
 }
 
+#[inline]
+pub fn from_argb32_simd(argb: Color1u32) -> SimdColor4u8 {
+	SimdColor4u8::from_array(from_argb32(argb))
+}
+
 /// Unpacks the individual ARGB normalized components out of a packed 32-bit color value.
 ///
 /// # Arguments
@@ -140,6 +172,11 @@ pub fn from_argb32_normalized(argb: Color1u32) -> Color4f32 {
 	]
 }
 
+#[inline]
+pub fn from_argb32_normalized_simd(argb: Color1u32) -> SimdColor4f32 {
+	SimdColor4f32::from_array(from_argb32_normalized(argb))
+}
+
 /// Packs a set of individual RGB components to a combined 32-bit color value. Substitutes a value of 255 for
 /// the missing alpha component.
 ///
@@ -151,6 +188,11 @@ pub fn from_argb32_normalized(argb: Color1u32) -> Color4f32 {
 #[inline]
 pub fn to_rgb32(rgb: Color3u8) -> Color1u32 {
 	to_argb32([255, rgb[0], rgb[1], rgb[2]])
+}
+
+#[inline]
+pub fn to_rgb32_simd(argb: SimdColor4u8) -> Color1u32 {
+	to_argb32([255, argb[1], argb[2], argb[3]])
 }
 
 /// PAcks a set of individual RGB normalized components to a combined 32-bit color value. Substitutes a value of
@@ -181,6 +223,12 @@ pub fn from_rgb32(rgb: Color1u32) -> Color3u8 {
 		((rgb & 0x0000ff00) >> 8) as u8,  // g
 		(rgb & 0x000000ff) as u8,         // b
 	]
+}
+
+#[inline]
+pub fn from_rgb32_simd(rgb: Color1u32) -> SimdColor4u8 {
+	let [r, g, b] = from_rgb32(rgb);
+	SimdColor4u8::from_array([255, r, g, b])
 }
 
 /// Unpacks the individual RGB normalized components out of a combined 32-bit color value. Ignores the alpha component.
@@ -218,6 +266,13 @@ pub fn blend_components(strength: u8, src: u8, dest: u8) -> u8 {
 	(((src as u16 * strength as u16) + (dest as u16 * (255 - strength as u16))) / 255) as u8
 }
 
+#[inline]
+pub fn blend_components_simd(strength: u8, src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
+	let strength = simd::u16x4::splat(strength as u16);
+	let max = simd::u16x4::splat(255);
+	(((src.cast() * strength) + (dest.cast() * (max - strength))) / max).cast()
+}
+
 /// Alpha blends two colors together.
 ///
 /// # Arguments
@@ -249,6 +304,11 @@ pub fn blend_argb(src: Color4u8, dest: Color4u8) -> Color4u8 {
 		blend_components(src[0], src[2], dest[2]),
 		blend_components(src[0], src[3], dest[3]),
 	]
+}
+
+#[inline]
+pub fn blend_argb_simd(src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
+	blend_components_simd(src[0], src, dest)
 }
 
 /// Blends the source and destination colors together, where the alpha value used to blend the two
@@ -301,6 +361,14 @@ pub fn blend_argb_source_by(src: Color4u8, dest: Color4u8, alpha: u8) -> Color4u
 	]
 }
 
+#[inline]
+pub fn blend_argb_simd_source_by(src: SimdColor4u8, dest: SimdColor4u8, alpha: u8) -> SimdColor4u8 {
+	let alpha = ((alpha as u16 * src[0] as u16) / 255) as u8;
+	let mut blended = blend_components_simd(alpha, src, dest);
+	blended[0] = alpha;
+	blended
+}
+
 /// Applies a tint to a color, using the tint color's alpha component as the strength of the tint,
 /// where 0 means no tint and 255 means full tint. The original color's alpha component is preserved in
 /// the result.
@@ -340,6 +408,13 @@ pub fn tint_argb(color: Color4u8, tint: Color4u8) -> Color4u8 {
 	]
 }
 
+#[inline]
+pub fn tint_argb_simd(color: SimdColor4u8, mut tint: SimdColor4u8) -> SimdColor4u8 {
+	let strength = tint[0];
+	tint[0] = color[0];
+	blend_components_simd(strength, tint, color)
+}
+
 /// Multiplies two colors together, returing the result. The multiplication is performed by
 /// individually multiplying each color component using the formula `(component * component) / 255`.
 ///
@@ -373,6 +448,11 @@ pub fn multiply_argb(a: Color4u8, b: Color4u8) -> Color4u8 {
 		((a[2] as u32 * b[2] as u32) / 255) as u8,
 		((a[3] as u32 * b[3] as u32) / 255) as u8,
 	]
+}
+
+#[inline]
+pub fn multiply_argb_simd(a: SimdColor4u8, b: SimdColor4u8) -> SimdColor4u8 {
+	((a.cast::<u32>() * b.cast::<u32>()) / simd::u32x4::splat(255)).cast()
 }
 
 /// Linearly interpolates between two colors.
@@ -410,6 +490,11 @@ pub fn lerp_argb(a: Color4u8, b: Color4u8, t: f32) -> Color4u8 {
 	]
 }
 
+#[inline]
+pub fn lerg_argb_simd(a: SimdColor4u8, b: SimdColor4u8, t: f32) -> SimdColor4u8 {
+	(a.cast() + (b - a).cast() * simd::f32x4::splat(t)).cast()
+}
+
 /// Linearly interpolates between two colors. Ignores the alpha component, which will always be
 /// set to 255 in the return value.
 ///
@@ -442,6 +527,11 @@ pub fn multiplied_blend_argb(color: Color4u8, src: Color4u8, dest: Color4u8) -> 
 }
 
 #[inline]
+pub fn multiplied_blend_argb_simd(color: SimdColor4u8, src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
+	blend_argb_simd(multiply_argb_simd(src, color), dest)
+}
+
+#[inline]
 pub fn tinted_blend_argb32(tint: Color1u32, src: Color1u32, dest: Color1u32) -> Color1u32 {
 	blend_argb32(tint_argb32(src, tint), dest)
 }
@@ -449,6 +539,11 @@ pub fn tinted_blend_argb32(tint: Color1u32, src: Color1u32, dest: Color1u32) -> 
 #[inline]
 pub fn tinted_blend_argb(tint: Color4u8, src: Color4u8, dest: Color4u8) -> Color4u8 {
 	blend_argb(tint_argb(src, tint), dest)
+}
+
+#[inline]
+pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
+	blend_argb_simd(tint_argb_simd(src, tint), dest)
 }
 
 const LUMINANCE_RED: f32 = 0.212655;
