@@ -57,14 +57,8 @@ impl BlendFunction {
 		match self {
 			Blend => blend_argb32(src, dest),
 			BlendSourceWithAlpha(opacity) => blend_argb32_source_by(src, dest, *opacity),
-			TintedBlend(tint) => {
-				let tinted = tint_argb32(src, *tint);
-				blend_argb32(tinted, dest)
-			}
-			MultipliedBlend(color) => {
-				let multiplied = multiply_argb32(src, *color);
-				blend_argb32(multiplied, dest)
-			}
+			TintedBlend(tint) => tinted_blend_argb32(*tint, src, dest),
+			MultipliedBlend(color) => multiplied_blend_argb32(*color, src, dest),
 		}
 	}
 
@@ -74,14 +68,10 @@ impl BlendFunction {
 		match self {
 			Blend => blend_argb(src, dest),
 			BlendSourceWithAlpha(opacity) => blend_argb_source_by(src, dest, *opacity),
-			TintedBlend(tint) => {
-				let tinted = tint_argb(src, from_argb32(*tint));
-				blend_argb(tinted, dest)
-			}
-			MultipliedBlend(color) => {
-				let multiplied = multiply_argb(src, from_argb32(*color));
-				blend_argb(multiplied, dest)
-			}
+			TintedBlend(tint) => tinted_blend_argb(from_argb32(*tint), src, dest),
+			MultipliedBlend(color) => multiplied_blend_argb(from_argb32(*color), src, dest),
+		}
+	}
 		}
 	}
 }
@@ -439,6 +429,26 @@ pub fn lerp_rgb32(a: Color1u32, b: Color1u32, t: f32) -> Color1u32 {
 		((g1 as f32) + ((g2 as f32) - (g1 as f32)) * t) as u8,
 		((b1 as f32) + ((b2 as f32) - (b1 as f32)) * t) as u8,
 	])
+}
+
+#[inline]
+pub fn multiplied_blend_argb32(color: Color1u32, src: Color1u32, dest: Color1u32) -> Color1u32 {
+	blend_argb32(multiply_argb32(src, color), dest)
+}
+
+#[inline]
+pub fn multiplied_blend_argb(color: Color4u8, src: Color4u8, dest: Color4u8) -> Color4u8 {
+	blend_argb(multiply_argb(src, color), dest)
+}
+
+#[inline]
+pub fn tinted_blend_argb32(tint: Color1u32, src: Color1u32, dest: Color1u32) -> Color1u32 {
+	blend_argb32(tint_argb32(src, tint), dest)
+}
+
+#[inline]
+pub fn tinted_blend_argb(tint: Color4u8, src: Color4u8, dest: Color4u8) -> Color4u8 {
+	blend_argb(tint_argb(src, tint), dest)
 }
 
 const LUMINANCE_RED: f32 = 0.212655;
