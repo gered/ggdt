@@ -2271,6 +2271,77 @@ fn get_quad<'a>(
 }
 
 #[rustfmt::skip]
+fn draw_triangles(dest: &mut IndexedBitmap, mode: TriangleType, texture: Option<&IndexedBitmap>, blendmap: Option<&BlendMap>) {
+	let size = 32.0;
+	let half_size = size / 2.0;
+
+	let top_left = Vector2::new(0.0, 0.0);
+	let top_right = Vector2::new(size, 0.0);
+	let bottom_left = Vector2::new(0.0, size);
+	let bottom_right = Vector2::new(size, size);
+
+	let scale_factor = 1.0;
+	let scaled_size = (size * scale_factor) as i32;
+	assert!(scaled_size > 4 && scaled_size % 4 == 0);
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(20.0, 20.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// 1x1
+	let scale_factor = 0.04;
+	let scaled_size = (size * scale_factor) as i32;
+	assert!(scaled_size < 4 && scaled_size % 4 == 1);
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(70.0, 20.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// 3x3
+	let scale_factor = 0.1;
+	let scaled_size = (size * scale_factor) as i32;
+	assert!(scaled_size < 4 && scaled_size % 4 == 3);
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(90.0, 20.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// 41x41
+	let scale_factor = 1.29;
+	let scaled_size = (size * scale_factor) as i32;
+	assert!(scaled_size > 4 && scaled_size % 4 == 1);
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(120.0, 20.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// 67x67
+	let scale_factor = 2.1;
+	let scaled_size = (size * scale_factor) as i32;
+	assert!(scaled_size > 4 && scaled_size % 4 == 3);
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(220.0, 20.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// todo: my matrix math is wrong here somehow (was trying to do rotations around the center of each quad), but i 
+	// don't care enough to fix this properly. the output of this crap is "good enough" 
+	let mut angle = 0.0;
+	for y in 0..2 {
+		for x in 0..4 {
+			let x_draw = 0.0 + (x as f32 * size * 2.5);
+			let y_draw = 80.0 + (y as f32 * size * 2.5);
+
+			let scale_factor = 1.5;
+
+			let rotate = Matrix3x3::new_2d_rotation((angle as f32).to_radians());
+			let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+			let translation = Matrix3x3::new_2d_translation(x_draw, y_draw);
+			let offset = Matrix3x3::new_2d_translation(half_size, half_size);
+
+			let triangles = get_quad(mode, texture, blendmap, offset * rotate * scale * translation, top_left, top_right, bottom_left, bottom_right);
+			dest.triangle_list_2d(&triangles);
+
+			angle += 15.0 / 2.0;
+		}
+	}
+}
+
 #[test]
 fn triangle_2d_solid_textured() {
 	let (mut screen, palette) = setup();
@@ -2278,24 +2349,7 @@ fn triangle_2d_solid_textured() {
 
 	let texture = generate_bitmap(32, 32);
 
-	let top_left = Vector2::new(0.0, 0.0);
-	let top_right = Vector2::new(32.0, 0.0);
-	let bottom_left = Vector2::new(0.0, 32.0);
-	let bottom_right = Vector2::new(32.0, 32.0);
-
-	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
-	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
-
-	let mode = TriangleType::SolidTextured;
-
-	let triangles = get_quad(mode, Some(&texture), None, Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, Some(&texture), None, scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, Some(&texture), None, scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
+	draw_triangles(&mut screen, TriangleType::SolidTextured, Some(&texture), None);
 
 	let path = reference_file(Path::new("triangle_2d_solid_textured.png"));
 	if cfg!(recreate_ref_test_images) {
@@ -2304,29 +2358,11 @@ fn triangle_2d_solid_textured() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
-#[rustfmt::skip]
 #[test]
 fn triangle_2d_solid_blended() {
 	let (mut screen, palette, blend_map) = setup_for_blending();
 
-	let top_left = Vector2::new(0.0, 0.0);
-	let top_right = Vector2::new(32.0, 0.0);
-	let bottom_left = Vector2::new(0.0, 32.0);
-	let bottom_right = Vector2::new(32.0, 32.0);
-
-	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
-	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
-
-	let mode = TriangleType::SolidBlended;
-
-	let triangles = get_quad(mode, None, Some(&blend_map), Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, None, Some(&blend_map), scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, None, Some(&blend_map), scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
+	draw_triangles(&mut screen, TriangleType::SolidBlended, None, Some(&blend_map));
 
 	let path = reference_file(Path::new("triangle_2d_solid_blended.png"));
 	if cfg!(recreate_ref_test_images) {
@@ -2335,31 +2371,13 @@ fn triangle_2d_solid_blended() {
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
-#[rustfmt::skip]
 #[test]
 fn triangle_2d_solid_textured_blended() {
 	let (mut screen, palette, blend_map) = setup_for_blending();
 
 	let texture = generate_bitmap(32, 32);
 
-	let top_left = Vector2::new(0.0, 0.0);
-	let top_right = Vector2::new(32.0, 0.0);
-	let bottom_left = Vector2::new(0.0, 32.0);
-	let bottom_right = Vector2::new(32.0, 32.0);
-
-	let rotate = Matrix3x3::new_2d_rotation(RADIANS_45);
-	let scale = Matrix3x3::new_2d_scaling(2.0, 2.0);
-
-	let mode = TriangleType::SolidTexturedBlended;
-
-	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), Matrix3x3::new_2d_translation(40.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), scale * Matrix3x3::new_2d_translation(200.0, 40.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
-
-	let triangles = get_quad(mode, Some(&texture), Some(&blend_map), scale * rotate * Matrix3x3::new_2d_translation(120.0, 120.0), top_left, top_right, bottom_left, bottom_right);
-	screen.triangle_list_2d(&triangles);
+	draw_triangles(&mut screen, TriangleType::SolidTexturedBlended, Some(&texture), Some(&blend_map));
 
 	let path = reference_file(Path::new("triangle_2d_solid_textured_blended.png"));
 	if cfg!(recreate_ref_test_images) {
