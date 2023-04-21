@@ -1,2 +1,9 @@
 [toolchain]
+# the sole reason we are using nightly at the moment is to use the portable_simd feature.
+# that is, i am not trying to chase "bleeding edge" features in general. as such, i don't
+# necessarily see a reason to keep using whatever nightly version is the latest, and would
+# prefer stick with versions that appear to be stable and just periodically do manual updates
+# here to get *some* peace of mind in terms of build stability.
+# NOTE: as of 2023-04-21, nightly versions past 2023-04-17 fail to build ggdt with an
+#       "illegal instruction" error
 channel = "nightly-2023-04-17"
