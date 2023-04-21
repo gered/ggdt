@@ -80,7 +80,9 @@ fn pixel_addressing() {
 	}
 
 	let path = reference_file(Path::new("pixel_addressing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -132,7 +134,9 @@ fn pixel_drawing() {
 	}
 
 	let path = reference_file(Path::new("pixel_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -166,7 +170,9 @@ fn blended_pixel_drawing() {
 	}
 
 	let path = reference_file(Path::new("blended_pixel_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -186,7 +192,9 @@ fn horiz_line_drawing() {
 	screen.horiz_line(20, 80, 250, 7);
 
 	let path = reference_file(Path::new("horiz_line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -206,7 +214,9 @@ fn blended_horiz_line_drawing() {
 	screen.blended_horiz_line(20, 80, 250, 7, &blend_map);
 
 	let path = reference_file(Path::new("blended_horiz_line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -226,7 +236,9 @@ fn vert_line_drawing() {
 	screen.vert_line(400, 100, 300, 7);
 
 	let path = reference_file(Path::new("vert_line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -246,7 +258,9 @@ fn blended_vert_line_drawing() {
 	screen.blended_vert_line(400, 100, 300, 7, &blend_map);
 
 	let path = reference_file(Path::new("blended_vert_line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -283,7 +297,9 @@ fn line_drawing() {
 	screen.line(320, 99, 320, 199, 5);
 
 	let path = reference_file(Path::new("line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -320,7 +336,9 @@ fn blended_line_drawing() {
 	screen.blended_line(320, 99, 320, 199, 5, &blend_map);
 
 	let path = reference_file(Path::new("blended_line_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -348,7 +366,9 @@ fn rect_drawing() {
 	screen.rect(20, 220, -20, 260, 14);
 
 	let path = reference_file(Path::new("rect_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -376,7 +396,9 @@ fn blended_rect_drawing() {
 	screen.blended_rect(20, 220, -20, 260, 14, &blend_map);
 
 	let path = reference_file(Path::new("blended_rect_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -404,7 +426,9 @@ fn filled_rect_drawing() {
 	screen.filled_rect(20, 220, -20, 260, 14);
 
 	let path = reference_file(Path::new("filled_rect_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -432,7 +456,9 @@ fn blended_filled_rect_drawing() {
 	screen.blended_filled_rect(20, 220, -20, 260, 14, &blend_map);
 
 	let path = reference_file(Path::new("blended_filled_rect_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -455,7 +481,9 @@ fn circle_drawing() {
 	screen.circle(2, 242, 19, 10);
 
 	let path = reference_file(Path::new("circle_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -478,7 +506,9 @@ fn filled_circle_drawing() {
 	screen.filled_circle(2, 242, 19, 10);
 
 	let path = reference_file(Path::new("filled_circle_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -529,7 +559,9 @@ fn text_drawing() {
 	screen.print_string(message, 200, 250, FontRenderOpts::Color(8), &font);
 
 	let path = reference_file(Path::new("text_drawing.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -614,7 +646,9 @@ fn solid_blits() {
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("solid_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -683,7 +717,9 @@ fn blended_solid_blits() {
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("blended_solid_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -747,7 +783,9 @@ fn solid_flipped_blits() {
 	screen.blit(SolidFlipped { horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_flipped_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -812,7 +850,9 @@ fn blended_solid_flipped_blits() {
 	screen.blit(SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_solid_flipped_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -880,7 +920,9 @@ fn solid_offset_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -949,7 +991,9 @@ fn solid_flipped_offset_blits() {
 	screen.blit(SolidFlippedOffset { offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("solid_flipped_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1018,7 +1062,9 @@ fn transparent_blits() {
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("transparent_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1087,7 +1133,9 @@ fn blended_transparent_blits() {
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
 	let path = reference_file(Path::new("blended_transparent_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1154,7 +1202,9 @@ fn transparent_flipped_blits() {
 	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1221,7 +1271,9 @@ fn blended_transparent_flipped_blits() {
 	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend_map: blend_map.clone() }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_transparent_flipped_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1291,7 +1343,9 @@ fn transparent_offset_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1362,7 +1416,9 @@ fn transparent_flipped_offset_blits() {
 	screen.blit(TransparentFlippedOffset { transparent_color, offset, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1432,7 +1488,9 @@ fn transparent_single_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_single_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1503,7 +1561,9 @@ fn transparent_flipped_single_blits() {
 	screen.blit(TransparentFlippedSingle { transparent_color, draw_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
 	let path = reference_file(Path::new("transparent_flipped_single_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1569,7 +1629,9 @@ fn rotozoom_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1636,7 +1698,9 @@ fn blended_rotozoom_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_rotozoom_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1705,7 +1769,9 @@ fn rotozoom_offset_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1774,7 +1840,9 @@ fn rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_transparent_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1849,7 +1917,9 @@ fn blended_rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("blended_rotozoom_transparent_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -1920,7 +1990,9 @@ fn rotozoom_transparent_offset_blits() {
 	screen.blit(method.clone(), &bmp, 226, 240);
 
 	let path = reference_file(Path::new("rotozoom_transparent_offset_blits.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -2132,7 +2204,9 @@ fn triangle_2d() {
 	});
 
 	let path = reference_file(Path::new("triangle_2d.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -2224,7 +2298,9 @@ fn triangle_2d_solid_textured() {
 	screen.triangle_list_2d(&triangles);
 
 	let path = reference_file(Path::new("triangle_2d_solid_textured.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -2253,7 +2329,9 @@ fn triangle_2d_solid_blended() {
 	screen.triangle_list_2d(&triangles);
 
 	let path = reference_file(Path::new("triangle_2d_solid_blended.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
 
@@ -2284,6 +2362,8 @@ fn triangle_2d_solid_textured_blended() {
 	screen.triangle_list_2d(&triangles);
 
 	let path = reference_file(Path::new("triangle_2d_solid_textured_blended.png"));
-	//screen.to_png_file(path.as_path(), &palette).unwrap();
+	if cfg!(recreate_ref_test_images) {
+		screen.to_png_file(path.as_path(), &palette).unwrap();
+	}
 	assert!(verify_visual(&screen, &palette, &path), "bitmap differs from source image: {:?}", path);
 }
