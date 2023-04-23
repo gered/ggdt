@@ -2318,7 +2318,34 @@ fn draw_triangles(dest: &mut IndexedBitmap, mode: TriangleType, texture: Option<
 	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
 	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(220.0, 20.0), top_left, top_right, bottom_left, bottom_right);
 	dest.triangle_list_2d(&triangles);
+	
+	// other downscaled sizes
+	let scale_factor = 0.25;
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(60.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
 
+	let scale_factor = 0.3;
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(80.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	let scale_factor = 0.35;
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(100.0, 40.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	let scale_factor = 0.5;
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(60.0, 60.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	let scale_factor = 0.66;
+	let scale = Matrix3x3::new_2d_scaling(scale_factor, scale_factor);
+	let triangles = get_quad(mode, texture, blendmap, scale * Matrix3x3::new_2d_translation(90.0, 60.0), top_left, top_right, bottom_left, bottom_right);
+	dest.triangle_list_2d(&triangles);
+
+	// upscaled sizes with various rotations
 	// todo: my matrix math is wrong here somehow (was trying to do rotations around the center of each quad), but i 
 	// don't care enough to fix this properly. the output of this crap is "good enough" 
 	let mut angle = 0.0;
