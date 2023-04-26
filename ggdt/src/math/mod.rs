@@ -1,4 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
+use std::simd;
+use std::simd::{SimdFloat, SimdPartialOrd};
 
 mod circle;
 mod matrix3x3;
@@ -45,6 +47,11 @@ pub const RIGHT: f32 = RADIANS_0;
 pub fn nearly_equal(a: f32, b: f32, epsilon: f32) -> bool {
 	// this could still be improved
 	a == b || (a - b).abs() <= epsilon
+}
+
+#[inline]
+pub fn nearly_equal_simd(a: simd::f32x4, b: simd::f32x4, epsilon: f32) -> simd::mask32x4 {
+	(a - b).abs().simd_le(simd::f32x4::splat(epsilon))
 }
 
 /// Linearly interpolates between two values.
@@ -209,6 +216,34 @@ mod tests {
 		assert!(4.0f32.nearly_equal(4.0, 0.1));
 		assert!(nearly_equal(0.1 + 0.2, 0.3, 0.01));
 		assert!(!nearly_equal(1.0001, 1.0005, 0.0001));
+	}
+
+	#[test]
+	pub fn test_nearly_equal_simd() {
+		assert_eq!(
+			simd::mask32x4::from_array([true, true, true, true]),
+			nearly_equal_simd(
+				simd::f32x4::from_array([1.0, 2.0, 3.0, 4.0]),
+				simd::f32x4::from_array([1.0, 2.0, 3.0, 4.0]),
+				0.1
+			)
+		);
+		assert_eq!(
+			simd::mask32x4::from_array([true, true, false, false]),
+			nearly_equal_simd(
+				simd::f32x4::from_array([1.0, 1.95, 3.2, 3.7]),
+				simd::f32x4::from_array([1.0, 2.0, 3.0, 4.0]),
+				0.1
+			)
+		);
+		assert_eq!(
+			simd::mask32x4::from_array([false, false, false, false]),
+			nearly_equal_simd(
+				simd::f32x4::from_array([1.0002, 2.0003, 2.9997, 4.00015]),
+				simd::f32x4::from_array([1.0, 2.0, 3.0, 4.0]),
+				0.0001
+			)
+		);
 	}
 
 	#[test]
