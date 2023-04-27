@@ -546,6 +546,265 @@ pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdC
 	blend_argb_simd(tint_argb_simd(src, tint), dest)
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
+/// Packed 32-bit color represented as a single u32 containing all of the individual 8-bit color components.
+/// The components are packed in the format 0xAARRGGBB.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct ARGBu32(pub u32);
+
+impl ARGBu32 {
+	#[inline]
+	pub const fn from_argb(argb: [u8; 4]) -> Self {
+		ARGBu32(
+			(argb[3] as u32) // b
+				+ ((argb[2] as u32) << 8) // g
+				+ ((argb[1] as u32) << 16) // r
+				+ ((argb[0] as u32) << 24), // a
+		)
+	}
+	#[inline]
+	pub const fn from_rgb(rgb: [u8; 3]) -> Self {
+		ARGBu32(
+			(rgb[2] as u32) // b
+				+ ((rgb[1] as u32) << 8) // g
+				+ ((rgb[0] as u32) << 16) // r
+				+ (255 << 24), // a
+		)
+	}
+
+	#[inline]
+	pub const fn a(&self) -> u8 {
+		((self.0 & 0xff000000) >> 24) as u8
+	}
+
+	#[inline]
+	pub const fn r(&self) -> u8 {
+		((self.0 & 0x00ff0000) >> 16) as u8
+	}
+
+	#[inline]
+	pub const fn g(&self) -> u8 {
+		((self.0 & 0x0000ff00) >> 8) as u8
+	}
+
+	#[inline]
+	pub const fn b(&self) -> u8 {
+		(self.0 & 0x000000ff) as u8
+	}
+
+	#[inline]
+	pub fn set_a(&mut self, value: u8) {
+		self.0 = (self.0 & !0xff_u32.wrapping_shl(24)) | (value as u32).wrapping_shl(24)
+	}
+
+	#[inline]
+	pub fn set_r(&mut self, value: u8) {
+		self.0 = (self.0 & !0xff_u32.wrapping_shl(16)) | (value as u32).wrapping_shl(16)
+	}
+
+	#[inline]
+	pub fn set_g(&mut self, value: u8) {
+		self.0 = (self.0 & !0xff_u32.wrapping_shl(8)) | (value as u32).wrapping_shl(8)
+	}
+
+	#[inline]
+	pub fn set_b(&mut self, value: u8) {
+		self.0 = (self.0 & !0xff) | (value as u32)
+	}
+
+	#[inline]
+	pub const fn to_array(&self) -> [u8; 4] {
+		[self.a(), self.r(), self.g(), self.b()]
+	}
+}
+
+impl From<ARGBu8x4> for ARGBu32 {
+	#[inline]
+	fn from(value: ARGBu8x4) -> Self {
+		ARGBu32::from_argb(value.0.to_array())
+	}
+}
+
+impl From<ARGBf32x4> for ARGBu32 {
+	#[inline]
+	fn from(value: ARGBf32x4) -> Self {
+		ARGBu32::from_argb([
+			(value.a() * 255.0) as u8,
+			(value.r() * 255.0) as u8,
+			(value.g() * 255.0) as u8,
+			(value.b() * 255.0) as u8,
+		])
+	}
+}
+
+/// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
+/// order alpha, red, green, blue.
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct ARGBu8x4(pub simd::u8x4);
+
+impl ARGBu8x4 {
+	#[inline]
+	pub const fn from_argb(argb: [u8; 4]) -> Self {
+		ARGBu8x4(simd::u8x4::from_array(argb))
+	}
+
+	#[inline]
+	pub const fn from_rgb(rgb: [u8; 3]) -> Self {
+		ARGBu8x4(simd::u8x4::from_array([255, rgb[0], rgb[1], rgb[2]]))
+	}
+
+	#[inline]
+	pub const fn a(&self) -> u8 {
+		self.0.to_array()[0]
+	}
+
+	#[inline]
+	pub const fn r(&self) -> u8 {
+		self.0.to_array()[1]
+	}
+
+	#[inline]
+	pub const fn g(&self) -> u8 {
+		self.0.to_array()[2]
+	}
+
+	#[inline]
+	pub const fn b(&self) -> u8 {
+		self.0.to_array()[3]
+	}
+
+	#[inline]
+	pub fn set_a(&mut self, value: u8) {
+		self.0[0] = value
+	}
+
+	#[inline]
+	pub fn set_r(&mut self, value: u8) {
+		self.0[1] = value
+	}
+
+	#[inline]
+	pub fn set_g(&mut self, value: u8) {
+		self.0[2] = value
+	}
+
+	#[inline]
+	pub fn set_b(&mut self, value: u8) {
+		self.0[3] = value
+	}
+
+	#[inline]
+	pub const fn to_array(&self) -> [u8; 4] {
+		self.0.to_array()
+	}
+}
+
+impl From<ARGBu32> for ARGBu8x4 {
+	#[inline]
+	fn from(value: ARGBu32) -> Self {
+		ARGBu8x4::from_argb([value.a(), value.r(), value.g(), value.b()])
+	}
+}
+
+impl From<ARGBf32x4> for ARGBu8x4 {
+	#[inline]
+	fn from(value: ARGBf32x4) -> Self {
+		ARGBu8x4::from_argb([
+			(value.a() * 255.0) as u8,
+			(value.r() * 255.0) as u8,
+			(value.g() * 255.0) as u8,
+			(value.b() * 255.0) as u8,
+		])
+	}
+}
+
+/// Unpacked 32-bit color represented as individual normalized f32 color components (0.0 to 1.0) where the
+/// components are in the order alpha, red, green, blue.
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+pub struct ARGBf32x4(pub simd::f32x4);
+
+impl ARGBf32x4 {
+	#[inline]
+	pub const fn from_argb(argb: [f32; 4]) -> Self {
+		ARGBf32x4(simd::f32x4::from_array(argb))
+	}
+
+	#[inline]
+	pub const fn from_rgb(rgb: [f32; 3]) -> Self {
+		ARGBf32x4(simd::f32x4::from_array([1.0, rgb[0], rgb[1], rgb[2]]))
+	}
+
+	#[inline]
+	pub const fn a(&self) -> f32 {
+		self.0.to_array()[0]
+	}
+
+	#[inline]
+	pub const fn r(&self) -> f32 {
+		self.0.to_array()[1]
+	}
+
+	#[inline]
+	pub const fn g(&self) -> f32 {
+		self.0.to_array()[2]
+	}
+
+	#[inline]
+	pub const fn b(&self) -> f32 {
+		self.0.to_array()[3]
+	}
+
+	#[inline]
+	pub fn set_a(&mut self, value: f32) {
+		self.0[0] = value
+	}
+
+	#[inline]
+	pub fn set_r(&mut self, value: f32) {
+		self.0[1] = value
+	}
+
+	#[inline]
+	pub fn set_g(&mut self, value: f32) {
+		self.0[2] = value
+	}
+
+	#[inline]
+	pub fn set_b(&mut self, value: f32) {
+		self.0[3] = value
+	}
+
+	#[inline]
+	pub const fn to_array(&self) -> [f32; 4] {
+		self.0.to_array()
+	}
+}
+
+impl From<ARGBu32> for ARGBf32x4 {
+	fn from(value: ARGBu32) -> Self {
+		ARGBf32x4::from_argb([
+			value.a() as f32 / 255.0,
+			value.r() as f32 / 255.0,
+			value.g() as f32 / 255.0,
+			value.b() as f32 / 255.0,
+		])
+	}
+}
+
+impl From<ARGBu8x4> for ARGBf32x4 {
+	fn from(value: ARGBu8x4) -> Self {
+		ARGBf32x4::from_argb([
+			value.a() as f32 / 255.0,
+			value.r() as f32 / 255.0,
+			value.g() as f32 / 255.0,
+			value.b() as f32 / 255.0,
+		])
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 const LUMINANCE_RED: f32 = 0.212655;
 const LUMINANCE_GREEN: f32 = 0.715158;
 const LUMINANCE_BLUE: f32 = 0.072187;
@@ -687,5 +946,110 @@ mod tests {
 		assert_eq!(0xff112233, lerp_rgb32(0x7f112233, 0xffaabbcc, 0.0));
 		assert_eq!(0xff5d6e7f, lerp_rgb32(0x7f112233, 0xffaabbcc, 0.5));
 		assert_eq!(0xffaabbcc, lerp_rgb32(0x7f112233, 0xffaabbcc, 1.0));
+	}
+
+	#[test]
+	fn argbu32() {
+		let mut color = ARGBu32(0x11223344);
+		assert_eq!(color.a(), 0x11);
+		assert_eq!(color.r(), 0x22);
+		assert_eq!(color.g(), 0x33);
+		assert_eq!(color.b(), 0x44);
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
+
+		color.set_a(0xaa);
+		assert_eq!(color.0, 0xaa223344);
+		color.set_r(0x55);
+		assert_eq!(color.0, 0xaa553344);
+		color.set_g(0x66);
+		assert_eq!(color.0, 0xaa556644);
+		color.set_b(0x88);
+		assert_eq!(color.0, 0xaa556688);
+
+		let color = ARGBu32::from_argb([0x11, 0x22, 0x33, 0x44]);
+		assert_eq!(color.0, 0x11223344);
+
+		let color = ARGBu32::from_rgb([0x11, 0x22, 0x33]);
+		assert_eq!(color.0, 0xff112233);
+
+		let other = ARGBu8x4::from_argb([0x11, 0x22, 0x33, 0x44]);
+		let color: ARGBu32 = other.into();
+		assert_eq!(color.0, 0x11223344);
+
+		let other = ARGBf32x4::from_argb([0.5, 0.1, 0.2, 0.3]);
+		let color: ARGBu32 = other.into();
+		assert_eq!(color.0, 0x7f19334c);
+	}
+
+	#[test]
+	fn argbu8x4() {
+		let mut color = ARGBu8x4(simd::u8x4::from_array([0x11, 0x22, 0x33, 0x44]));
+		assert_eq!(color.a(), 0x11);
+		assert_eq!(color.r(), 0x22);
+		assert_eq!(color.g(), 0x33);
+		assert_eq!(color.b(), 0x44);
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
+
+		color.set_a(0x55);
+		assert_eq!(color.to_array(), [0x55, 0x22, 0x33, 0x44]);
+		color.set_r(0x66);
+		assert_eq!(color.to_array(), [0x55, 0x66, 0x33, 0x44]);
+		color.set_g(0x77);
+		assert_eq!(color.to_array(), [0x55, 0x66, 0x77, 0x44]);
+		color.set_b(0x88);
+		assert_eq!(color.to_array(), [0x55, 0x66, 0x77, 0x88]);
+
+		let color = ARGBu8x4::from_argb([0x11, 0x22, 0x33, 0x44]);
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
+
+		let color = ARGBu8x4::from_rgb([0x11, 0x22, 0x33]);
+		assert_eq!(color.to_array(), [0xff, 0x11, 0x22, 0x33]);
+
+		let other = ARGBu32::from_argb([0x11, 0x22, 0x33, 0x44]);
+		let color: ARGBu8x4 = other.into();
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
+
+		let other = ARGBf32x4::from_argb([0.5, 0.1, 0.2, 0.3]);
+		let color: ARGBu8x4 = other.into();
+		assert_eq!(color.to_array(), [0x7f, 0x19, 0x33, 0x4c]);
+	}
+
+	#[test]
+	fn argbf32x4() {
+		let mut color = ARGBf32x4(simd::f32x4::from_array([0.5, 0.1, 0.2, 0.3]));
+		assert_eq!(color.a(), 0.5);
+		assert_eq!(color.r(), 0.1);
+		assert_eq!(color.g(), 0.2);
+		assert_eq!(color.b(), 0.3);
+		assert_eq!(color.to_array(), [0.5, 0.1, 0.2, 0.3]);
+
+		color.set_a(1.0);
+		assert_eq!(color.to_array(), [1.0, 0.1, 0.2, 0.3]);
+		color.set_r(0.4);
+		assert_eq!(color.to_array(), [1.0, 0.4, 0.2, 0.3]);
+		color.set_g(0.5);
+		assert_eq!(color.to_array(), [1.0, 0.4, 0.5, 0.3]);
+		color.set_b(0.6);
+		assert_eq!(color.to_array(), [1.0, 0.4, 0.5, 0.6]);
+
+		let color = ARGBf32x4::from_argb([0.5, 0.1, 0.2, 0.3]);
+		assert_eq!(color.to_array(), [0.5, 0.1, 0.2, 0.3]);
+
+		let color = ARGBf32x4::from_rgb([0.1, 0.2, 0.3]);
+		assert_eq!(color.to_array(), [1.0, 0.1, 0.2, 0.3]);
+
+		let other = ARGBu32::from_argb([0x7f, 0x19, 0x33, 0x4c]);
+		let color: ARGBf32x4 = other.into();
+		assert!(color.a().nearly_equal(0.5, 0.01));
+		assert!(color.r().nearly_equal(0.1, 0.01));
+		assert!(color.g().nearly_equal(0.2, 0.01));
+		assert!(color.b().nearly_equal(0.3, 0.01));
+
+		let other = ARGBu8x4::from_argb([0x7f, 0x19, 0x33, 0x4c]);
+		let color: ARGBf32x4 = other.into();
+		assert!(color.a().nearly_equal(0.5, 0.01));
+		assert!(color.r().nearly_equal(0.1, 0.01));
+		assert!(color.g().nearly_equal(0.2, 0.01));
+		assert!(color.b().nearly_equal(0.3, 0.01));
 	}
 }
