@@ -548,6 +548,30 @@ pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdC
 
 ///////////////////////////////////////////////////////////////////////////////
 
+pub trait ARGBUnpackedu8x4 {
+	fn a(&self) -> u8;
+	fn r(&self) -> u8;
+	fn g(&self) -> u8;
+	fn b(&self) -> u8;
+	fn set_a(&mut self, value: u8);
+	fn set_r(&mut self, value: u8);
+	fn set_g(&mut self, value: u8);
+	fn set_b(&mut self, value: u8);
+	fn to_array(&self) -> [u8; 4];
+}
+
+pub trait ARGBUnpackedf32x4 {
+	fn a(&self) -> f32;
+	fn r(&self) -> f32;
+	fn g(&self) -> f32;
+	fn b(&self) -> f32;
+	fn set_a(&mut self, value: f32);
+	fn set_r(&mut self, value: f32);
+	fn set_g(&mut self, value: f32);
+	fn set_b(&mut self, value: f32);
+	fn to_array(&self) -> [f32; 4];
+}
+
 /// Packed 32-bit color represented as a single u32 containing all of the individual 8-bit color components.
 /// The components are packed in the format 0xAARRGGBB.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -572,49 +596,51 @@ impl ARGBu32 {
 				+ (255 << 24), // a
 		)
 	}
+}
 
+impl ARGBUnpackedu8x4 for ARGBu32 {
 	#[inline]
-	pub const fn a(&self) -> u8 {
+	fn a(&self) -> u8 {
 		((self.0 & 0xff000000) >> 24) as u8
 	}
 
 	#[inline]
-	pub const fn r(&self) -> u8 {
+	fn r(&self) -> u8 {
 		((self.0 & 0x00ff0000) >> 16) as u8
 	}
 
 	#[inline]
-	pub const fn g(&self) -> u8 {
+	fn g(&self) -> u8 {
 		((self.0 & 0x0000ff00) >> 8) as u8
 	}
 
 	#[inline]
-	pub const fn b(&self) -> u8 {
+	fn b(&self) -> u8 {
 		(self.0 & 0x000000ff) as u8
 	}
 
 	#[inline]
-	pub fn set_a(&mut self, value: u8) {
+	fn set_a(&mut self, value: u8) {
 		self.0 = (self.0 & !0xff_u32.wrapping_shl(24)) | (value as u32).wrapping_shl(24)
 	}
 
 	#[inline]
-	pub fn set_r(&mut self, value: u8) {
+	fn set_r(&mut self, value: u8) {
 		self.0 = (self.0 & !0xff_u32.wrapping_shl(16)) | (value as u32).wrapping_shl(16)
 	}
 
 	#[inline]
-	pub fn set_g(&mut self, value: u8) {
+	fn set_g(&mut self, value: u8) {
 		self.0 = (self.0 & !0xff_u32.wrapping_shl(8)) | (value as u32).wrapping_shl(8)
 	}
 
 	#[inline]
-	pub fn set_b(&mut self, value: u8) {
+	fn set_b(&mut self, value: u8) {
 		self.0 = (self.0 & !0xff) | (value as u32)
 	}
 
 	#[inline]
-	pub const fn to_array(&self) -> [u8; 4] {
+	fn to_array(&self) -> [u8; 4] {
 		[self.a(), self.r(), self.g(), self.b()]
 	}
 }
@@ -653,49 +679,51 @@ impl ARGBu8x4 {
 	pub const fn from_rgb(rgb: [u8; 3]) -> Self {
 		ARGBu8x4(simd::u8x4::from_array([255, rgb[0], rgb[1], rgb[2]]))
 	}
+}
 
+impl ARGBUnpackedu8x4 for ARGBu8x4 {
 	#[inline]
-	pub const fn a(&self) -> u8 {
-		self.0.to_array()[0]
+	fn a(&self) -> u8 {
+		self.0[0]
 	}
 
 	#[inline]
-	pub const fn r(&self) -> u8 {
-		self.0.to_array()[1]
+	fn r(&self) -> u8 {
+		self.0[1]
 	}
 
 	#[inline]
-	pub const fn g(&self) -> u8 {
-		self.0.to_array()[2]
+	fn g(&self) -> u8 {
+		self.0[2]
 	}
 
 	#[inline]
-	pub const fn b(&self) -> u8 {
-		self.0.to_array()[3]
+	fn b(&self) -> u8 {
+		self.0[3]
 	}
 
 	#[inline]
-	pub fn set_a(&mut self, value: u8) {
+	fn set_a(&mut self, value: u8) {
 		self.0[0] = value
 	}
 
 	#[inline]
-	pub fn set_r(&mut self, value: u8) {
+	fn set_r(&mut self, value: u8) {
 		self.0[1] = value
 	}
 
 	#[inline]
-	pub fn set_g(&mut self, value: u8) {
+	fn set_g(&mut self, value: u8) {
 		self.0[2] = value
 	}
 
 	#[inline]
-	pub fn set_b(&mut self, value: u8) {
+	fn set_b(&mut self, value: u8) {
 		self.0[3] = value
 	}
 
 	#[inline]
-	pub const fn to_array(&self) -> [u8; 4] {
+	fn to_array(&self) -> [u8; 4] {
 		self.0.to_array()
 	}
 }
@@ -734,49 +762,51 @@ impl ARGBf32x4 {
 	pub const fn from_rgb(rgb: [f32; 3]) -> Self {
 		ARGBf32x4(simd::f32x4::from_array([1.0, rgb[0], rgb[1], rgb[2]]))
 	}
+}
 
+impl ARGBUnpackedf32x4 for ARGBf32x4 {
 	#[inline]
-	pub const fn a(&self) -> f32 {
-		self.0.to_array()[0]
+	fn a(&self) -> f32 {
+		self.0[0]
 	}
 
 	#[inline]
-	pub const fn r(&self) -> f32 {
-		self.0.to_array()[1]
+	fn r(&self) -> f32 {
+		self.0[1]
 	}
 
 	#[inline]
-	pub const fn g(&self) -> f32 {
-		self.0.to_array()[2]
+	fn g(&self) -> f32 {
+		self.0[2]
 	}
 
 	#[inline]
-	pub const fn b(&self) -> f32 {
-		self.0.to_array()[3]
+	fn b(&self) -> f32 {
+		self.0[3]
 	}
 
 	#[inline]
-	pub fn set_a(&mut self, value: f32) {
+	fn set_a(&mut self, value: f32) {
 		self.0[0] = value
 	}
 
 	#[inline]
-	pub fn set_r(&mut self, value: f32) {
+	fn set_r(&mut self, value: f32) {
 		self.0[1] = value
 	}
 
 	#[inline]
-	pub fn set_g(&mut self, value: f32) {
+	fn set_g(&mut self, value: f32) {
 		self.0[2] = value
 	}
 
 	#[inline]
-	pub fn set_b(&mut self, value: f32) {
+	fn set_b(&mut self, value: f32) {
 		self.0[3] = value
 	}
 
 	#[inline]
-	pub const fn to_array(&self) -> [f32; 4] {
+	fn to_array(&self) -> [f32; 4] {
 		self.0.to_array()
 	}
 }
