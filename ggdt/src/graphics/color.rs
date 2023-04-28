@@ -621,17 +621,17 @@ impl ARGBUnpackedu8x4 for ARGBu32 {
 
 	#[inline]
 	fn set_a(&mut self, value: u8) {
-		self.0 = (self.0 & !0xff_u32.wrapping_shl(24)) | (value as u32).wrapping_shl(24)
+		self.0 = (self.0 & !(0xff_u32 << 24)) | ((value as u32) << 24)
 	}
 
 	#[inline]
 	fn set_r(&mut self, value: u8) {
-		self.0 = (self.0 & !0xff_u32.wrapping_shl(16)) | (value as u32).wrapping_shl(16)
+		self.0 = (self.0 & !(0xff_u32 << 16)) | ((value as u32) << 16)
 	}
 
 	#[inline]
 	fn set_g(&mut self, value: u8) {
-		self.0 = (self.0 & !0xff_u32.wrapping_shl(8)) | (value as u32).wrapping_shl(8)
+		self.0 = (self.0 & !(0xff_u32 << 8)) | ((value as u32) << 8)
 	}
 
 	#[inline]
