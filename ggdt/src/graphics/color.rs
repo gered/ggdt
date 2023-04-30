@@ -1,3 +1,4 @@
+use std::ops::{Mul, MulAssign};
 use std::simd;
 
 /// Packed 32-bit color, in the format: 0xAARRGGBB
@@ -608,6 +609,23 @@ impl ARGBu8x4 {
 	pub const fn to_array(&self) -> [u8; 4] {
 		self.0.to_array()
 	}
+
+}
+
+impl Mul for ARGBu8x4 {
+	type Output = ARGBu8x4;
+
+	#[inline]
+	fn mul(self, rhs: Self) -> Self::Output {
+		ARGBu8x4(((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast())
+	}
+}
+
+impl MulAssign for ARGBu8x4 {
+	#[inline]
+	fn mul_assign(&mut self, rhs: Self) {
+		self.0 = ((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast()
+	}
 }
 
 impl From<u32> for ARGBu8x4 {
@@ -882,6 +900,27 @@ mod tests {
 		let other = ARGBf32x4::from_argb([0.5, 0.1, 0.2, 0.3]);
 		let color: ARGBu8x4 = other.into();
 		assert_eq!(color.to_array(), [0x7f, 0x19, 0x33, 0x4c]);
+	}
+
+	#[test]
+	fn argbu8x4_multiplication() {
+		assert_eq!([0xff, 0x11, 0x22, 0x33], (ARGBu8x4::from(0xffffffff) * ARGBu8x4::from(0xff112233)).to_array());
+		assert_eq!([0xff, 0x11, 0x22, 0x33], (ARGBu8x4::from(0xff112233) * ARGBu8x4::from(0xffffffff)).to_array());
+		assert_eq!([0x7f, 0x03, 0x00, 0x14], (ARGBu8x4::from(0x7f330066) * ARGBu8x4::from(0xff112233)).to_array());
+		assert_eq!([0x7f, 0x03, 0x00, 0x14], (ARGBu8x4::from(0xff112233) * ARGBu8x4::from(0x7f330066)).to_array());
+
+		let mut color = ARGBu8x4::from(0xffffffff);
+		color *= ARGBu8x4::from(0xff112233);
+		assert_eq!([0xff, 0x11, 0x22, 0x33], color.to_array());
+		let mut color = ARGBu8x4::from(0xff112233);
+		color *= ARGBu8x4::from(0xffffffff);
+		assert_eq!([0xff, 0x11, 0x22, 0x33], color.to_array());
+		let mut color = ARGBu8x4::from(0x7f330066);
+		color *= ARGBu8x4::from(0xff112233);
+		assert_eq!([0x7f, 0x03, 0x00, 0x14], color.to_array());
+		let mut color = ARGBu8x4::from(0xff112233);
+		color *= ARGBu8x4::from(0x7f330066);
+		assert_eq!([0x7f, 0x03, 0x00, 0x14], color.to_array());
 	}
 
 	#[test]
