@@ -642,6 +642,18 @@ impl ARGBu8x4 {
 	pub fn lerp(&self, other: Self, t: f32) -> Self {
 		ARGBu8x4((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
 	}
+
+	#[inline]
+	pub fn luminance(&self) -> f32 {
+		(LUMINANCE_RED * srgb_to_linearized(self.r()))
+			+ (LUMINANCE_GREEN * srgb_to_linearized(self.g()))
+			+ (LUMINANCE_BLUE * srgb_to_linearized(self.b()))
+	}
+
+	#[inline]
+	pub fn greyscale(&self) -> u8 {
+		(brightness(self.luminance()) * 255.0) as u8
+	}
 }
 
 impl Mul for ARGBu8x4 {
