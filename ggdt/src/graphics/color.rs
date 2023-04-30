@@ -611,6 +611,25 @@ impl ARGBu8x4 {
 	}
 
 	#[inline]
+	fn blend_components(strength: u8, src: Self, dest: Self) -> Self {
+		let strength = simd::u16x4::splat(strength as u16);
+		let max = simd::u16x4::splat(255);
+		ARGBu8x4((((src.0.cast() * strength) + (dest.0.cast() * (max - strength))) / max).cast())
+	}
+
+	#[inline]
+	pub fn blend(&self, dest: Self) -> Self {
+		ARGBu8x4::blend_components(self.a(), *self, dest)
+	}
+
+	#[inline]
+	pub fn blend_with_alpha(&self, dest: Self, alpha: u8) -> Self {
+		let alpha = ((alpha as u16 * self.a() as u16) / 255) as u8;
+		let mut blended = ARGBu8x4::blend_components(alpha, *self, dest);
+		blended.set_a(alpha);
+		blended
+	}
+
 	pub fn lerp(&self, other: Self, t: f32) -> Self {
 		ARGBu8x4((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
 	}
@@ -941,6 +960,40 @@ mod tests {
 			[0xff, 0xaa, 0xbb, 0xcc],
 			(ARGBu8x4::from(0x7f112233).lerp(ARGBu8x4::from(0xffaabbcc), 1.0).to_array())
 		);
+	}
+
+	#[test]
+	#[rustfmt::skip]
+	fn argbu8x4_blending() {
+		// TODO: for .blend(), is this really the behaviour we want? the output value's alpha
+		//       is blended, but the source color's alpha is what is ultimately used to control
+		//       the blend operation. what is best here? the output RGB color looks correct at
+		//       any rate, just not sure what the proper output alpha component *should* be in
+		//       all cases.
+
+		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xff112233).blend(ARGBu8x4::from(0xff555555)).to_array());
+		assert_eq!([0xbf, 0x33, 0x3b, 0x44], ARGBu8x4::from(0x7f112233).blend(ARGBu8x4::from(0xff555555)).to_array());
+		assert_eq!([0xff, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend(ARGBu8x4::from(0xff555555)).to_array());
+
+		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xff112233).blend(ARGBu8x4::from(0x7f555555)).to_array());
+		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGBu8x4::from(0x7f112233).blend(ARGBu8x4::from(0x7f555555)).to_array());
+		assert_eq!([0x7f, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend(ARGBu8x4::from(0x7f555555)).to_array());
+
+		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xff112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 255).to_array());
+		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGBu8x4::from(0x7f112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 255).to_array());
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 255).to_array());
+
+		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xff112233).blend_with_alpha(ARGBu8x4::from(0x7f555555), 255).to_array());
+		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGBu8x4::from(0x7f112233).blend_with_alpha(ARGBu8x4::from(0x7f555555), 255).to_array());
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend_with_alpha(ARGBu8x4::from(0x7f555555), 255).to_array());
+
+		assert_eq!([0x80, 0x32, 0x3b, 0x43], ARGBu8x4::from(0xff112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 128).to_array());
+		assert_eq!([0x3f, 0x44, 0x48, 0x4c], ARGBu8x4::from(0x7f112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 128).to_array());
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 128).to_array());
+
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0xff112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x7f112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
+		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
 	}
 
 	#[test]
