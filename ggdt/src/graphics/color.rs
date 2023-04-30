@@ -610,6 +610,10 @@ impl ARGBu8x4 {
 		self.0.to_array()
 	}
 
+	#[inline]
+	pub fn lerp(&self, other: Self, t: f32) -> Self {
+		ARGBu8x4((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
+	}
 }
 
 impl Mul for ARGBu8x4 {
@@ -921,6 +925,22 @@ mod tests {
 		let mut color = ARGBu8x4::from(0xff112233);
 		color *= ARGBu8x4::from(0x7f330066);
 		assert_eq!([0x7f, 0x03, 0x00, 0x14], color.to_array());
+	}
+
+	#[test]
+	fn argbu8x4_lerping() {
+		assert_eq!(
+			[0x7f, 0x11, 0x22, 0x33],
+			(ARGBu8x4::from(0x7f112233).lerp(ARGBu8x4::from(0xffaabbcc), 0.0).to_array())
+		);
+		assert_eq!(
+			[0xbf, 0x5d, 0x6e, 0x7f],
+			(ARGBu8x4::from(0x7f112233).lerp(ARGBu8x4::from(0xffaabbcc), 0.5).to_array())
+		);
+		assert_eq!(
+			[0xff, 0xaa, 0xbb, 0xcc],
+			(ARGBu8x4::from(0x7f112233).lerp(ARGBu8x4::from(0xffaabbcc), 1.0).to_array())
+		);
 	}
 
 	#[test]
