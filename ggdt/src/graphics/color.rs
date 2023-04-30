@@ -772,6 +772,7 @@ impl From<u32> for ARGBf32x4 {
 }
 
 impl From<ARGBu8x4> for ARGBf32x4 {
+	#[inline]
 	fn from(value: ARGBu8x4) -> Self {
 		ARGBf32x4::from_argb([
 			value.a() as f32 / 255.0,
