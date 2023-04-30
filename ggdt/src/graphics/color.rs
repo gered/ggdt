@@ -747,6 +747,18 @@ impl ARGBf32x4 {
 	}
 }
 
+impl From<u32> for ARGBf32x4 {
+	#[inline]
+	fn from(value: u32) -> Self {
+		ARGBf32x4::from_argb([
+			((value & 0xff000000) >> 24) as f32 / 255.0, // a
+			((value & 0x00ff0000) >> 16) as f32 / 255.0, // r
+			((value & 0x0000ff00) >> 8) as f32 / 255.0,  // g
+			(value & 0x000000ff) as f32 / 255.0,         // b
+		])
+	}
+}
+
 impl From<ARGBu8x4> for ARGBf32x4 {
 	fn from(value: ARGBu8x4) -> Self {
 		ARGBf32x4::from_argb([
@@ -1036,6 +1048,12 @@ mod tests {
 
 		let color = ARGBf32x4::from_rgb([0.1, 0.2, 0.3]);
 		assert_eq!(color.to_array(), [1.0, 0.1, 0.2, 0.3]);
+
+		let color: ARGBf32x4 = 0x7f19334c.into();
+		assert!(color.a().nearly_equal(0.5, 0.01));
+		assert!(color.r().nearly_equal(0.1, 0.01));
+		assert!(color.g().nearly_equal(0.2, 0.01));
+		assert!(color.b().nearly_equal(0.3, 0.01));
 
 		let other = ARGBu8x4::from_argb([0x7f, 0x19, 0x33, 0x4c]);
 		let color: ARGBf32x4 = other.into();
