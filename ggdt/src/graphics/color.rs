@@ -630,6 +630,14 @@ impl ARGBu8x4 {
 		blended
 	}
 
+	#[inline]
+	pub fn tint(&self, mut tint: Self) -> Self {
+		let strength = tint.a();
+		tint.set_a(self.a());
+		ARGBu8x4::blend_components(strength, tint, *self)
+	}
+
+	#[inline]
 	pub fn lerp(&self, other: Self, t: f32) -> Self {
 		ARGBu8x4((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
 	}
@@ -994,6 +1002,13 @@ mod tests {
 		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0xff112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
 		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x7f112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
 		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGBu8x4::from(0x00112233).blend_with_alpha(ARGBu8x4::from(0xff555555), 0).to_array());
+	}
+
+	#[test]
+	fn argbu8x4_tinting() {
+		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0xff112233)).to_array());
+		assert_eq!([0xff, 0x88, 0x90, 0x99], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0x7f112233)).to_array());
+		assert_eq!([0xff, 0xff, 0xff, 0xff], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0x00112233)).to_array());
 	}
 
 	#[test]
