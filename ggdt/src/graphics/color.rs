@@ -552,6 +552,7 @@ pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdC
 /// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
 /// order alpha, red, green, blue.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[repr(transparent)]
 pub struct ARGBu8x4(pub simd::u8x4);
 
 impl ARGBu8x4 {
@@ -686,6 +687,7 @@ impl From<ARGBf32x4> for ARGBu8x4 {
 /// Unpacked 32-bit color represented as individual normalized f32 color components (0.0 to 1.0) where the
 /// components are in the order alpha, red, green, blue.
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct ARGBf32x4(pub simd::f32x4);
 
 impl ARGBf32x4 {
