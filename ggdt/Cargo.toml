@@ -42,5 +42,9 @@ name = "loading"
 harness = false
 
 [[bench]]
+name = "primitives"
+harness = false
+
+[[bench]]
 name = "triangles"
 harness = false
