@@ -549,6 +549,16 @@ pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdC
 
 ///////////////////////////////////////////////////////////////////////////////
 
+pub trait BytesAsColors<T> {
+	unsafe fn as_colors(&self) -> &[T];
+	unsafe fn as_colors_mut(&mut self) -> &mut [T];
+}
+
+pub trait ColorsAsBytes {
+	fn as_bytes(&self) -> &[u8];
+	fn as_bytes_mut(&mut self) -> &mut [u8];
+}
+
 /// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
 /// order alpha, red, green, blue.
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
@@ -693,6 +703,46 @@ impl From<ARGBf32x4> for ARGBu8x4 {
 			(value.g() * 255.0) as u8,
 			(value.b() * 255.0) as u8,
 		])
+	}
+}
+
+impl BytesAsColors<ARGBu8x4> for [u8] {
+	#[inline]
+	unsafe fn as_colors(&self) -> &[ARGBu8x4] {
+		std::slice::from_raw_parts(
+			self.as_ptr() as *const ARGBu8x4, //
+			self.len() / std::mem::size_of::<ARGBu8x4>(),
+		)
+	}
+
+	#[inline]
+	unsafe fn as_colors_mut(&mut self) -> &mut [ARGBu8x4] {
+		std::slice::from_raw_parts_mut(
+			self.as_mut_ptr() as *mut ARGBu8x4, //
+			self.len() / std::mem::size_of::<ARGBu8x4>(),
+		)
+	}
+}
+
+impl ColorsAsBytes for [ARGBu8x4] {
+	#[inline]
+	fn as_bytes(&self) -> &[u8] {
+		unsafe {
+			std::slice::from_raw_parts(
+				self.as_ptr() as *const u8, //
+				std::mem::size_of_val(self),
+			)
+		}
+	}
+
+	#[inline]
+	fn as_bytes_mut(&mut self) -> &mut [u8] {
+		unsafe {
+			std::slice::from_raw_parts_mut(
+				self.as_mut_ptr() as *mut u8, //
+				std::mem::size_of_val(self),
+			)
+		}
 	}
 }
 
@@ -1036,6 +1086,83 @@ mod tests {
 		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0xff112233)).to_array());
 		assert_eq!([0xff, 0x88, 0x90, 0x99], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0x7f112233)).to_array());
 		assert_eq!([0xff, 0xff, 0xff, 0xff], ARGBu8x4::from(0xffffffff).tint(ARGBu8x4::from(0x00112233)).to_array());
+	}
+
+	#[test]
+	fn argbu8x4_bytes_to_colors_casting() {
+		let mut bytes =
+			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff];
+
+		let colors = unsafe { bytes.as_colors() };
+		assert_eq!(
+			colors,
+			[
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0xff, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0x00, 0xff]),
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0xff]),
+			]
+		);
+
+		let colors = unsafe { bytes.as_colors_mut() };
+		assert_eq!(
+			colors,
+			[
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0xff, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0x00, 0xff]),
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0xff]),
+			]
+		);
+
+		// bytes slice which is NOT an exact multiple of 4
+		let mut bytes = [
+			0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0x7f, 0x7f,
+		];
+
+		let colors = unsafe { bytes.as_colors() };
+		assert_eq!(
+			colors,
+			[
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0xff, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0x00, 0xff]),
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0xff]),
+			]
+		);
+
+		let colors = unsafe { bytes.as_colors_mut() };
+		assert_eq!(
+			colors,
+			[
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0xff, 0x00]),
+				ARGBu8x4::from_argb([0xff, 0x00, 0x00, 0xff]),
+				ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0xff]),
+			]
+		);
+	}
+
+	#[test]
+	fn argbu8x4_colors_to_bytes_casting() {
+		let mut colors = [
+			ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0x00]),
+			ARGBu8x4::from_argb([0xff, 0x00, 0xff, 0x00]),
+			ARGBu8x4::from_argb([0xff, 0x00, 0x00, 0xff]),
+			ARGBu8x4::from_argb([0xff, 0xff, 0x00, 0xff]),
+		];
+
+		let bytes = colors.as_bytes();
+		assert_eq!(
+			bytes,
+			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff]
+		);
+
+		let bytes = colors.as_bytes_mut();
+		assert_eq!(
+			bytes,
+			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff]
+		);
 	}
 
 	#[test]
