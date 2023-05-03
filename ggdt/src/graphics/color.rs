@@ -561,7 +561,7 @@ pub trait ColorsAsBytes {
 
 /// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
 /// order alpha, red, green, blue.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 #[repr(transparent)]
 pub struct ARGBu8x4(pub simd::u8x4);
 
@@ -758,7 +758,7 @@ impl ColorsAsBytes for [ARGBu8x4] {
 
 /// Unpacked 32-bit color represented as individual normalized f32 color components (0.0 to 1.0) where the
 /// components are in the order alpha, red, green, blue.
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Default)]
 #[repr(transparent)]
 pub struct ARGBf32x4(pub simd::f32x4);
 
