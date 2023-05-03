@@ -561,7 +561,7 @@ pub trait ColorsAsBytes {
 
 /// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
 /// order alpha, red, green, blue.
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 #[repr(transparent)]
 pub struct ARGBu8x4(pub simd::u8x4);
 
@@ -756,9 +756,21 @@ impl ColorsAsBytes for [ARGBu8x4] {
 	}
 }
 
+impl std::fmt::Debug for ARGBu8x4 {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "ARGBu8x4(0x{:2x}, 0x{:2x}, 0x{:2x}, 0x{:2x})", self.a(), self.r(), self.g(), self.b())
+	}
+}
+
+impl std::fmt::Display for ARGBu8x4 {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "0x{:2x}{:2x}{:2x}{:2x}", self.a(), self.r(), self.g(), self.b())
+	}
+}
+
 /// Unpacked 32-bit color represented as individual normalized f32 color components (0.0 to 1.0) where the
 /// components are in the order alpha, red, green, blue.
-#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Default)]
+#[derive(Copy, Clone, PartialEq, PartialOrd, Default)]
 #[repr(transparent)]
 pub struct ARGBf32x4(pub simd::f32x4);
 
@@ -840,6 +852,18 @@ impl From<ARGBu8x4> for ARGBf32x4 {
 			value.g() as f32 / 255.0,
 			value.b() as f32 / 255.0,
 		])
+	}
+}
+
+impl std::fmt::Debug for ARGBf32x4 {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "ARGBf32x4({}, {}, {}, {})", self.a(), self.r(), self.g(), self.b())
+	}
+}
+
+impl std::fmt::Display for ARGBf32x4 {
+	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+		write!(f, "{{A={}, R={}, G={}, B={}}}", self.a(), self.r(), self.g(), self.b())
 	}
 }
 
