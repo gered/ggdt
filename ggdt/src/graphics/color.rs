@@ -694,6 +694,16 @@ impl From<u32> for ARGBu8x4 {
 	}
 }
 
+impl From<ARGBu8x4> for u32 {
+	#[inline]
+	fn from(value: ARGBu8x4) -> Self {
+		(value.b() as u32) // b
+			+ ((value.g() as u32) << 8) // g
+			+ ((value.r() as u32) << 16) // r
+			+ ((value.a() as u32) << 24) // a
+	}
+}
+
 impl From<ARGBf32x4> for ARGBu8x4 {
 	#[inline]
 	fn from(value: ARGBf32x4) -> Self {
@@ -1008,6 +1018,9 @@ mod tests {
 		let other = ARGBf32x4::from_argb([0.5, 0.1, 0.2, 0.3]);
 		let color: ARGBu8x4 = other.into();
 		assert_eq!(color.to_array(), [0x7f, 0x19, 0x33, 0x4c]);
+
+		let color = ARGBu8x4::from_argb([0x11, 0x22, 0x33, 0x44]);
+		assert_eq!(0x11223344u32, color.into())
 	}
 
 	#[test]
