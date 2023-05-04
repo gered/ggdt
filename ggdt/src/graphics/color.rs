@@ -1,6 +1,10 @@
 use std::ops::{Mul, MulAssign};
 use std::simd;
 
+use byteorder::{ReadBytesExt, WriteBytesExt};
+
+use crate::utils::{ReadType, WriteType};
+
 /// Packed 32-bit color, in the format: 0xAARRGGBB
 pub type Color1u32 = u32;
 
@@ -24,36 +28,36 @@ pub type SimdColor4f32 = simd::f32x4;
 
 // these colours are taken from the default VGA palette
 
-pub const COLOR_BLACK: Color1u32 = 0xff000000;
-pub const COLOR_BLUE: Color1u32 = 0xff0000aa;
-pub const COLOR_GREEN: Color1u32 = 0xff00aa00;
-pub const COLOR_CYAN: Color1u32 = 0xff00aaaa;
-pub const COLOR_RED: Color1u32 = 0xffaa0000;
-pub const COLOR_MAGENTA: Color1u32 = 0xffaa00aa;
-pub const COLOR_BROWN: Color1u32 = 0xffaa5500;
-pub const COLOR_LIGHT_GRAY: Color1u32 = 0xffaaaaaa;
-pub const COLOR_DARK_GRAY: Color1u32 = 0xff555555;
-pub const COLOR_BRIGHT_BLUE: Color1u32 = 0xff5555ff;
-pub const COLOR_BRIGHT_GREEN: Color1u32 = 0xff55ff55;
-pub const COLOR_BRIGHT_CYAN: Color1u32 = 0xff55ffff;
-pub const COLOR_BRIGHT_RED: Color1u32 = 0xffff5555;
-pub const COLOR_BRIGHT_MAGENTA: Color1u32 = 0xffff55ff;
-pub const COLOR_BRIGHT_YELLOW: Color1u32 = 0xffffff55;
-pub const COLOR_BRIGHT_WHITE: Color1u32 = 0xffffffff;
+pub const COLOR_BLACK: ARGBu8x4 = ARGBu8x4::from_rgb([0, 0, 0]);
+pub const COLOR_BLUE: ARGBu8x4 = ARGBu8x4::from_rgb([0, 0, 170]);
+pub const COLOR_GREEN: ARGBu8x4 = ARGBu8x4::from_rgb([0, 170, 0]);
+pub const COLOR_CYAN: ARGBu8x4 = ARGBu8x4::from_rgb([0, 170, 170]);
+pub const COLOR_RED: ARGBu8x4 = ARGBu8x4::from_rgb([170, 0, 0]);
+pub const COLOR_MAGENTA: ARGBu8x4 = ARGBu8x4::from_rgb([170, 0, 170]);
+pub const COLOR_BROWN: ARGBu8x4 = ARGBu8x4::from_rgb([170, 85, 0]);
+pub const COLOR_LIGHT_GRAY: ARGBu8x4 = ARGBu8x4::from_rgb([170, 170, 170]);
+pub const COLOR_DARK_GRAY: ARGBu8x4 = ARGBu8x4::from_rgb([85, 85, 85]);
+pub const COLOR_BRIGHT_BLUE: ARGBu8x4 = ARGBu8x4::from_rgb([85, 85, 255]);
+pub const COLOR_BRIGHT_GREEN: ARGBu8x4 = ARGBu8x4::from_rgb([85, 255, 85]);
+pub const COLOR_BRIGHT_CYAN: ARGBu8x4 = ARGBu8x4::from_rgb([85, 255, 255]);
+pub const COLOR_BRIGHT_RED: ARGBu8x4 = ARGBu8x4::from_rgb([255, 85, 85]);
+pub const COLOR_BRIGHT_MAGENTA: ARGBu8x4 = ARGBu8x4::from_rgb([255, 85, 255]);
+pub const COLOR_BRIGHT_YELLOW: ARGBu8x4 = ARGBu8x4::from_rgb([255, 255, 85]);
+pub const COLOR_BRIGHT_WHITE: ARGBu8x4 = ARGBu8x4::from_rgb([255, 255, 255]);
 
 // TODO: probably should name these better, after i do much more reading on the subject :-)
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BlendFunction {
 	Blend,
 	BlendSourceWithAlpha(u8),
-	TintedBlend(Color1u32),
-	MultipliedBlend(Color1u32),
+	TintedBlend(ARGBu8x4),
+	MultipliedBlend(ARGBu8x4),
 }
 
 impl BlendFunction {
 	#[inline]
 	/// Blends the source and destination color together using the function associated with
-	/// this enum value. Both colors should be 32-bit packed colors in the format 0xAARRGGBB.
+	/// this enum value.
 	///
 	/// # Arguments
 	///
@@ -61,35 +65,13 @@ impl BlendFunction {
 	/// * `dest`: the destination color to blend the source color over
 	///
 	/// returns: the blended color
-	pub fn blend_1u32(&self, src: Color1u32, dest: Color1u32) -> Color1u32 {
+	pub fn blend(&self, src: ARGBu8x4, dest: ARGBu8x4) -> ARGBu8x4 {
 		use BlendFunction::*;
 		match self {
-			Blend => blend_argb32(src, dest),
-			BlendSourceWithAlpha(opacity) => blend_argb32_source_by(src, dest, *opacity),
-			TintedBlend(tint) => tinted_blend_argb32(*tint, src, dest),
-			MultipliedBlend(color) => multiplied_blend_argb32(*color, src, dest),
-		}
-	}
-
-	#[inline]
-	pub fn blend_4u8(&self, src: Color4u8, dest: Color4u8) -> Color4u8 {
-		use BlendFunction::*;
-		match self {
-			Blend => blend_argb(src, dest),
-			BlendSourceWithAlpha(opacity) => blend_argb_source_by(src, dest, *opacity),
-			TintedBlend(tint) => tinted_blend_argb(from_argb32(*tint), src, dest),
-			MultipliedBlend(color) => multiplied_blend_argb(from_argb32(*color), src, dest),
-		}
-	}
-
-	#[inline]
-	pub fn blend_simd(&self, src: SimdColor4u8, dest: SimdColor4u8) -> SimdColor4u8 {
-		use BlendFunction::*;
-		match self {
-			Blend => blend_argb_simd(src, dest),
-			BlendSourceWithAlpha(opacity) => blend_argb_simd_source_by(src, dest, *opacity),
-			TintedBlend(tint) => tinted_blend_argb_simd(from_argb32_simd(*tint), src, dest),
-			MultipliedBlend(color) => multiplied_blend_argb_simd(from_argb32_simd(*color), src, dest),
+			Blend => src.blend(dest),
+			BlendSourceWithAlpha(opacity) => src.blend_with_alpha(dest, *opacity),
+			TintedBlend(tint) => src.tint(*tint).blend(dest),
+			MultipliedBlend(color) => src.mul(*color).blend(dest),
 		}
 	}
 }
@@ -566,6 +548,8 @@ pub trait ColorsAsBytes {
 pub struct ARGBu8x4(pub simd::u8x4);
 
 impl ARGBu8x4 {
+	pub const SIZE: usize = std::mem::size_of::<Self>();
+
 	#[inline]
 	pub const fn from_argb(argb: [u8; 4]) -> Self {
 		ARGBu8x4(simd::u8x4::from_array(argb))
@@ -758,13 +742,33 @@ impl ColorsAsBytes for [ARGBu8x4] {
 
 impl std::fmt::Debug for ARGBu8x4 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "ARGBu8x4(0x{:2x}, 0x{:2x}, 0x{:2x}, 0x{:2x})", self.a(), self.r(), self.g(), self.b())
+		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.a(), self.r(), self.g(), self.b())
 	}
 }
 
 impl std::fmt::Display for ARGBu8x4 {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "0x{:2x}{:2x}{:2x}{:2x}", self.a(), self.r(), self.g(), self.b())
+		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.a(), self.r(), self.g(), self.b())
+	}
+}
+
+impl WriteType for ARGBu8x4 {
+	type ErrorType = std::io::Error;
+
+	#[inline]
+	fn write<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), Self::ErrorType> {
+		writer.write_all(self.0.as_array())?;
+		Ok(())
+	}
+}
+
+impl ReadType for ARGBu8x4 {
+	type OutputType = Self;
+	type ErrorType = std::io::Error;
+
+	#[inline]
+	fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self::OutputType, Self::ErrorType> {
+		Ok(ARGBu8x4::from_argb([reader.read_u8()?, reader.read_u8()?, reader.read_u8()?, reader.read_u8()?]))
 	}
 }
 

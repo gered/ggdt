@@ -1,29 +1,26 @@
 use std::simd;
 
-use crate::graphics::{
-	edge_function, from_argb32_simd, from_rgb32_simd, multiply_argb_simd, per_pixel_triangle_2d, tint_argb_simd,
-	to_argb32_simd, to_rgb32_simd, BlendFunction, RgbaBitmap,
-};
+use crate::graphics::{edge_function, per_pixel_triangle_2d, ARGBu8x4, BlendFunction, RgbaBitmap};
 use crate::math::Vector2;
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum RgbaTriangle2d<'a> {
 	Solid {
 		position: [Vector2; 3], //
-		color: u32,
+		color: ARGBu8x4,
 	},
 	SolidBlended {
 		position: [Vector2; 3], //
-		color: u32,
+		color: ARGBu8x4,
 		blend: BlendFunction,
 	},
 	SolidMultiColor {
 		position: [Vector2; 3], //
-		color: [u32; 3],
+		color: [ARGBu8x4; 3],
 	},
 	SolidMultiColorBlended {
 		position: [Vector2; 3], //
-		color: [u32; 3],
+		color: [ARGBu8x4; 3],
 		blend: BlendFunction,
 	},
 	SolidTextured {
@@ -34,26 +31,26 @@ pub enum RgbaTriangle2d<'a> {
 	SolidTexturedColored {
 		position: [Vector2; 3], //
 		texcoord: [Vector2; 3],
-		color: u32,
+		color: ARGBu8x4,
 		bitmap: &'a RgbaBitmap,
 	},
 	SolidTexturedColoredBlended {
 		position: [Vector2; 3], //
 		texcoord: [Vector2; 3],
-		color: u32,
+		color: ARGBu8x4,
 		bitmap: &'a RgbaBitmap,
 		blend: BlendFunction,
 	},
 	SolidTexturedMultiColored {
 		position: [Vector2; 3], //
 		texcoord: [Vector2; 3],
-		color: [u32; 3],
+		color: [ARGBu8x4; 3],
 		bitmap: &'a RgbaBitmap,
 	},
 	SolidTexturedMultiColoredBlended {
 		position: [Vector2; 3], //
 		texcoord: [Vector2; 3],
-		color: [u32; 3],
+		color: [ARGBu8x4; 3],
 		bitmap: &'a RgbaBitmap,
 		blend: BlendFunction,
 	},
@@ -61,7 +58,7 @@ pub enum RgbaTriangle2d<'a> {
 		position: [Vector2; 3], //
 		texcoord: [Vector2; 3],
 		bitmap: &'a RgbaBitmap,
-		tint: u32,
+		tint: ARGBu8x4,
 	},
 	SolidTexturedBlended {
 		position: [Vector2; 3], //
@@ -72,7 +69,7 @@ pub enum RgbaTriangle2d<'a> {
 }
 
 impl RgbaBitmap {
-	pub fn solid_triangle_2d(&mut self, positions: &[Vector2; 3], color: u32) {
+	pub fn solid_triangle_2d(&mut self, positions: &[Vector2; 3], color: ARGBu8x4) {
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -82,24 +79,21 @@ impl RgbaBitmap {
 		)
 	}
 
-	pub fn solid_blended_triangle_2d(&mut self, positions: &[Vector2; 3], color: u32, blend: BlendFunction) {
-		let color = from_argb32_simd(color);
+	pub fn solid_blended_triangle_2d(&mut self, positions: &[Vector2; 3], color: ARGBu8x4, blend: BlendFunction) {
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
 			positions[1],
 			positions[2],
-			|dest_pixels, _w0, _w1, _w2| {
-				*dest_pixels = to_argb32_simd(blend.blend_simd(color, from_argb32_simd(*dest_pixels)))
-			},
+			|dest_pixels, _w0, _w1, _w2| *dest_pixels = blend.blend(color, *dest_pixels),
 		)
 	}
 
-	pub fn solid_multicolor_triangle_2d(&mut self, positions: &[Vector2; 3], colors: &[u32; 3]) {
+	pub fn solid_multicolor_triangle_2d(&mut self, positions: &[Vector2; 3], colors: &[ARGBu8x4; 3]) {
 		let area = simd::f32x4::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color1 = from_rgb32_simd(colors[0]).cast();
-		let color2 = from_rgb32_simd(colors[1]).cast();
-		let color3 = from_rgb32_simd(colors[2]).cast();
+		let color1 = colors[0].0.cast();
+		let color2 = colors[1].0.cast();
+		let color3 = colors[2].0.cast();
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -111,7 +105,7 @@ impl RgbaBitmap {
 					+ simd::f32x4::splat(w2) * color3)
 					/ area)
 					.cast();
-				*dest_pixels = to_rgb32_simd(color)
+				*dest_pixels = ARGBu8x4(color)
 			},
 		)
 	}
@@ -119,13 +113,13 @@ impl RgbaBitmap {
 	pub fn solid_multicolor_blended_triangle_2d(
 		&mut self,
 		positions: &[Vector2; 3],
-		colors: &[u32; 3],
+		colors: &[ARGBu8x4; 3],
 		blend: BlendFunction,
 	) {
 		let area = simd::f32x4::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color1 = from_argb32_simd(colors[0]).cast();
-		let color2 = from_argb32_simd(colors[1]).cast();
-		let color3 = from_argb32_simd(colors[2]).cast();
+		let color1 = colors[0].0.cast();
+		let color2 = colors[1].0.cast();
+		let color3 = colors[2].0.cast();
 		per_pixel_triangle_2d(
 			self, //
 			positions[0],
@@ -137,7 +131,7 @@ impl RgbaBitmap {
 					+ simd::f32x4::splat(w2) * color3)
 					/ area)
 					.cast();
-				*dest_pixels = to_argb32_simd(blend.blend_simd(color, from_argb32_simd(*dest_pixels)))
+				*dest_pixels = blend.blend(ARGBu8x4(color), *dest_pixels)
 			},
 		)
 	}
@@ -166,11 +160,10 @@ impl RgbaBitmap {
 		&mut self,
 		positions: &[Vector2; 3],
 		texcoords: &[Vector2; 3],
-		color: u32,
+		color: ARGBu8x4,
 		bitmap: &Self,
 	) {
 		let area = simd::f32x2::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color = from_argb32_simd(color);
 		let texcoord1 = simd::f32x2::from_array([texcoords[0].x, texcoords[0].y]);
 		let texcoord2 = simd::f32x2::from_array([texcoords[1].x, texcoords[1].y]);
 		let texcoord3 = simd::f32x2::from_array([texcoords[2].x, texcoords[2].y]);
@@ -184,8 +177,8 @@ impl RgbaBitmap {
 					+ simd::f32x2::splat(w1) * texcoord2
 					+ simd::f32x2::splat(w2) * texcoord3)
 					/ area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				*dest_pixels = to_argb32_simd(multiply_argb_simd(texel, color))
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				*dest_pixels = texel * color
 			},
 		)
 	}
@@ -194,12 +187,11 @@ impl RgbaBitmap {
 		&mut self,
 		positions: &[Vector2; 3],
 		texcoords: &[Vector2; 3],
-		color: u32,
+		color: ARGBu8x4,
 		bitmap: &Self,
 		blend: BlendFunction,
 	) {
 		let area = simd::f32x2::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color = from_argb32_simd(color);
 		let texcoord1 = simd::f32x2::from_array([texcoords[0].x, texcoords[0].y]);
 		let texcoord2 = simd::f32x2::from_array([texcoords[1].x, texcoords[1].y]);
 		let texcoord3 = simd::f32x2::from_array([texcoords[2].x, texcoords[2].y]);
@@ -213,9 +205,9 @@ impl RgbaBitmap {
 					+ simd::f32x2::splat(w1) * texcoord2
 					+ simd::f32x2::splat(w2) * texcoord3)
 					/ area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				let src = multiply_argb_simd(texel, color);
-				*dest_pixels = to_argb32_simd(blend.blend_simd(src, from_argb32_simd(*dest_pixels)))
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				let src = texel * color;
+				*dest_pixels = blend.blend(src, *dest_pixels)
 			},
 		)
 	}
@@ -224,13 +216,13 @@ impl RgbaBitmap {
 		&mut self,
 		positions: &[Vector2; 3],
 		texcoords: &[Vector2; 3],
-		colors: &[u32; 3],
+		colors: &[ARGBu8x4; 3],
 		bitmap: &Self,
 	) {
 		let area = simd::f32x4::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color1 = from_rgb32_simd(colors[0]).cast();
-		let color2 = from_rgb32_simd(colors[1]).cast();
-		let color3 = from_rgb32_simd(colors[2]).cast();
+		let color1 = colors[0].0.cast();
+		let color2 = colors[1].0.cast();
+		let color3 = colors[2].0.cast();
 		// we are using a f32x4 here with two zero's at the end as dummy values just so that we can
 		// do the texture coordinate interpolation in the inner loop as f32x4 operations.
 		// however, for the texture coordinates, we only care about the first two lanes in the results ...
@@ -248,8 +240,8 @@ impl RgbaBitmap {
 				let w2 = simd::f32x4::splat(w2);
 				let color = ((w0 * color1 + w1 * color2 + w2 * color3) / area).cast::<u8>();
 				let texcoord = (w0 * texcoord1 + w1 * texcoord2 + w2 * texcoord3) / area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				*dest_pixels = to_rgb32_simd(multiply_argb_simd(texel, color))
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				*dest_pixels = texel * ARGBu8x4(color)
 			},
 		)
 	}
@@ -258,14 +250,14 @@ impl RgbaBitmap {
 		&mut self,
 		positions: &[Vector2; 3],
 		texcoords: &[Vector2; 3],
-		colors: &[u32; 3],
+		colors: &[ARGBu8x4; 3],
 		bitmap: &Self,
 		blend: BlendFunction,
 	) {
 		let area = simd::f32x4::splat(edge_function(positions[0], positions[1], positions[2]));
-		let color1 = from_argb32_simd(colors[0]).cast();
-		let color2 = from_argb32_simd(colors[1]).cast();
-		let color3 = from_argb32_simd(colors[2]).cast();
+		let color1 = colors[0].0.cast();
+		let color2 = colors[1].0.cast();
+		let color3 = colors[2].0.cast();
 		// we are using a f32x4 here with two zero's at the end as dummy values just so that we can
 		// do the texture coordinate interpolation in the inner loop as f32x4 operations.
 		// however, for the texture coordinates, we only care about the first two lanes in the results ...
@@ -283,10 +275,9 @@ impl RgbaBitmap {
 				let w2 = simd::f32x4::splat(w2);
 				let color = ((w0 * color1 + w1 * color2 + w2 * color3) / area).cast::<u8>();
 				let texcoord = (w0 * texcoord1 + w1 * texcoord2 + w2 * texcoord3) / area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				let src = multiply_argb_simd(texel, color);
-				let dest = from_argb32_simd(*dest_pixels);
-				*dest_pixels = to_argb32_simd(blend.blend_simd(src, dest))
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				let src = texel * ARGBu8x4(color);
+				*dest_pixels = blend.blend(src, *dest_pixels)
 			},
 		)
 	}
@@ -296,10 +287,9 @@ impl RgbaBitmap {
 		positions: &[Vector2; 3],
 		texcoords: &[Vector2; 3],
 		bitmap: &Self,
-		tint: u32,
+		tint: ARGBu8x4,
 	) {
 		let area = simd::f32x2::splat(edge_function(positions[0], positions[1], positions[2]));
-		let tint = from_argb32_simd(tint);
 		let texcoord1 = simd::f32x2::from_array([texcoords[0].x, texcoords[0].y]);
 		let texcoord2 = simd::f32x2::from_array([texcoords[1].x, texcoords[1].y]);
 		let texcoord3 = simd::f32x2::from_array([texcoords[2].x, texcoords[2].y]);
@@ -313,8 +303,8 @@ impl RgbaBitmap {
 					+ simd::f32x2::splat(w1) * texcoord2
 					+ simd::f32x2::splat(w2) * texcoord3)
 					/ area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				*dest_pixels = to_argb32_simd(tint_argb_simd(texel, tint));
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				*dest_pixels = texel.tint(tint);
 			},
 		)
 	}
@@ -340,8 +330,8 @@ impl RgbaBitmap {
 					+ simd::f32x2::splat(w1) * texcoord2
 					+ simd::f32x2::splat(w2) * texcoord3)
 					/ area;
-				let texel = from_argb32_simd(bitmap.sample_at(texcoord[0], texcoord[1]));
-				*dest_pixels = to_argb32_simd(blend.blend_simd(texel, from_argb32_simd(*dest_pixels)));
+				let texel = bitmap.sample_at(texcoord[0], texcoord[1]);
+				*dest_pixels = blend.blend(texel, *dest_pixels);
 			},
 		)
 	}

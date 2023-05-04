@@ -63,7 +63,7 @@ impl TileMap {
 		tiles: &BitmapAtlas<RgbaBitmap>,
 		camera_x: i32,
 		camera_y: i32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 	) {
 		let xt = camera_x / TILE_WIDTH as i32;
 		let yt = camera_y / TILE_HEIGHT as i32;

@@ -1,6 +1,6 @@
 use crate::graphics::{
-	clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit, tint_argb32, BitmapAtlas,
-	BlendFunction, RgbaBitmap,
+	clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit, ARGBu8x4, BitmapAtlas, BlendFunction,
+	RgbaBitmap,
 };
 use crate::math::Rect;
 
@@ -8,7 +8,7 @@ use crate::math::Rect;
 pub enum RgbaBlitMethod {
 	/// Solid blit, no transparency or other per-pixel adjustments.
 	Solid,
-	SolidTinted(u32),
+	SolidTinted(ARGBu8x4),
 	SolidBlended(BlendFunction),
 	/// Same as [RgbaBlitMethod::Solid] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
@@ -19,7 +19,7 @@ pub enum RgbaBlitMethod {
 	SolidFlippedTinted {
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	},
 	SolidFlippedBlended {
 		horizontal_flip: bool,
@@ -27,30 +27,30 @@ pub enum RgbaBlitMethod {
 		blend: BlendFunction,
 	},
 	/// Transparent blit, the specified source color pixels are skipped.
-	Transparent(u32),
+	Transparent(ARGBu8x4),
 	TransparentTinted {
-		transparent_color: u32,
-		tint_color: u32,
+		transparent_color: ARGBu8x4,
+		tint_color: ARGBu8x4,
 	},
 	TransparentBlended {
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		blend: BlendFunction,
 	},
 	/// Same as [RgbaBlitMethod::Transparent] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	TransparentFlipped {
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 	},
 	TransparentFlippedTinted {
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	},
 	TransparentFlippedBlended {
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 		blend: BlendFunction,
@@ -58,15 +58,15 @@ pub enum RgbaBlitMethod {
 	/// Same as [RgbaBlitMethod::Transparent] except that the visible pixels on the destination are all
 	/// drawn using the same color.
 	TransparentSingle {
-		transparent_color: u32,
-		draw_color: u32,
+		transparent_color: ARGBu8x4,
+		draw_color: ARGBu8x4,
 	},
 	/// Combination of [RgbaBlitMethod::TransparentFlipped] and [RgbaBlitMethod::TransparentSingle].
 	TransparentFlippedSingle {
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		draw_color: u32,
+		draw_color: ARGBu8x4,
 	},
 	/// Rotozoom blit, works the same as [RgbaBlitMethod::Solid] except that rotation and scaling is
 	/// performed.
@@ -79,7 +79,7 @@ pub enum RgbaBlitMethod {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	},
 	RotoZoomBlended {
 		angle: f32,
@@ -92,20 +92,20 @@ pub enum RgbaBlitMethod {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 	},
 	RotoZoomTransparentTinted {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: u32,
-		tint_color: u32,
+		transparent_color: ARGBu8x4,
+		tint_color: ARGBu8x4,
 	},
 	RotoZoomTransparentBlended {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		blend: BlendFunction,
 	},
 }
@@ -117,7 +117,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_blit(
 			self, //
@@ -126,7 +126,7 @@ impl RgbaBitmap {
 			dest_x,
 			dest_y,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = tint_argb32(*src_pixels, tint_color);
+				*dest_pixels = (*src_pixels).tint(tint_color);
 			},
 		);
 	}
@@ -146,7 +146,7 @@ impl RgbaBitmap {
 			dest_x,
 			dest_y,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
+				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 			},
 		);
 	}
@@ -170,7 +170,7 @@ impl RgbaBitmap {
 			horizontal_flip,
 			vertical_flip,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
+				*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 			},
 		);
 	}
@@ -183,7 +183,7 @@ impl RgbaBitmap {
 		dest_y: i32,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_flipped_blit(
 			self, //
@@ -194,7 +194,7 @@ impl RgbaBitmap {
 			horizontal_flip,
 			vertical_flip,
 			|src_pixels, dest_pixels| {
-				*dest_pixels = tint_argb32(*src_pixels, tint_color);
+				*dest_pixels = (*src_pixels).tint(tint_color);
 			},
 		);
 	}
@@ -205,8 +205,8 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: u32,
-		tint_color: u32,
+		transparent_color: ARGBu8x4,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_blit(
 			self, //
@@ -216,7 +216,7 @@ impl RgbaBitmap {
 			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = tint_argb32(*src_pixels, tint_color);
+					*dest_pixels = (*src_pixels).tint(tint_color);
 				}
 			},
 		);
@@ -228,7 +228,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		blend: BlendFunction,
 	) {
 		per_pixel_blit(
@@ -239,7 +239,7 @@ impl RgbaBitmap {
 			dest_y,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
+					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 				}
 			},
 		);
@@ -251,10 +251,10 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_flipped_blit(
 			self, //
@@ -266,7 +266,7 @@ impl RgbaBitmap {
 			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = tint_argb32(*src_pixels, tint_color);
+					*dest_pixels = (*src_pixels).tint(tint_color);
 				}
 			},
 		);
@@ -278,7 +278,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 		blend: BlendFunction,
@@ -293,7 +293,7 @@ impl RgbaBitmap {
 			vertical_flip,
 			|src_pixels, dest_pixels| {
 				if *src_pixels != transparent_color {
-					*dest_pixels = blend.blend_1u32(*src_pixels, *dest_pixels);
+					*dest_pixels = blend.blend(*src_pixels, *dest_pixels);
 				}
 			},
 		);
@@ -308,7 +308,7 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		tint_color: u32,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_rotozoom_blit(
 			self, //
@@ -320,7 +320,7 @@ impl RgbaBitmap {
 			scale_x,
 			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
-				dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
+				dest_bitmap.set_pixel(draw_x, draw_y, src_pixel.tint(tint_color));
 			},
 		);
 	}
@@ -347,7 +347,7 @@ impl RgbaBitmap {
 			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
-					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend_1u32(src_pixel, dest_pixel))
+					dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
 				}
 			},
 		);
@@ -362,8 +362,8 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: u32,
-		tint_color: u32,
+		transparent_color: ARGBu8x4,
+		tint_color: ARGBu8x4,
 	) {
 		per_pixel_rotozoom_blit(
 			self, //
@@ -376,7 +376,7 @@ impl RgbaBitmap {
 			scale_y,
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
-					dest_bitmap.set_pixel(draw_x, draw_y, tint_argb32(src_pixel, tint_color));
+					dest_bitmap.set_pixel(draw_x, draw_y, src_pixel.tint(tint_color));
 				}
 			},
 		);
@@ -391,7 +391,7 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: u32,
+		transparent_color: ARGBu8x4,
 		blend: BlendFunction,
 	) {
 		per_pixel_rotozoom_blit(
@@ -406,7 +406,7 @@ impl RgbaBitmap {
 			|src_pixel, dest_bitmap, draw_x, draw_y| {
 				if transparent_color != src_pixel {
 					if let Some(dest_pixel) = dest_bitmap.get_pixel(draw_x, draw_y) {
-						dest_bitmap.set_pixel(draw_x, draw_y, blend.blend_1u32(src_pixel, dest_pixel))
+						dest_bitmap.set_pixel(draw_x, draw_y, blend.blend(src_pixel, dest_pixel))
 					}
 				}
 			},

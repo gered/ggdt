@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::graphics::{Bitmap, BitmapError, Palette, RgbaBitmap};
+use crate::graphics::{ARGBu8x4, Bitmap, BitmapError, Palette, RgbaBitmap};
 
 mod blit;
 mod primitives;
@@ -51,7 +51,7 @@ impl IndexedBitmap {
 	///
 	/// * `dest`: destination 32-bit ARGB pixel buffer to copy converted pixels to
 	/// * `palette`: the 256 colour palette to use during pixel conversion
-	pub fn copy_as_argb_to(&self, dest: &mut [u32], palette: &Palette) {
+	pub fn copy_as_argb_to(&self, dest: &mut [ARGBu8x4], palette: &Palette) {
 		for (src, dest) in self.pixels().iter().zip(dest.iter_mut()) {
 			*dest = palette[*src];
 		}

@@ -2,7 +2,7 @@ use crate::BACKGROUND_COLOR;
 use ggdt::prelude::*;
 
 fn display_raw_keyboard_state(system: &mut System<Standard>, x: i32, y: i32) {
-	let font_opts = FontRenderOpts::Color(0xffffffff);
+	let font_opts = FontRenderOpts::Color(COLOR_BRIGHT_WHITE);
 	let font = &system.res.font;
 
 	system.res.video.print_string("Raw Keyboard State", x, x, font_opts, font);
@@ -40,7 +40,7 @@ fn display_key_state(key: Scancode, system: &mut System<Standard>, x: i32, y: i3
 		),
 		x,
 		y,
-		FontRenderOpts::Color(0xffffffff),
+		FontRenderOpts::Color(COLOR_BRIGHT_WHITE),
 		&system.res.font,
 	);
 }
@@ -87,7 +87,7 @@ fn keyboard_state() {
 			display_key_state(*key, &mut system, 2, 160 + (idx as i32 * 10));
 		}
 
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), COLOR_BRIGHT_MAGENTA);
 
 		system.display().unwrap();
 	}

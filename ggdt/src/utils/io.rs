@@ -1,3 +1,4 @@
+use byteorder::{ReadBytesExt, WriteBytesExt};
 use std::io::{Error, SeekFrom};
 
 /// Provides a convenience method for determining the total size of a stream. This is provided
@@ -19,4 +20,17 @@ impl<T: std::io::Read + std::io::Seek> StreamSize for T {
 
 		Ok(len)
 	}
+}
+
+pub trait ReadType {
+	type OutputType;
+	type ErrorType;
+
+	fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self::OutputType, Self::ErrorType>;
+}
+
+pub trait WriteType {
+	type ErrorType;
+
+	fn write<T: WriteBytesExt>(&self, writer: &mut T) -> Result<(), Self::ErrorType>;
 }

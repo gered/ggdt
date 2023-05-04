@@ -5,7 +5,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::{from_rgb32, luminance, Palette};
+use crate::graphics::Palette;
 use crate::math::lerp;
 use crate::utils::ReadFixedLengthByteArray;
 
@@ -76,8 +76,7 @@ impl BlendMap {
 
 		let mut blend_map = Self::new(source_color, source_color);
 		for idx in 0..=255 {
-			let rgb = from_rgb32(palette[idx]);
-			let lit = (luminance(rgb) * 255.0) as u8;
+			let lit = (palette[idx].luminance() * 255.0) as u8;
 			blend_map
 				.set_mapping(
 					source_color,
@@ -105,11 +104,9 @@ impl BlendMap {
 
 		let mut blend_map = BlendMap::new(0, 255);
 		for source_color in 0..=255 {
-			let source_rgb = from_rgb32(palette[source_color]);
-			let source_luminance = luminance(source_rgb);
+			let source_luminance = palette[source_color].luminance();
 			for dest_color in 0..=255 {
-				let dest_rgb = from_rgb32(palette[dest_color]);
-				let destination_luminance = luminance(dest_rgb);
+				let destination_luminance = palette[dest_color].luminance();
 				let weight = (f(source_luminance, destination_luminance) * 255.0) as u8;
 				blend_map
 					.set_mapping(
@@ -135,10 +132,10 @@ impl BlendMap {
 	pub fn new_translucency_map(blend_r: f32, blend_g: f32, blend_b: f32, palette: &Palette) -> Self {
 		let mut blend_map = BlendMap::new(0, 255);
 		for source in 0..=255 {
-			let [source_r, source_g, source_b] = from_rgb32(palette[source]);
+			let [_, source_r, source_g, source_b] = palette[source].to_array();
 			let mapping = blend_map.get_mapping_mut(source).unwrap();
 			for dest in 0..=255 {
-				let [dest_r, dest_g, dest_b] = from_rgb32(palette[dest]);
+				let [_, dest_r, dest_g, dest_b] = palette[dest].to_array();
 
 				let find_r = lerp(dest_r as f32, source_r as f32, blend_r) as u8;
 				let find_g = lerp(dest_g as f32, source_g as f32, blend_g) as u8;

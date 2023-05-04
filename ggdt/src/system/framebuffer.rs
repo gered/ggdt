@@ -1,7 +1,6 @@
-use byte_slice_cast::AsByteSlice;
 use thiserror::Error;
 
-use crate::graphics::{IndexedBitmap, Palette, RgbaBitmap};
+use crate::graphics::{ARGBu8x4, ColorsAsBytes, IndexedBitmap, Palette, RgbaBitmap};
 
 pub fn calculate_logical_screen_size(window_width: u32, window_height: u32, scale_factor: u32) -> (u32, u32) {
 	let logical_width = (window_width as f32 / scale_factor as f32).ceil() as u32;
@@ -24,7 +23,7 @@ pub enum SdlFramebufferError {
 pub struct SdlFramebuffer {
 	sdl_texture: sdl2::render::Texture,
 	sdl_texture_pitch: usize,
-	intermediate_texture: Option<Box<[u32]>>,
+	intermediate_texture: Option<Box<[ARGBu8x4]>>,
 }
 
 // TODO: i'm not totally happy with this implementation. i don't like the two display methods and how the caller
@@ -46,14 +45,13 @@ impl SdlFramebuffer {
 			return Err(SdlFramebufferError::SDLError(error.to_string()));
 		}
 
-		let sdl_texture = match canvas.create_texture_streaming(
-			Some(sdl2::pixels::PixelFormatEnum::ARGB8888),
-			logical_screen_width,
-			logical_screen_height,
-		) {
-			Ok(texture) => texture,
-			Err(error) => return Err(SdlFramebufferError::SDLError(error.to_string())),
-		};
+		let format = sdl2::pixels::PixelFormatEnum::BGRA8888;
+
+		let sdl_texture =
+			match canvas.create_texture_streaming(Some(format), logical_screen_width, logical_screen_height) {
+				Ok(texture) => texture,
+				Err(error) => return Err(SdlFramebufferError::SDLError(error.to_string())),
+			};
 		let sdl_texture_pitch = sdl_texture.query().width as usize * SCREEN_TEXTURE_PIXEL_SIZE;
 
 		let intermediate_texture = if create_intermediate_texture {
@@ -61,9 +59,8 @@ impl SdlFramebuffer {
 			// SDL texture uploads each frame. necessary as applications are dealing with 8-bit indexed
 			// bitmaps, not 32-bit RGBA pixels, so this temporary buffer is where we convert the final
 			// application framebuffer to 32-bit RGBA pixels before it is uploaded to the SDL texture
-			let texture_pixels_size =
-				(logical_screen_width * logical_screen_height) as usize * SCREEN_TEXTURE_PIXEL_SIZE;
-			Some(vec![0u32; texture_pixels_size].into_boxed_slice())
+			let texture_pixels_size = (logical_screen_width * logical_screen_height) as usize;
+			Some(vec![ARGBu8x4::default(); texture_pixels_size].into_boxed_slice())
 		} else {
 			None
 		};
@@ -83,7 +80,7 @@ impl SdlFramebuffer {
 
 		src.copy_as_argb_to(intermediate_texture, palette);
 
-		let texture_pixels = intermediate_texture.as_byte_slice();
+		let texture_pixels = intermediate_texture.as_bytes();
 		if let Err(error) = self.sdl_texture.update(None, texture_pixels, self.sdl_texture_pitch) {
 			return Err(SdlFramebufferError::SDLError(error.to_string()));
 		}
@@ -106,7 +103,7 @@ impl SdlFramebuffer {
 			"Calls to display should only occur on SdlFramebuffers without an intermediate_texture"
 		);
 
-		let texture_pixels = src.pixels().as_byte_slice();
+		let texture_pixels = src.pixels().as_bytes();
 		if let Err(error) = self.sdl_texture.update(None, texture_pixels, self.sdl_texture_pitch) {
 			return Err(SdlFramebufferError::SDLError(error.to_string()));
 		}

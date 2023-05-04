@@ -7,7 +7,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::{from_rgb32, lerp_rgb32, to_argb32, to_rgb32, IndexedBitmap};
+use crate::graphics::{ARGBu8x4, IndexedBitmap};
 use crate::utils::abs_diff;
 
 const NUM_COLORS: usize = 256;
@@ -29,16 +29,19 @@ fn to_6bit(value: u8) -> u8 {
 }
 
 // vga bios (0-63) format
-fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[u32; NUM_COLORS], PaletteError> {
+fn read_palette_6bit<T: ReadBytesExt>(
+	reader: &mut T,
+	num_colors: usize,
+) -> Result<[ARGBu8x4; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [to_argb32([255, 0, 0, 0]); NUM_COLORS];
+	let mut colors = [ARGBu8x4::from_argb([255, 0, 0, 0]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32([from_6bit(r), from_6bit(g), from_6bit(b)]);
+		let color = ARGBu8x4::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -46,32 +49,34 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 
 fn write_palette_6bit<T: WriteBytesExt>(
 	writer: &mut T,
-	colors: &[u32; NUM_COLORS],
+	colors: &[ARGBu8x4; NUM_COLORS],
 	num_colors: usize,
 ) -> Result<(), PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let [r, g, b] = from_rgb32(colors[i]);
-		writer.write_u8(to_6bit(r))?;
-		writer.write_u8(to_6bit(g))?;
-		writer.write_u8(to_6bit(b))?;
+		writer.write_u8(to_6bit(colors[i].r()))?;
+		writer.write_u8(to_6bit(colors[i].g()))?;
+		writer.write_u8(to_6bit(colors[i].b()))?;
 	}
 	Ok(())
 }
 
 // normal (0-255) format
-fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[u32; NUM_COLORS], PaletteError> {
+fn read_palette_8bit<T: ReadBytesExt>(
+	reader: &mut T,
+	num_colors: usize,
+) -> Result<[ARGBu8x4; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [to_argb32([255, 0, 0, 0]); NUM_COLORS];
+	let mut colors = [ARGBu8x4::from_argb([255, 0, 0, 0]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = to_rgb32([r, g, b]);
+		let color = ARGBu8x4::from_rgb([r, g, b]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -79,17 +84,16 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 
 fn write_palette_8bit<T: WriteBytesExt>(
 	writer: &mut T,
-	colors: &[u32; NUM_COLORS],
+	colors: &[ARGBu8x4; NUM_COLORS],
 	num_colors: usize,
 ) -> Result<(), PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	for i in 0..num_colors {
-		let [r, g, b] = from_rgb32(colors[i]);
-		writer.write_u8(r)?;
-		writer.write_u8(g)?;
-		writer.write_u8(b)?;
+		writer.write_u8(colors[i].r())?;
+		writer.write_u8(colors[i].g())?;
+		writer.write_u8(colors[i].b())?;
 	}
 	Ok(())
 }
@@ -114,19 +118,18 @@ pub enum PaletteFormat {
 /// colors are all stored individually as 32-bit packed values in the format 0xAARRGGBB.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Palette {
-	colors: [u32; NUM_COLORS],
+	colors: [ARGBu8x4; NUM_COLORS],
 }
 
 impl Palette {
 	/// Creates a new Palette with all black colors.
 	pub fn new() -> Palette {
-		Palette { colors: [0; NUM_COLORS] }
+		Palette { colors: [ARGBu8x4::from_rgb([0, 0, 0]); NUM_COLORS] }
 	}
 
 	/// Creates a new Palette with all initial colors having the RGB values specified.
 	pub fn new_with_default(r: u8, g: u8, b: u8) -> Palette {
-		let rgb = to_rgb32([r, g, b]);
-		Palette { colors: [rgb; NUM_COLORS] }
+		Palette { colors: [ARGBu8x4::from_rgb([r, g, b]); NUM_COLORS] }
 	}
 
 	/// Creates a new Palette, pre-loaded with the default VGA BIOS colors.
@@ -295,7 +298,9 @@ impl Palette {
 	pub fn fade_color_toward_rgb(&mut self, color: u8, target_r: u8, target_g: u8, target_b: u8, step: u8) -> bool {
 		let mut modified = false;
 
-		let [mut r, mut g, mut b] = from_rgb32(self.colors[color as usize]);
+		let mut r = self.colors[color as usize].r();
+		let mut g = self.colors[color as usize].g();
+		let mut b = self.colors[color as usize].b();
 
 		if r != target_r {
 			modified = true;
@@ -328,7 +333,7 @@ impl Palette {
 		}
 
 		if modified {
-			self.colors[color as usize] = to_rgb32([r, g, b]);
+			self.colors[color as usize] = ARGBu8x4::from_rgb([r, g, b]);
 		}
 
 		(target_r == r) && (target_g == g) && (target_b == b)
@@ -381,8 +386,7 @@ impl Palette {
 	pub fn fade_colors_toward_palette<T: ColorRange>(&mut self, colors: T, palette: &Palette, step: u8) -> bool {
 		let mut all_faded = true;
 		for color in colors {
-			let [r, g, b] = from_rgb32(palette[color]);
-			if !self.fade_color_toward_rgb(color, r, g, b, step) {
+			if !self.fade_color_toward_rgb(color, palette[color].r(), palette[color].g(), palette[color].b(), step) {
 				all_faded = false;
 			}
 		}
@@ -400,7 +404,7 @@ impl Palette {
 	/// * `t`: the amount to interpolate between the two palettes, specified as a fraction
 	pub fn lerp<T: ColorRange>(&mut self, colors: T, a: &Palette, b: &Palette, t: f32) {
 		for color in colors {
-			self[color] = lerp_rgb32(a[color], b[color], t);
+			self[color] = a[color].lerp(b[color], t);
 		}
 	}
 
@@ -439,15 +443,14 @@ impl Palette {
 		let mut closest = 0;
 
 		for (index, color) in self.colors.iter().enumerate() {
-			let [this_r, this_g, this_b] = from_rgb32(*color);
-
-			if r == this_r && g == this_g && b == this_b {
+			if r == color.r() && g == color.g() && b == color.b() {
 				return index as u8;
 			} else {
 				// this comparison method is using the sRGB Euclidean formula described here:
 				// https://en.wikipedia.org/wiki/Color_difference
 
-				let distance = abs_diff(this_r, r) as u32 + abs_diff(this_g, g) as u32 + abs_diff(this_b, b) as u32;
+				let distance =
+					abs_diff(color.r(), r) as u32 + abs_diff(color.g(), g) as u32 + abs_diff(color.b(), b) as u32;
 
 				if distance < closest_distance {
 					closest = index as u8;
@@ -475,7 +478,7 @@ impl Palette {
 }
 
 impl Index<u8> for Palette {
-	type Output = u32;
+	type Output = ARGBu8x4;
 
 	#[inline]
 	fn index(&self, index: u8) -> &Self::Output {
@@ -509,11 +512,11 @@ mod tests {
 	#[test]
 	fn get_and_set_colors() {
 		let mut palette = Palette::new();
-		assert_eq!(0, palette[0]);
-		assert_eq!(0, palette[1]);
-		palette[0] = 0x11223344;
-		assert_eq!(0x11223344, palette[0]);
-		assert_eq!(0, palette[1]);
+		assert_eq!(ARGBu8x4::from_rgb([0, 0, 0]), palette[0]);
+		assert_eq!(ARGBu8x4::from_rgb([0, 0, 0]), palette[1]);
+		palette[0] = 0x11223344.into();
+		assert_eq!(ARGBu8x4::from(0x11223344), palette[0]);
+		assert_eq!(ARGBu8x4::from_rgb([0, 0, 0]), palette[1]);
 	}
 
 	fn assert_ega_colors(palette: &Palette) {

@@ -7,7 +7,7 @@
 //! Only a subset of the most common Bitmap drawing operations will be provided here.
 
 use crate::graphics::{
-	BitmapError, Font, FontRenderOpts, IndexedBitmap, IndexedBlitMethod, Pixel, RgbaBitmap, RgbaBlitMethod,
+	ARGBu8x4, BitmapError, Font, FontRenderOpts, IndexedBitmap, IndexedBlitMethod, Pixel, RgbaBitmap, RgbaBlitMethod,
 };
 use crate::math::Rect;
 
@@ -220,7 +220,7 @@ impl GeneralBitmap for IndexedBitmap {
 }
 
 impl GeneralBitmap for RgbaBitmap {
-	type PixelType = u32;
+	type PixelType = ARGBu8x4;
 
 	#[inline]
 	fn new(width: u32, height: u32) -> Result<Self, BitmapError> {

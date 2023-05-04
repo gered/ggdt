@@ -3,7 +3,7 @@ use ggdt::prelude::*;
 
 fn display_mouse_state(system: &mut System<Standard>) {
 	let font = &system.res.font;
-	let font_opts = FontRenderOpts::Color(0xffffffff);
+	let font_opts = FontRenderOpts::Color(COLOR_BRIGHT_WHITE);
 
 	system.res.video.print_string(
 		&format!(
@@ -62,7 +62,7 @@ fn mouse_with_custom_cursor() {
 		system.update().unwrap();
 
 		display_mouse_state(&mut system);
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), COLOR_BRIGHT_MAGENTA);
 
 		system.display().unwrap();
 	}
@@ -91,7 +91,7 @@ fn mouse_with_os_cursor() {
 		system.update().unwrap();
 
 		display_mouse_state(&mut system);
-		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), to_rgb32([255, 0, 255]));
+		system.res.video.set_pixel(system.res.mouse.x(), system.res.mouse.y(), COLOR_BRIGHT_MAGENTA);
 
 		system.display().unwrap();
 	}
