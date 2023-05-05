@@ -66,11 +66,7 @@ impl Renderer {
 									Vector2::new(v1.uv[0], v1.uv[1]),
 									Vector2::new(v3.uv[0], v3.uv[1]),
 								],
-								&[
-									RGBA::from_rgba([v2.col[0], v2.col[1], v2.col[2], v2.col[3]]),
-									RGBA::from_rgba([v1.col[0], v1.col[1], v1.col[2], v1.col[3]]),
-									RGBA::from_rgba([v3.col[0], v3.col[1], v3.col[2], v3.col[3]]),
-								],
+								&[RGBA::from_rgba(v2.col), RGBA::from_rgba(v1.col), RGBA::from_rgba(v3.col)],
 								bitmap,
 								BlendFunction::Blend,
 							);
