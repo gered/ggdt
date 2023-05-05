@@ -11,7 +11,7 @@ pub struct CoreContext {
 	pub delta: f32,
 	pub camera_x: i32,
 	pub camera_y: i32,
-	pub transparent_color: ARGBu8x4,
+	pub transparent_color: ARGB,
 	pub system: System<Standard>,
 	pub palette: Palette,
 	pub font: BitmaskFont,

@@ -7,7 +7,7 @@ use std::path::Path;
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::{ARGBu8x4, Bitmap, IndexedBitmap, Palette, PaletteError, PaletteFormat, Pixel, RgbaBitmap};
+use crate::graphics::{Bitmap, IndexedBitmap, Palette, PaletteError, PaletteFormat, Pixel, RgbaBitmap, ARGB};
 use crate::utils::ReadFixedLengthByteArray;
 
 const PNG_HEADER: [u8; 8] = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
@@ -319,8 +319,8 @@ impl ScanlinePixelConverter<u8> for ScanlineBuffer {
 	}
 }
 
-impl ScanlinePixelConverter<ARGBu8x4> for ScanlineBuffer {
-	fn read_pixel(&mut self, x: usize, palette: &Option<Palette>) -> Result<ARGBu8x4, PngError> {
+impl ScanlinePixelConverter<ARGB> for ScanlineBuffer {
+	fn read_pixel(&mut self, x: usize, palette: &Option<Palette>) -> Result<ARGB, PngError> {
 		let offset = x * self.bpp;
 		match self.format {
 			ColorFormat::IndexedColor => {
@@ -337,20 +337,20 @@ impl ScanlinePixelConverter<ARGBu8x4> for ScanlineBuffer {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
-				Ok(ARGBu8x4::from_rgb([r, g, b]))
+				Ok(ARGB::from_rgb([r, g, b]))
 			}
 			ColorFormat::RGBA => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				let a = self.current[offset + 3];
-				Ok(ARGBu8x4::from_argb([a, r, g, b]))
+				Ok(ARGB::from_argb([a, r, g, b]))
 			}
 			_ => Err(PngError::BadFile(format!("Unsupported color format for this PixelReader: {:?}", self.format))),
 		}
 	}
 
-	fn write_pixel(&mut self, x: usize, pixel: ARGBu8x4) -> Result<(), PngError> {
+	fn write_pixel(&mut self, x: usize, pixel: ARGB) -> Result<(), PngError> {
 		let offset = x * self.bpp;
 		match self.format {
 			ColorFormat::RGB => {

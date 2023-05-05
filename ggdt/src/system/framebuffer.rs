@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::graphics::{ARGBu8x4, ColorsAsBytes, IndexedBitmap, Palette, RgbaBitmap};
+use crate::graphics::{ColorsAsBytes, IndexedBitmap, Palette, RgbaBitmap, ARGB};
 
 pub fn calculate_logical_screen_size(window_width: u32, window_height: u32, scale_factor: u32) -> (u32, u32) {
 	let logical_width = (window_width as f32 / scale_factor as f32).ceil() as u32;
@@ -23,7 +23,7 @@ pub enum SdlFramebufferError {
 pub struct SdlFramebuffer {
 	sdl_texture: sdl2::render::Texture,
 	sdl_texture_pitch: usize,
-	intermediate_texture: Option<Box<[ARGBu8x4]>>,
+	intermediate_texture: Option<Box<[ARGB]>>,
 }
 
 // TODO: i'm not totally happy with this implementation. i don't like the two display methods and how the caller
@@ -60,7 +60,7 @@ impl SdlFramebuffer {
 			// bitmaps, not 32-bit RGBA pixels, so this temporary buffer is where we convert the final
 			// application framebuffer to 32-bit RGBA pixels before it is uploaded to the SDL texture
 			let texture_pixels_size = (logical_screen_width * logical_screen_height) as usize;
-			Some(vec![ARGBu8x4::default(); texture_pixels_size].into_boxed_slice())
+			Some(vec![ARGB::default(); texture_pixels_size].into_boxed_slice())
 		} else {
 			None
 		};

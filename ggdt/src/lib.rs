@@ -21,7 +21,7 @@ mod tests {
 	use std::io::{BufReader, Read};
 	use std::path::{Path, PathBuf};
 
-	use crate::graphics::ARGBu8x4;
+	use crate::graphics::ARGB;
 	use crate::utils::ReadType;
 
 	#[allow(dead_code)]
@@ -46,12 +46,12 @@ mod tests {
 		Ok(buffer.into_boxed_slice())
 	}
 
-	pub fn load_raw_argb(bin_file: &Path) -> Result<Box<[ARGBu8x4]>, io::Error> {
+	pub fn load_raw_argb(bin_file: &Path) -> Result<Box<[ARGB]>, io::Error> {
 		let f = File::open(bin_file)?;
 		let mut reader = BufReader::new(f);
 		let mut buffer = Vec::new();
 		loop {
-			buffer.push(match ARGBu8x4::read(&mut reader) {
+			buffer.push(match ARGB::read(&mut reader) {
 				Ok(value) => value,
 				Err(err) if err.kind() == io::ErrorKind::UnexpectedEof => break,
 				Err(err) => return Err(err),

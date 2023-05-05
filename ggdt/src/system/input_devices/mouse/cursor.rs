@@ -1,4 +1,4 @@
-use crate::graphics::{ARGBu8x4, ColorsAsBytes, GeneralBitmap, GeneralBlitMethod, IndexedBitmap, RgbaBitmap};
+use crate::graphics::{ColorsAsBytes, GeneralBitmap, GeneralBlitMethod, IndexedBitmap, RgbaBitmap, ARGB};
 use crate::math::Rect;
 use crate::system::Mouse;
 
@@ -267,7 +267,7 @@ impl DefaultMouseCursorBitmaps<RgbaBitmap> for CustomMouseCursor<RgbaBitmap> {
 			cursor,
 			hotspot_x: DEFAULT_MOUSE_CURSOR_HOTSPOT_X,
 			hotspot_y: DEFAULT_MOUSE_CURSOR_HOTSPOT_Y,
-			transparent_color: ARGBu8x4::from(0xffff00ff),
+			transparent_color: ARGB::from(0xffff00ff),
 		}
 	}
 }
