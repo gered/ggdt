@@ -6,9 +6,9 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	let width = 320;
 	let height = 240;
 
-	const BG_COLOR: ARGB = ARGB::from_rgb([0, 0, 0]);
-	const SOLID_COLOR: ARGB = ARGB::from_rgb([255, 0, 255]);
-	const BLEND_COLOR: ARGB = ARGB::from_argb([127, 255, 0, 255]);
+	const BG_COLOR: RGBA = RGBA::from_rgb([0, 0, 0]);
+	const SOLID_COLOR: RGBA = RGBA::from_rgb([255, 0, 255]);
+	const BLEND_COLOR: RGBA = RGBA::from_rgba([255, 0, 255, 127]);
 
 	let mut dest = RgbaBitmap::new(width, height).unwrap();
 

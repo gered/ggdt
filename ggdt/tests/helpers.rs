@@ -24,7 +24,7 @@ pub fn load_raw_indexed(bin_file: &Path) -> Result<Box<[u8]>, io::Error> {
 	Ok(buffer.into_boxed_slice())
 }
 
-pub fn load_raw_argb(bin_file: &Path) -> Result<Box<[u32]>, io::Error> {
+pub fn load_raw_rgba(bin_file: &Path) -> Result<Box<[u32]>, io::Error> {
 	let f = File::open(bin_file)?;
 	let mut reader = BufReader::new(f);
 	let mut buffer = Vec::new();

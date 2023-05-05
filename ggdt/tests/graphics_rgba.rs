@@ -5,24 +5,24 @@ use helpers::test_assets_file;
 
 pub mod helpers;
 
-const LIGHTER_BACKGROUND: ARGB = ARGB::from_rgb([0x2c, 0x30, 0x41]);
+const LIGHTER_BACKGROUND: RGBA = RGBA::from_rgb([0x2c, 0x30, 0x41]);
 
-pub const COLOR_BLACK_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x00, 0x00, 0x00]);
-pub const COLOR_BLUE_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x00, 0x00, 0xaa]);
-pub const COLOR_GREEN_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x00, 0xaa, 0x00]);
-pub const COLOR_CYAN_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x00, 0xaa, 0xaa]);
-pub const COLOR_RED_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xaa, 0x00, 0x00]);
-pub const COLOR_MAGENTA_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xaa, 0x00, 0xaa]);
-pub const COLOR_BROWN_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xaa, 0x55, 0x00]);
-pub const COLOR_LIGHT_GRAY_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xaa, 0xaa, 0xaa]);
-pub const COLOR_DARK_GRAY_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x55, 0x55, 0x55]);
-pub const COLOR_BRIGHT_BLUE_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x55, 0x55, 0xff]);
-pub const COLOR_BRIGHT_GREEN_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x55, 0xff, 0x55]);
-pub const COLOR_BRIGHT_CYAN_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0x55, 0xff, 0xff]);
-pub const COLOR_BRIGHT_RED_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xff, 0x55, 0x55]);
-pub const COLOR_BRIGHT_MAGENTA_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xff, 0x55, 0xff]);
-pub const COLOR_BRIGHT_YELLOW_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xff, 0xff, 0x55]);
-pub const COLOR_BRIGHT_WHITE_HALF_ALPHA: ARGB = ARGB::from_argb([0x7f, 0xff, 0xff, 0xff]);
+pub const COLOR_BLACK_HALF_ALPHA: RGBA = RGBA::from_rgba([0x00, 0x00, 0x00, 0x7f]);
+pub const COLOR_BLUE_HALF_ALPHA: RGBA = RGBA::from_rgba([0x00, 0x00, 0xaa, 0x7f]);
+pub const COLOR_GREEN_HALF_ALPHA: RGBA = RGBA::from_rgba([0x00, 0xaa, 0x00, 0x7f]);
+pub const COLOR_CYAN_HALF_ALPHA: RGBA = RGBA::from_rgba([0x00, 0xaa, 0xaa, 0x7f]);
+pub const COLOR_RED_HALF_ALPHA: RGBA = RGBA::from_rgba([0xaa, 0x00, 0x00, 0x7f]);
+pub const COLOR_MAGENTA_HALF_ALPHA: RGBA = RGBA::from_rgba([0xaa, 0x00, 0xaa, 0x7f]);
+pub const COLOR_BROWN_HALF_ALPHA: RGBA = RGBA::from_rgba([0xaa, 0x55, 0x00, 0x7f]);
+pub const COLOR_LIGHT_GRAY_HALF_ALPHA: RGBA = RGBA::from_rgba([0xaa, 0xaa, 0xaa, 0x7f]);
+pub const COLOR_DARK_GRAY_HALF_ALPHA: RGBA = RGBA::from_rgba([0x55, 0x55, 0x55, 0x7f]);
+pub const COLOR_BRIGHT_BLUE_HALF_ALPHA: RGBA = RGBA::from_rgba([0x55, 0x55, 0xff, 0x7f]);
+pub const COLOR_BRIGHT_GREEN_HALF_ALPHA: RGBA = RGBA::from_rgba([0x55, 0xff, 0x55, 0x7f]);
+pub const COLOR_BRIGHT_CYAN_HALF_ALPHA: RGBA = RGBA::from_rgba([0x55, 0xff, 0xff, 0x7f]);
+pub const COLOR_BRIGHT_RED_HALF_ALPHA: RGBA = RGBA::from_rgba([0xff, 0x55, 0x55, 0x7f]);
+pub const COLOR_BRIGHT_MAGENTA_HALF_ALPHA: RGBA = RGBA::from_rgba([0xff, 0x55, 0xff, 0x7f]);
+pub const COLOR_BRIGHT_YELLOW_HALF_ALPHA: RGBA = RGBA::from_rgba([0xff, 0xff, 0x55, 0x7f]);
+pub const COLOR_BRIGHT_WHITE_HALF_ALPHA: RGBA = RGBA::from_rgba([0xff, 0xff, 0xff, 0x7f]);
 
 const SCREEN_WIDTH: u32 = 320;
 const SCREEN_HEIGHT: u32 = 240;
@@ -83,7 +83,7 @@ fn pixel_addressing() {
 		let mut i = 0;
 		for _y in 0..16 {
 			for _x in 0..16 {
-				*pixels = ARGB::from_rgb([i, i, i]);
+				*pixels = RGBA::from_rgb([i, i, i]);
 				i = i.wrapping_add(1);
 				pixels = pixels.offset(1);
 			}
@@ -636,10 +636,10 @@ fn generate_bitmap_with_varied_alpha(width: i32, height: i32) -> RgbaBitmap {
 	let mut bitmap = RgbaBitmap::new(width as u32, height as u32).unwrap();
 	bitmap.clear(0.into()); // alpha=0
 
-	let color1 = ARGB::from_argb([0x33, 0x00, 0x00, 0xaa]);
-	let color2 = ARGB::from_argb([0x66, 0x00, 0xaa, 0x00]);
-	let color3 = ARGB::from_argb([0x99, 0x00, 0xaa, 0xaa]);
-	let color4 = ARGB::from_argb([0xcc, 0xaa, 0x00, 0x00]);
+	let color1 = RGBA::from_rgba([0x00, 0x00, 0xaa, 0x33]);
+	let color2 = RGBA::from_rgba([0x00, 0xaa, 0x00, 0x66]);
+	let color3 = RGBA::from_rgba([0x00, 0xaa, 0xaa, 0x99]);
+	let color4 = RGBA::from_rgba([0xaa, 0x00, 0x00, 0xcc]);
 
 	bitmap.filled_rect(0, 0, x_third, y_third, color1);
 	bitmap.filled_rect(x_third * 2 + 1, y_third * 2 + 1, width - 1, height - 1, color2);
@@ -656,12 +656,12 @@ fn generate_solid_bitmap_with_varied_alpha(width: i32, height: i32) -> RgbaBitma
 	let y_third = height / 3;
 
 	let mut bitmap = RgbaBitmap::new(width as u32, height as u32).unwrap();
-	bitmap.clear(ARGB::from_argb([255, 0, 0, 0]));
+	bitmap.clear(RGBA::from_rgba([0, 0, 0, 255]));
 
-	let color1 = ARGB::from_argb([0x33, 0x00, 0x00, 0xaa]);
-	let color2 = ARGB::from_argb([0x66, 0x00, 0xaa, 0x00]);
-	let color3 = ARGB::from_argb([0x99, 0x00, 0xaa, 0xaa]);
-	let color4 = ARGB::from_argb([0xcc, 0xaa, 0x00, 0x00]);
+	let color1 = RGBA::from_rgba([0x00, 0x00, 0xaa, 0x33]);
+	let color2 = RGBA::from_rgba([0x00, 0xaa, 0x00, 0x66]);
+	let color3 = RGBA::from_rgba([0x00, 0xaa, 0xaa, 0x99]);
+	let color4 = RGBA::from_rgba([0xaa, 0x00, 0x00, 0xcc]);
 
 	bitmap.filled_rect(0, 0, x_third, y_third, color1);
 	bitmap.filled_rect(x_third * 2 + 1, y_third * 2 + 1, width - 1, height - 1, color2);
@@ -756,7 +756,7 @@ fn solid_tinted_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
-	let method = SolidTinted(ARGB::from_argb([127, 155, 242, 21]));
+	let method = SolidTinted(RGBA::from_rgba([155, 242, 21, 127]));
 
 	let x = 40;
 	let y = 20;
@@ -961,7 +961,7 @@ fn solid_flipped_tinted_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
-	let tint_color = ARGB::from_argb([127, 155, 242, 21]);
+	let tint_color = RGBA::from_rgba([155, 242, 21, 127]);
 
 	let x = 40;
 	let y = 20;
@@ -1100,7 +1100,7 @@ fn transparent_blits() {
 	let bmp21 = generate_bitmap(21, 21);
 	let bmp3 = generate_bitmap(3, 3);
 
-	let method = Transparent(ARGB::from_rgb([0, 0, 0]));
+	let method = Transparent(RGBA::from_rgb([0, 0, 0]));
 
 	let x = 40;
 	let y = 20;
@@ -1172,8 +1172,8 @@ fn transparent_tinted_blits() {
 	let bmp3 = generate_bitmap(3, 3);
 
 	let method = TransparentTinted {
-		transparent_color: ARGB::from_rgb([0, 0, 0]),
-		tint_color: ARGB::from_argb([127, 155, 242, 21]),
+		transparent_color: RGBA::from_rgb([0, 0, 0]),
+		tint_color: RGBA::from_rgba([155, 242, 21, 127]),
 	};
 
 	let x = 40;
@@ -1244,7 +1244,7 @@ fn blended_transparent_blits() {
 	let bmp21 = generate_solid_bitmap_with_varied_alpha(21, 21);
 	let bmp3 = generate_solid_bitmap_with_varied_alpha(3, 3);
 
-	let method = TransparentBlended { transparent_color: ARGB::from_argb([255, 0, 0, 0]), blend: BlendFunction::Blend };
+	let method = TransparentBlended { transparent_color: RGBA::from_rgba([0, 0, 0, 255]), blend: BlendFunction::Blend };
 
 	let x = 40;
 	let y = 20;
@@ -1311,7 +1311,7 @@ fn transparent_flipped_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -1380,8 +1380,8 @@ fn transparent_flipped_tinted_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
-	let tint_color = ARGB::from_argb([127, 155, 242, 21]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
+	let tint_color = RGBA::from_rgba([155, 242, 21, 127]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -1451,7 +1451,7 @@ fn blended_transparent_flipped_blits() {
 
 	let bmp = generate_solid_bitmap_with_varied_alpha(16, 16);
 
-	let transparent_color = ARGB::from_argb([255, 0, 0, 0]);
+	let transparent_color = RGBA::from_rgba([0, 0, 0, 255]);
 	let blend = BlendFunction::Blend;
 
 	let x = 40;
@@ -1519,7 +1519,7 @@ fn transparent_single_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -1592,7 +1592,7 @@ fn transparent_flipped_single_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -1731,7 +1731,7 @@ fn rotozoom_tinted_blits() {
 
 	let bmp = generate_bitmap(16, 16);
 
-	let tint_color = ARGB::from_argb([127, 155, 242, 21]);
+	let tint_color = RGBA::from_rgba([155, 242, 21, 127]);
 
 	let x = 40;
 	let y = 20;
@@ -1869,7 +1869,7 @@ fn rotozoom_transparent_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -1940,8 +1940,8 @@ fn rotozoom_transparent_tinted_blits() {
 	let mut screen = setup();
 	screen.clear(LIGHTER_BACKGROUND);
 
-	let transparent_color = ARGB::from_rgb([0, 0, 0]);
-	let tint_color = ARGB::from_argb([127, 155, 242, 21]);
+	let transparent_color = RGBA::from_rgb([0, 0, 0]);
+	let tint_color = RGBA::from_rgba([155, 242, 21, 127]);
 
 	let bmp = generate_bitmap(16, 16);
 
@@ -2013,7 +2013,7 @@ fn blended_rotozoom_transparent_blits() {
 
 	let bmp = generate_solid_bitmap_with_varied_alpha(16, 16);
 
-	let transparent_color = ARGB::from_argb([255, 0, 0, 0]);
+	let transparent_color = RGBA::from_rgba([0, 0, 0, 255]);
 	let blend = BlendFunction::Blend;
 
 	let x = 40;
@@ -2110,34 +2110,34 @@ fn blend_function_tinted_blend() {
 	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
 	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([255, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 255])));
 	screen.blit(method.clone(), &bmp_solid, 10, 5);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 5);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 5);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([127, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 127])));
 	screen.blit(method.clone(), &bmp_solid, 10, 40);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 40);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 40);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([0, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 0])));
 	screen.blit(method.clone(), &bmp_solid, 10, 75);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 75);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 75);
 
 	//////
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([255, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 255])));
 	screen.blit(method.clone(), &bmp_solid, 10, 125);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 125);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 125);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([127, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 127])));
 	screen.blit(method.clone(), &bmp_solid, 10, 160);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 160);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 160);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(ARGB::from_argb([0, 155, 242, 21])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::TintedBlend(RGBA::from_rgba([155, 242, 21, 0])));
 	screen.blit(method.clone(), &bmp_solid, 10, 195);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
@@ -2204,34 +2204,34 @@ fn blend_function_multiplied_blend() {
 	let bmp_solid_with_varied_alpha = generate_solid_bitmap_with_varied_alpha(32, 32);
 	let bmp_with_varied_alpha = generate_bitmap_with_varied_alpha(32, 32);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([255, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 255])));
 	screen.blit(method.clone(), &bmp_solid, 10, 5);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 5);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 5);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([127, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 127])));
 	screen.blit(method.clone(), &bmp_solid, 10, 40);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 40);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 40);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([0, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 0])));
 	screen.blit(method.clone(), &bmp_solid, 10, 75);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 75);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 75);
 
 	//////
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([255, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 255])));
 	screen.blit(method.clone(), &bmp_solid, 10, 125);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 125);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 125);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([127, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 127])));
 	screen.blit(method.clone(), &bmp_solid, 10, 160);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 160);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 160);
 
-	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(ARGB::from_argb([0, 242, 29, 81])));
+	let method = RgbaBlitMethod::SolidBlended(BlendFunction::MultipliedBlend(RGBA::from_rgba([242, 29, 81, 0])));
 	screen.blit(method.clone(), &bmp_solid, 10, 195);
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
@@ -2490,15 +2490,15 @@ fn get_quad(
 	let positions_2 = [top_left, bottom_right, top_right];
 	let texcoords_1 = [Vector2::new(0.0, 0.0), Vector2::new(0.0, 1.0), Vector2::new(1.0, 1.0)];
 	let texcoords_2 = [Vector2::new(0.0, 0.0), Vector2::new(1.0, 1.0), Vector2::new(1.0, 0.0)];
-	let single_color = ARGB::from_argb([128, 255, 0, 255]);
-	let colors_1 = [ARGB::from_rgb([255, 0, 0]), ARGB::from_rgb([0, 255, 0]), ARGB::from_rgb([0, 0, 255])];
-	let colors_2 = [ARGB::from_rgb([255, 0, 0]), ARGB::from_rgb([0, 0, 255]), ARGB::from_rgb([255, 255, 255])];
-	let tint_color = ARGB::from_argb([128, 192, 47, 160]);
+	let single_color = RGBA::from_rgba([255, 0, 255, 128]);
+	let colors_1 = [RGBA::from_rgb([255, 0, 0]), RGBA::from_rgb([0, 255, 0]), RGBA::from_rgb([0, 0, 255])];
+	let colors_2 = [RGBA::from_rgb([255, 0, 0]), RGBA::from_rgb([0, 0, 255]), RGBA::from_rgb([255, 255, 255])];
+	let tint_color = RGBA::from_rgba([192, 47, 160, 128]);
 
 	match mode {
 		TriangleType::Solid => [
-			RgbaTriangle2d::Solid { position: positions_1, color: ARGB::from_rgb([255, 0, 255]) },
-			RgbaTriangle2d::Solid { position: positions_2, color: ARGB::from_rgb([255, 0, 255]) },
+			RgbaTriangle2d::Solid { position: positions_1, color: RGBA::from_rgb([255, 0, 255]) },
+			RgbaTriangle2d::Solid { position: positions_2, color: RGBA::from_rgb([255, 0, 255]) },
 		],
 		TriangleType::SolidBlended => [
 			RgbaTriangle2d::SolidBlended { position: positions_1, color: single_color, blend: BlendFunction::Blend },

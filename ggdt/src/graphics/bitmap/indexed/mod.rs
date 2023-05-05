@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use crate::graphics::{Bitmap, BitmapError, Palette, RgbaBitmap, ARGB};
+use crate::graphics::{Bitmap, BitmapError, Palette, RgbaBitmap, RGBA};
 
 mod blit;
 mod primitives;
@@ -44,14 +44,14 @@ impl IndexedBitmap {
 	}
 
 	/// Copies and converts the entire pixel data from this bitmap to a destination expecting
-	/// 32-bit ARGB-format pixel data. This can be used to display the contents of the bitmap
+	/// 32-bit RGBA-format pixel data. This can be used to display the contents of the bitmap
 	/// on-screen by using an SDL Surface, OpenGL texture, etc as the destination.
 	///
 	/// # Arguments
 	///
-	/// * `dest`: destination 32-bit ARGB pixel buffer to copy converted pixels to
+	/// * `dest`: destination 32-bit RGBA pixel buffer to copy converted pixels to
 	/// * `palette`: the 256 colour palette to use during pixel conversion
-	pub fn copy_as_argb_to(&self, dest: &mut [ARGB], palette: &Palette) {
+	pub fn copy_as_rgba_to(&self, dest: &mut [RGBA], palette: &Palette) {
 		for (src, dest) in self.pixels().iter().zip(dest.iter_mut()) {
 			*dest = palette[*src];
 		}
@@ -67,7 +67,7 @@ impl IndexedBitmap {
 	/// returns: `RgbaBitmap`
 	pub fn to_rgba(&self, palette: &Palette) -> RgbaBitmap {
 		let mut output = RgbaBitmap::new(self.width, self.height).unwrap();
-		self.copy_as_argb_to(output.pixels_mut(), palette);
+		self.copy_as_rgba_to(output.pixels_mut(), palette);
 		output
 	}
 }

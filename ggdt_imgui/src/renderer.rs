@@ -1,4 +1,4 @@
-use ggdt::graphics::{BlendFunction, RgbaBitmap, RgbaPixelFormat, ARGB};
+use ggdt::graphics::{BlendFunction, RgbaBitmap, RgbaPixelFormat, RGBA};
 use ggdt::math::{Rect, Vector2};
 use imgui::internal::RawWrapper;
 
@@ -67,9 +67,9 @@ impl Renderer {
 									Vector2::new(v3.uv[0], v3.uv[1]),
 								],
 								&[
-									ARGB::from_argb([v2.col[3], v2.col[0], v2.col[1], v2.col[2]]),
-									ARGB::from_argb([v1.col[3], v1.col[0], v1.col[1], v1.col[2]]),
-									ARGB::from_argb([v3.col[3], v3.col[0], v3.col[1], v3.col[2]]),
+									RGBA::from_rgba([v2.col[0], v2.col[1], v2.col[2], v2.col[3]]),
+									RGBA::from_rgba([v1.col[0], v1.col[1], v1.col[2], v1.col[3]]),
+									RGBA::from_rgba([v3.col[0], v3.col[1], v3.col[2], v3.col[3]]),
 								],
 								bitmap,
 								BlendFunction::Blend,

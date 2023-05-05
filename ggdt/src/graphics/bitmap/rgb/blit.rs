@@ -1,6 +1,6 @@
 use crate::graphics::{
 	clip_blit, per_pixel_blit, per_pixel_flipped_blit, per_pixel_rotozoom_blit, BitmapAtlas, BlendFunction, RgbaBitmap,
-	ARGB,
+	RGBA,
 };
 use crate::math::Rect;
 
@@ -8,7 +8,7 @@ use crate::math::Rect;
 pub enum RgbaBlitMethod {
 	/// Solid blit, no transparency or other per-pixel adjustments.
 	Solid,
-	SolidTinted(ARGB),
+	SolidTinted(RGBA),
 	SolidBlended(BlendFunction),
 	/// Same as [RgbaBlitMethod::Solid] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
@@ -19,7 +19,7 @@ pub enum RgbaBlitMethod {
 	SolidFlippedTinted {
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	},
 	SolidFlippedBlended {
 		horizontal_flip: bool,
@@ -27,30 +27,30 @@ pub enum RgbaBlitMethod {
 		blend: BlendFunction,
 	},
 	/// Transparent blit, the specified source color pixels are skipped.
-	Transparent(ARGB),
+	Transparent(RGBA),
 	TransparentTinted {
-		transparent_color: ARGB,
-		tint_color: ARGB,
+		transparent_color: RGBA,
+		tint_color: RGBA,
 	},
 	TransparentBlended {
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		blend: BlendFunction,
 	},
 	/// Same as [RgbaBlitMethod::Transparent] but the drawn image can also be flipped horizontally
 	/// and/or vertically.
 	TransparentFlipped {
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 	},
 	TransparentFlippedTinted {
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	},
 	TransparentFlippedBlended {
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 		blend: BlendFunction,
@@ -58,15 +58,15 @@ pub enum RgbaBlitMethod {
 	/// Same as [RgbaBlitMethod::Transparent] except that the visible pixels on the destination are all
 	/// drawn using the same color.
 	TransparentSingle {
-		transparent_color: ARGB,
-		draw_color: ARGB,
+		transparent_color: RGBA,
+		draw_color: RGBA,
 	},
 	/// Combination of [RgbaBlitMethod::TransparentFlipped] and [RgbaBlitMethod::TransparentSingle].
 	TransparentFlippedSingle {
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		draw_color: ARGB,
+		draw_color: RGBA,
 	},
 	/// Rotozoom blit, works the same as [RgbaBlitMethod::Solid] except that rotation and scaling is
 	/// performed.
@@ -79,7 +79,7 @@ pub enum RgbaBlitMethod {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	},
 	RotoZoomBlended {
 		angle: f32,
@@ -92,20 +92,20 @@ pub enum RgbaBlitMethod {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 	},
 	RotoZoomTransparentTinted {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: ARGB,
-		tint_color: ARGB,
+		transparent_color: RGBA,
+		tint_color: RGBA,
 	},
 	RotoZoomTransparentBlended {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		blend: BlendFunction,
 	},
 }
@@ -117,7 +117,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	) {
 		per_pixel_blit(
 			self, //
@@ -183,7 +183,7 @@ impl RgbaBitmap {
 		dest_y: i32,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	) {
 		per_pixel_flipped_blit(
 			self, //
@@ -205,8 +205,8 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: ARGB,
-		tint_color: ARGB,
+		transparent_color: RGBA,
+		tint_color: RGBA,
 	) {
 		per_pixel_blit(
 			self, //
@@ -228,7 +228,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		blend: BlendFunction,
 	) {
 		per_pixel_blit(
@@ -251,10 +251,10 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	) {
 		per_pixel_flipped_blit(
 			self, //
@@ -278,7 +278,7 @@ impl RgbaBitmap {
 		src_region: &Rect,
 		dest_x: i32,
 		dest_y: i32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		horizontal_flip: bool,
 		vertical_flip: bool,
 		blend: BlendFunction,
@@ -308,7 +308,7 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		tint_color: ARGB,
+		tint_color: RGBA,
 	) {
 		per_pixel_rotozoom_blit(
 			self, //
@@ -362,8 +362,8 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: ARGB,
-		tint_color: ARGB,
+		transparent_color: RGBA,
+		tint_color: RGBA,
 	) {
 		per_pixel_rotozoom_blit(
 			self, //
@@ -391,7 +391,7 @@ impl RgbaBitmap {
 		angle: f32,
 		scale_x: f32,
 		scale_y: f32,
-		transparent_color: ARGB,
+		transparent_color: RGBA,
 		blend: BlendFunction,
 	) {
 		per_pixel_rotozoom_blit(

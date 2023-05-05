@@ -27,8 +27,8 @@ fn simple_main_loop(mut system: System<Standard>) {
 
 		draw_base_screen(
 			&mut system.res.video,
-			ARGB::from_rgb([32, 32, 32]),
-			ARGB::from_rgb([44, 44, 44]),
+			RGBA::from_rgb([32, 32, 32]),
+			RGBA::from_rgb([44, 44, 44]),
 			COLOR_BRIGHT_WHITE,
 			COLOR_BRIGHT_RED,
 		);

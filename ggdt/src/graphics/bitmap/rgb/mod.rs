@@ -1,7 +1,7 @@
 use byteorder::ReadBytesExt;
 use std::path::Path;
 
-use crate::graphics::{Bitmap, BitmapError, Palette, ARGB};
+use crate::graphics::{Bitmap, BitmapError, Palette, RGBA};
 
 mod blit;
 mod primitives;
@@ -11,7 +11,7 @@ pub use blit::*;
 pub use primitives::*;
 pub use triangles::*;
 
-pub type RgbaBitmap = Bitmap<ARGB>;
+pub type RgbaBitmap = Bitmap<RGBA>;
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum RgbaPixelFormat {
@@ -29,7 +29,7 @@ impl RgbaBitmap {
 	///
 	/// returns: `Result<Bitmap, BitmapError>`
 	pub fn new(width: u32, height: u32) -> Result<Self, BitmapError> {
-		Self::internal_new(width, height, ARGB::from_rgb([0, 0, 0]))
+		Self::internal_new(width, height, RGBA::from_rgb([0, 0, 0]))
 	}
 
 	pub fn from_bytes<T: ReadBytesExt>(
@@ -38,7 +38,7 @@ impl RgbaBitmap {
 		format: RgbaPixelFormat,
 		reader: &mut T,
 	) -> Result<Self, BitmapError> {
-		let mut bitmap = Self::internal_new(width, height, ARGB::from_rgb([0, 0, 0]))?;
+		let mut bitmap = Self::internal_new(width, height, RGBA::from_rgb([0, 0, 0]))?;
 		for pixel in bitmap.pixels_mut().iter_mut() {
 			*pixel = match format {
 				RgbaPixelFormat::RGBA => {
@@ -46,14 +46,14 @@ impl RgbaBitmap {
 					let g = reader.read_u8()?;
 					let b = reader.read_u8()?;
 					let a = reader.read_u8()?;
-					ARGB::from_argb([a, r, g, b])
+					RGBA::from_rgba([r, g, b, a])
 				}
 				RgbaPixelFormat::ARGB => {
 					let a = reader.read_u8()?;
 					let r = reader.read_u8()?;
 					let g = reader.read_u8()?;
 					let b = reader.read_u8()?;
-					ARGB::from_argb([a, r, g, b])
+					RGBA::from_rgba([r, g, b, a])
 				}
 			};
 		}

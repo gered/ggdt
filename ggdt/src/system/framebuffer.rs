@@ -1,6 +1,6 @@
 use thiserror::Error;
 
-use crate::graphics::{ColorsAsBytes, IndexedBitmap, Palette, RgbaBitmap, ARGB};
+use crate::graphics::{ColorsAsBytes, IndexedBitmap, Palette, RgbaBitmap, RGBA};
 
 pub fn calculate_logical_screen_size(window_width: u32, window_height: u32, scale_factor: u32) -> (u32, u32) {
 	let logical_width = (window_width as f32 / scale_factor as f32).ceil() as u32;
@@ -23,7 +23,7 @@ pub enum SdlFramebufferError {
 pub struct SdlFramebuffer {
 	sdl_texture: sdl2::render::Texture,
 	sdl_texture_pitch: usize,
-	intermediate_texture: Option<Box<[ARGB]>>,
+	intermediate_texture: Option<Box<[RGBA]>>,
 }
 
 // TODO: i'm not totally happy with this implementation. i don't like the two display methods and how the caller
@@ -45,7 +45,7 @@ impl SdlFramebuffer {
 			return Err(SdlFramebufferError::SDLError(error.to_string()));
 		}
 
-		let format = sdl2::pixels::PixelFormatEnum::BGRA8888;
+		let format = sdl2::pixels::PixelFormatEnum::ABGR8888;
 
 		let sdl_texture =
 			match canvas.create_texture_streaming(Some(format), logical_screen_width, logical_screen_height) {
@@ -60,7 +60,7 @@ impl SdlFramebuffer {
 			// bitmaps, not 32-bit RGBA pixels, so this temporary buffer is where we convert the final
 			// application framebuffer to 32-bit RGBA pixels before it is uploaded to the SDL texture
 			let texture_pixels_size = (logical_screen_width * logical_screen_height) as usize;
-			Some(vec![ARGB::default(); texture_pixels_size].into_boxed_slice())
+			Some(vec![RGBA::default(); texture_pixels_size].into_boxed_slice())
 		} else {
 			None
 		};
@@ -78,7 +78,7 @@ impl SdlFramebuffer {
 			"Calls to display_indexed_bitmap should only occur on SdlFramebuffers with an intermediate_texture",
 		);
 
-		src.copy_as_argb_to(intermediate_texture, palette);
+		src.copy_as_rgba_to(intermediate_texture, palette);
 
 		let texture_pixels = intermediate_texture.as_bytes();
 		if let Err(error) = self.sdl_texture.update(None, texture_pixels, self.sdl_texture_pitch) {

@@ -7,30 +7,30 @@ use crate::utils::{ReadType, WriteType};
 
 // these colours are taken from the default VGA palette
 
-pub const COLOR_BLACK: ARGB = ARGB::from_rgb([0, 0, 0]);
-pub const COLOR_BLUE: ARGB = ARGB::from_rgb([0, 0, 170]);
-pub const COLOR_GREEN: ARGB = ARGB::from_rgb([0, 170, 0]);
-pub const COLOR_CYAN: ARGB = ARGB::from_rgb([0, 170, 170]);
-pub const COLOR_RED: ARGB = ARGB::from_rgb([170, 0, 0]);
-pub const COLOR_MAGENTA: ARGB = ARGB::from_rgb([170, 0, 170]);
-pub const COLOR_BROWN: ARGB = ARGB::from_rgb([170, 85, 0]);
-pub const COLOR_LIGHT_GRAY: ARGB = ARGB::from_rgb([170, 170, 170]);
-pub const COLOR_DARK_GRAY: ARGB = ARGB::from_rgb([85, 85, 85]);
-pub const COLOR_BRIGHT_BLUE: ARGB = ARGB::from_rgb([85, 85, 255]);
-pub const COLOR_BRIGHT_GREEN: ARGB = ARGB::from_rgb([85, 255, 85]);
-pub const COLOR_BRIGHT_CYAN: ARGB = ARGB::from_rgb([85, 255, 255]);
-pub const COLOR_BRIGHT_RED: ARGB = ARGB::from_rgb([255, 85, 85]);
-pub const COLOR_BRIGHT_MAGENTA: ARGB = ARGB::from_rgb([255, 85, 255]);
-pub const COLOR_BRIGHT_YELLOW: ARGB = ARGB::from_rgb([255, 255, 85]);
-pub const COLOR_BRIGHT_WHITE: ARGB = ARGB::from_rgb([255, 255, 255]);
+pub const COLOR_BLACK: RGBA = RGBA::from_rgb([0, 0, 0]);
+pub const COLOR_BLUE: RGBA = RGBA::from_rgb([0, 0, 170]);
+pub const COLOR_GREEN: RGBA = RGBA::from_rgb([0, 170, 0]);
+pub const COLOR_CYAN: RGBA = RGBA::from_rgb([0, 170, 170]);
+pub const COLOR_RED: RGBA = RGBA::from_rgb([170, 0, 0]);
+pub const COLOR_MAGENTA: RGBA = RGBA::from_rgb([170, 0, 170]);
+pub const COLOR_BROWN: RGBA = RGBA::from_rgb([170, 85, 0]);
+pub const COLOR_LIGHT_GRAY: RGBA = RGBA::from_rgb([170, 170, 170]);
+pub const COLOR_DARK_GRAY: RGBA = RGBA::from_rgb([85, 85, 85]);
+pub const COLOR_BRIGHT_BLUE: RGBA = RGBA::from_rgb([85, 85, 255]);
+pub const COLOR_BRIGHT_GREEN: RGBA = RGBA::from_rgb([85, 255, 85]);
+pub const COLOR_BRIGHT_CYAN: RGBA = RGBA::from_rgb([85, 255, 255]);
+pub const COLOR_BRIGHT_RED: RGBA = RGBA::from_rgb([255, 85, 85]);
+pub const COLOR_BRIGHT_MAGENTA: RGBA = RGBA::from_rgb([255, 85, 255]);
+pub const COLOR_BRIGHT_YELLOW: RGBA = RGBA::from_rgb([255, 255, 85]);
+pub const COLOR_BRIGHT_WHITE: RGBA = RGBA::from_rgb([255, 255, 255]);
 
 // TODO: probably should name these better, after i do much more reading on the subject :-)
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum BlendFunction {
 	Blend,
 	BlendSourceWithAlpha(u8),
-	TintedBlend(ARGB),
-	MultipliedBlend(ARGB),
+	TintedBlend(RGBA),
+	MultipliedBlend(RGBA),
 }
 
 impl BlendFunction {
@@ -44,7 +44,7 @@ impl BlendFunction {
 	/// * `dest`: the destination color to blend the source color over
 	///
 	/// returns: the blended color
-	pub fn blend(&self, src: ARGB, dest: ARGB) -> ARGB {
+	pub fn blend(&self, src: RGBA, dest: RGBA) -> RGBA {
 		use BlendFunction::*;
 		match self {
 			Blend => src.blend(dest),
@@ -86,24 +86,24 @@ pub trait ColorsAsBytes {
 }
 
 /// Unpacked 32-bit color represented as individual 8-bit color components where the components are in the
-/// order alpha, red, green, blue.
+/// order red, green, blue, alpha.
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash, Default)]
 #[repr(transparent)]
-pub struct ARGB(pub simd::u8x4);
+pub struct RGBA(pub simd::u8x4);
 
-impl ARGB {
+impl RGBA {
 	pub const SIZE: usize = std::mem::size_of::<Self>();
 
-	/// Returns a color value composed of the provided ARGB color components.
+	/// Returns a color value composed of the provided RGBA color components.
 	///
 	/// # Arguments
 	///
-	/// * `argb`: the 4 color components (0-255) in the order: alpha, red, green, blue
+	/// * `rgba`: the 4 color components (0-255) in the order: red, green, blue, alpha
 	///
 	/// returns: the composed color value
 	#[inline]
-	pub const fn from_argb(argb: [u8; 4]) -> Self {
-		ARGB(simd::u8x4::from_array(argb))
+	pub const fn from_rgba(rgba: [u8; 4]) -> Self {
+		RGBA(simd::u8x4::from_array(rgba))
 	}
 
 	/// Returns a color value composed of the provided RGB color components. Substitutes a value of 255 for the
@@ -116,41 +116,31 @@ impl ARGB {
 	/// returns: the composed color value
 	#[inline]
 	pub const fn from_rgb(rgb: [u8; 3]) -> Self {
-		ARGB(simd::u8x4::from_array([255, rgb[0], rgb[1], rgb[2]]))
-	}
-
-	/// Returns the current alpha component value (0-255) of this color.
-	#[inline]
-	pub const fn a(&self) -> u8 {
-		self.0.to_array()[0]
+		RGBA(simd::u8x4::from_array([rgb[0], rgb[1], rgb[2], 255]))
 	}
 
 	/// Returns the current red component value (0-255) of this color.
 	#[inline]
 	pub const fn r(&self) -> u8 {
-		self.0.to_array()[1]
+		self.0.to_array()[0]
 	}
 
 	/// Returns the current green component value (0-255) of this color.
 	#[inline]
 	pub const fn g(&self) -> u8 {
-		self.0.to_array()[2]
+		self.0.to_array()[1]
 	}
 
 	/// Returns the current blue component value (0-255) of this color.
 	#[inline]
 	pub const fn b(&self) -> u8 {
-		self.0.to_array()[3]
+		self.0.to_array()[2]
 	}
 
-	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
-	///
-	/// # Arguments
-	///
-	/// * `value`: the new alpha component value to be set (0-255)
+	/// Returns the current alpha component value (0-255) of this color.
 	#[inline]
-	pub fn set_a(&mut self, value: u8) {
-		self.0[0] = value
+	pub const fn a(&self) -> u8 {
+		self.0.to_array()[3]
 	}
 
 	/// Sets the red component value of this color leaving the other components in the color unchanged.
@@ -160,7 +150,7 @@ impl ARGB {
 	/// * `value`: the new red component value to be set (0-255)
 	#[inline]
 	pub fn set_r(&mut self, value: u8) {
-		self.0[1] = value
+		self.0[0] = value
 	}
 
 	/// Sets the green component value of this color leaving the other components in the color unchanged.
@@ -170,7 +160,7 @@ impl ARGB {
 	/// * `value`: the new green component value to be set (0-255)
 	#[inline]
 	pub fn set_g(&mut self, value: u8) {
-		self.0[2] = value
+		self.0[1] = value
 	}
 
 	/// Sets the blue component value of this color leaving the other components in the color unchanged.
@@ -180,10 +170,20 @@ impl ARGB {
 	/// * `value`: the new blue component value to be set (0-255)
 	#[inline]
 	pub fn set_b(&mut self, value: u8) {
+		self.0[2] = value
+	}
+
+	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new alpha component value to be set (0-255)
+	#[inline]
+	pub fn set_a(&mut self, value: u8) {
 		self.0[3] = value
 	}
 
-	/// Returns an array with all of this color's ARGB components, in the order: alpha, red, green, blue.
+	/// Returns an array with all of this color's RGBA components, in the order: red, green, blue, alpha.
 	#[inline]
 	pub const fn to_array(&self) -> [u8; 4] {
 		self.0.to_array()
@@ -193,7 +193,7 @@ impl ARGB {
 	fn blend_components(strength: u8, src: Self, dest: Self) -> Self {
 		let strength = simd::u16x4::splat(strength as u16);
 		let max = simd::u16x4::splat(255);
-		ARGB((((src.0.cast() * strength) + (dest.0.cast() * (max - strength))) / max).cast())
+		RGBA((((src.0.cast() * strength) + (dest.0.cast() * (max - strength))) / max).cast())
 	}
 
 	/// Alpha blends two colors together, using this color as the source color and the other provided color as the
@@ -206,12 +206,12 @@ impl ARGB {
 	/// returns: the blended color result
 	#[inline]
 	pub fn blend(&self, dest: Self) -> Self {
-		ARGB::blend_components(self.a(), *self, dest)
+		RGBA::blend_components(self.a(), *self, dest)
 	}
 
 	/// Alpha blends two colors together, where the alpha value used to blend the colors is derived from the given
 	/// alpha value multiplied with the source color's alpha component. This allows for more flexibility versus the
-	/// [`ARGB::blend`] method allowing direct control over how transparent the source color is when blended over
+	/// [`RGBA::blend`] method allowing direct control over how transparent the source color is when blended over
 	/// top of the destination. The blend is performed using this color as the source color and the other provided
 	/// color as the destination color.
 	///
@@ -227,7 +227,7 @@ impl ARGB {
 	#[inline]
 	pub fn blend_with_alpha(&self, dest: Self, alpha: u8) -> Self {
 		let alpha = ((alpha as u16 * self.a() as u16) / 255) as u8;
-		let mut blended = ARGB::blend_components(alpha, *self, dest);
+		let mut blended = RGBA::blend_components(alpha, *self, dest);
 		blended.set_a(alpha);
 		blended
 	}
@@ -245,7 +245,7 @@ impl ARGB {
 	pub fn tint(&self, mut tint: Self) -> Self {
 		let strength = tint.a();
 		tint.set_a(self.a());
-		ARGB::blend_components(strength, tint, *self)
+		RGBA::blend_components(strength, tint, *self)
 	}
 
 	/// Linearly interpolates between this color and another color.
@@ -258,7 +258,7 @@ impl ARGB {
 	/// returns: the interpolated color result
 	#[inline]
 	pub fn lerp(&self, other: Self, t: f32) -> Self {
-		ARGB((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
+		RGBA((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
 	}
 
 	/// Calculates this color's luminance, returned as a value between 0.0 and 1.0.
@@ -277,18 +277,18 @@ impl ARGB {
 	}
 }
 
-impl Mul for ARGB {
-	type Output = ARGB;
+impl Mul for RGBA {
+	type Output = RGBA;
 
 	/// Multiplies two colors together, returning the result. The multiplication is performed by individually
 	/// multiplying each color component using the formula `(component * component) / 255`.
 	#[inline]
 	fn mul(self, rhs: Self) -> Self::Output {
-		ARGB(((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast())
+		RGBA(((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast())
 	}
 }
 
-impl MulAssign for ARGB {
+impl MulAssign for RGBA {
 	/// Multiplies two colors together, assigning the result of the multiplication to this color. The multiplication is
 	/// performed by individually multiplying each color component using the formula `(component * component) / 255`.
 	#[inline]
@@ -297,64 +297,64 @@ impl MulAssign for ARGB {
 	}
 }
 
-impl From<u32> for ARGB {
-	/// Returns a color value constructed by unpacking ARGB color components from the given u32 value. The u32 value
-	/// provided is parsed assuming the following locations of each color component: 0xAARRGGBB.
+impl From<u32> for RGBA {
+	/// Returns a color value constructed by unpacking RGBA color components from the given u32 value. The u32 value
+	/// provided is parsed assuming the following locations of each color component: 0xRRGGBBAA.
 	#[inline]
 	fn from(value: u32) -> Self {
-		ARGB::from_argb([
-			((value & 0xff000000) >> 24) as u8, // a
-			((value & 0x00ff0000) >> 16) as u8, // r
-			((value & 0x0000ff00) >> 8) as u8,  // g
-			(value & 0x000000ff) as u8,         // b
+		RGBA::from_rgba([
+			((value & 0xff000000) >> 24) as u8, // r
+			((value & 0x00ff0000) >> 16) as u8, // g
+			((value & 0x0000ff00) >> 8) as u8,  // b
+			(value & 0x000000ff) as u8,         // a
 		])
 	}
 }
 
-impl From<ARGB> for u32 {
-	/// Returns a u32 containing packed ARGB color components from this color. The returned u32 value contains the
-	/// color components packed in format 0xAARRGGBB.
+impl From<RGBA> for u32 {
+	/// Returns a u32 containing packed RGBA color components from this color. The returned u32 value contains the
+	/// color components packed in format 0xRRGGBBAA.
 	#[inline]
-	fn from(value: ARGB) -> Self {
-		(value.b() as u32) // b
-			+ ((value.g() as u32) << 8) // g
-			+ ((value.r() as u32) << 16) // r
-			+ ((value.a() as u32) << 24) // a
+	fn from(value: RGBA) -> Self {
+		(value.a() as u32) // a
+			+ ((value.b() as u32) << 8) // b
+			+ ((value.g() as u32) << 16) // g
+			+ ((value.r() as u32) << 24) // r
 	}
 }
 
-impl From<ARGBf> for ARGB {
-	/// Converts a [`ARGBf`] color to an equivalent [`ARGB`] color value.
+impl From<RGBAf> for RGBA {
+	/// Converts a [`RGBAf`] color to an equivalent [`RGBA`] color value.
 	#[inline]
-	fn from(value: ARGBf) -> Self {
-		ARGB::from_argb([
-			(value.a() * 255.0) as u8,
+	fn from(value: RGBAf) -> Self {
+		RGBA::from_rgba([
 			(value.r() * 255.0) as u8,
 			(value.g() * 255.0) as u8,
 			(value.b() * 255.0) as u8,
+			(value.a() * 255.0) as u8,
 		])
 	}
 }
 
-impl BytesAsColors<ARGB> for [u8] {
+impl BytesAsColors<RGBA> for [u8] {
 	#[inline]
-	unsafe fn as_colors(&self) -> &[ARGB] {
+	unsafe fn as_colors(&self) -> &[RGBA] {
 		std::slice::from_raw_parts(
-			self.as_ptr() as *const ARGB, //
-			self.len() / std::mem::size_of::<ARGB>(),
+			self.as_ptr() as *const RGBA, //
+			self.len() / std::mem::size_of::<RGBA>(),
 		)
 	}
 
 	#[inline]
-	unsafe fn as_colors_mut(&mut self) -> &mut [ARGB] {
+	unsafe fn as_colors_mut(&mut self) -> &mut [RGBA] {
 		std::slice::from_raw_parts_mut(
-			self.as_mut_ptr() as *mut ARGB, //
-			self.len() / std::mem::size_of::<ARGB>(),
+			self.as_mut_ptr() as *mut RGBA, //
+			self.len() / std::mem::size_of::<RGBA>(),
 		)
 	}
 }
 
-impl ColorsAsBytes for [ARGB] {
+impl ColorsAsBytes for [RGBA] {
 	#[inline]
 	fn as_bytes(&self) -> &[u8] {
 		unsafe {
@@ -376,19 +376,19 @@ impl ColorsAsBytes for [ARGB] {
 	}
 }
 
-impl std::fmt::Debug for ARGB {
+impl std::fmt::Debug for RGBA {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.a(), self.r(), self.g(), self.b())
+		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.r(), self.g(), self.b(), self.a())
 	}
 }
 
-impl std::fmt::Display for ARGB {
+impl std::fmt::Display for RGBA {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.a(), self.r(), self.g(), self.b())
+		write!(f, "0x{:02x}{:02x}{:02x}{:02x}", self.r(), self.g(), self.b(), self.a())
 	}
 }
 
-impl WriteType for ARGB {
+impl WriteType for RGBA {
 	type ErrorType = std::io::Error;
 
 	#[inline]
@@ -398,33 +398,33 @@ impl WriteType for ARGB {
 	}
 }
 
-impl ReadType for ARGB {
+impl ReadType for RGBA {
 	type OutputType = Self;
 	type ErrorType = std::io::Error;
 
 	#[inline]
 	fn read<T: ReadBytesExt>(reader: &mut T) -> Result<Self::OutputType, Self::ErrorType> {
-		Ok(ARGB::from_argb([reader.read_u8()?, reader.read_u8()?, reader.read_u8()?, reader.read_u8()?]))
+		Ok(RGBA::from_rgba([reader.read_u8()?, reader.read_u8()?, reader.read_u8()?, reader.read_u8()?]))
 	}
 }
 
 /// Unpacked 32-bit color represented as individual normalized f32 color components (0.0 to 1.0) where the
-/// components are in the order alpha, red, green, blue.
+/// components are in the order red, green, blue, alpha.
 #[derive(Copy, Clone, PartialEq, PartialOrd, Default)]
 #[repr(transparent)]
-pub struct ARGBf(pub simd::f32x4);
+pub struct RGBAf(pub simd::f32x4);
 
-impl ARGBf {
-	/// Returns a color value composed of the provided ARGB color components.
+impl RGBAf {
+	/// Returns a color value composed of the provided RGBA color components.
 	///
 	/// # Arguments
 	///
-	/// * `argb`: the 4 color components (0.0 to 1.0) in the order: alpha, red, green, blue
+	/// * `rgba`: the 4 color components (0.0 to 1.0) in the order: red, green, blue, alpha
 	///
 	/// returns: the composed color value
 	#[inline]
-	pub const fn from_argb(argb: [f32; 4]) -> Self {
-		ARGBf(simd::f32x4::from_array(argb))
+	pub const fn from_rgba(rgba: [f32; 4]) -> Self {
+		RGBAf(simd::f32x4::from_array(rgba))
 	}
 
 	/// Returns a color value composed of the provided RGB color components. Substitutes a value of 1.0 for the
@@ -437,41 +437,31 @@ impl ARGBf {
 	/// returns: the composed color value
 	#[inline]
 	pub const fn from_rgb(rgb: [f32; 3]) -> Self {
-		ARGBf(simd::f32x4::from_array([1.0, rgb[0], rgb[1], rgb[2]]))
-	}
-
-	/// Returns the current alpha component value (0.0 to 1.0) of this color.
-	#[inline]
-	pub const fn a(&self) -> f32 {
-		self.0.to_array()[0]
+		RGBAf(simd::f32x4::from_array([rgb[0], rgb[1], rgb[2], 1.0]))
 	}
 
 	/// Returns the current red component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn r(&self) -> f32 {
-		self.0.to_array()[1]
+		self.0.to_array()[0]
 	}
 
 	/// Returns the current green component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn g(&self) -> f32 {
-		self.0.to_array()[2]
+		self.0.to_array()[1]
 	}
 
 	/// Returns the current blue component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn b(&self) -> f32 {
-		self.0.to_array()[3]
+		self.0.to_array()[2]
 	}
 
-	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
-	///
-	/// # Arguments
-	///
-	/// * `value`: the new alpha component value to be set (0.0 to 1.0)
+	/// Returns the current alpha component value (0.0 to 1.0) of this color.
 	#[inline]
-	pub fn set_a(&mut self, value: f32) {
-		self.0[0] = value
+	pub const fn a(&self) -> f32 {
+		self.0.to_array()[3]
 	}
 
 	/// Sets the red component value of this color leaving the other components in the color unchanged.
@@ -481,7 +471,7 @@ impl ARGBf {
 	/// * `value`: the new red component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_r(&mut self, value: f32) {
-		self.0[1] = value
+		self.0[0] = value
 	}
 
 	/// Sets the green component value of this color leaving the other components in the color unchanged.
@@ -491,7 +481,7 @@ impl ARGBf {
 	/// * `value`: the new green component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_g(&mut self, value: f32) {
-		self.0[2] = value
+		self.0[1] = value
 	}
 
 	/// Sets the blue component value of this color leaving the other components in the color unchanged.
@@ -501,52 +491,62 @@ impl ARGBf {
 	/// * `value`: the new blue component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_b(&mut self, value: f32) {
+		self.0[2] = value
+	}
+
+	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new alpha component value to be set (0.0 to 1.0)
+	#[inline]
+	pub fn set_a(&mut self, value: f32) {
 		self.0[3] = value
 	}
 
-	/// Returns an array with all of this color's ARGB components, in the order: alpha, red, green, blue.
+	/// Returns an array with all of this color's RGBA components, in the order: red, green, blue, alpha.
 	#[inline]
 	pub const fn to_array(&self) -> [f32; 4] {
 		self.0.to_array()
 	}
 }
 
-impl From<u32> for ARGBf {
-	/// Returns a color value constructed by unpacking ARGB color components from the given u32 value. The u32 value
-	/// provided is parsed assuming the following locations of each color component: 0xAARRGGBB.
+impl From<u32> for RGBAf {
+	/// Returns a color value constructed by unpacking RGBA color components from the given u32 value. The u32 value
+	/// provided is parsed assuming the following locations of each color component: 0xRRGGBBAA.
 	#[inline]
 	fn from(value: u32) -> Self {
-		ARGBf::from_argb([
-			((value & 0xff000000) >> 24) as f32 / 255.0, // a
-			((value & 0x00ff0000) >> 16) as f32 / 255.0, // r
-			((value & 0x0000ff00) >> 8) as f32 / 255.0,  // g
-			(value & 0x000000ff) as f32 / 255.0,         // b
+		RGBAf::from_rgba([
+			((value & 0xff000000) >> 24) as f32 / 255.0, // r
+			((value & 0x00ff0000) >> 16) as f32 / 255.0, // g
+			((value & 0x0000ff00) >> 8) as f32 / 255.0,  // b
+			(value & 0x000000ff) as f32 / 255.0,         // a
 		])
 	}
 }
 
-impl From<ARGB> for ARGBf {
-	/// Converts a [`ARGBf`] color to an equivalent [`ARGB`] color value.
+impl From<RGBA> for RGBAf {
+	/// Converts a [`RGBAf`] color to an equivalent [`RGBA`] color value.
 	#[inline]
-	fn from(value: ARGB) -> Self {
-		ARGBf::from_argb([
-			value.a() as f32 / 255.0,
+	fn from(value: RGBA) -> Self {
+		RGBAf::from_rgba([
 			value.r() as f32 / 255.0,
 			value.g() as f32 / 255.0,
 			value.b() as f32 / 255.0,
+			value.a() as f32 / 255.0,
 		])
 	}
 }
 
-impl std::fmt::Debug for ARGBf {
+impl std::fmt::Debug for RGBAf {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "ARGBf32x4({}, {}, {}, {})", self.a(), self.r(), self.g(), self.b())
+		write!(f, "RGBAf({}, {}, {}, {})", self.r(), self.g(), self.b(), self.a())
 	}
 }
 
-impl std::fmt::Display for ARGBf {
+impl std::fmt::Display for RGBAf {
 	fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-		write!(f, "{{A={}, R={}, G={}, B={}}}", self.a(), self.r(), self.g(), self.b())
+		write!(f, "{{R={}, G={}, B={}, A={}}}", self.r(), self.g(), self.b(), self.a())
 	}
 }
 
@@ -593,122 +593,122 @@ mod tests {
 	use crate::math::NearlyEqual;
 
 	#[test]
-	fn argb() {
-		let mut color = ARGB(simd::u8x4::from_array([0x11, 0x22, 0x33, 0x44]));
-		assert_eq!(color.a(), 0x11);
-		assert_eq!(color.r(), 0x22);
-		assert_eq!(color.g(), 0x33);
-		assert_eq!(color.b(), 0x44);
+	fn rgba() {
+		let mut color = RGBA(simd::u8x4::from_array([0x11, 0x22, 0x33, 0x44]));
+		assert_eq!(color.r(), 0x11);
+		assert_eq!(color.g(), 0x22);
+		assert_eq!(color.b(), 0x33);
+		assert_eq!(color.a(), 0x44);
 		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
 
 		color.set_a(0x55);
-		assert_eq!(color.to_array(), [0x55, 0x22, 0x33, 0x44]);
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x55]);
 		color.set_r(0x66);
-		assert_eq!(color.to_array(), [0x55, 0x66, 0x33, 0x44]);
+		assert_eq!(color.to_array(), [0x66, 0x22, 0x33, 0x55]);
 		color.set_g(0x77);
-		assert_eq!(color.to_array(), [0x55, 0x66, 0x77, 0x44]);
+		assert_eq!(color.to_array(), [0x66, 0x77, 0x33, 0x55]);
 		color.set_b(0x88);
-		assert_eq!(color.to_array(), [0x55, 0x66, 0x77, 0x88]);
+		assert_eq!(color.to_array(), [0x66, 0x77, 0x88, 0x55]);
 
-		let color = ARGB::from_argb([0x11, 0x22, 0x33, 0x44]);
+		let color = RGBA::from_rgba([0x11, 0x22, 0x33, 0x44]);
 		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
 
-		let color = ARGB::from_rgb([0x11, 0x22, 0x33]);
-		assert_eq!(color.to_array(), [0xff, 0x11, 0x22, 0x33]);
+		let color = RGBA::from_rgb([0x11, 0x22, 0x33]);
+		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0xff]);
 
-		let color: ARGB = 0x11223344.into();
+		let color: RGBA = 0x11223344.into();
 		assert_eq!(color.to_array(), [0x11, 0x22, 0x33, 0x44]);
 
-		let other = ARGBf::from_argb([0.5, 0.1, 0.2, 0.3]);
-		let color: ARGB = other.into();
-		assert_eq!(color.to_array(), [0x7f, 0x19, 0x33, 0x4c]);
+		let other = RGBAf::from_rgba([0.1, 0.2, 0.3, 0.5]);
+		let color: RGBA = other.into();
+		assert_eq!(color.to_array(), [0x19, 0x33, 0x4c, 0x7f]);
 
-		let color = ARGB::from_argb([0x11, 0x22, 0x33, 0x44]);
+		let color = RGBA::from_rgba([0x11, 0x22, 0x33, 0x44]);
 		assert_eq!(0x11223344u32, color.into())
 	}
 
 	#[test]
-	fn argb_multiplication() {
-		assert_eq!([0xff, 0x11, 0x22, 0x33], (ARGB::from(0xffffffff) * ARGB::from(0xff112233)).to_array());
-		assert_eq!([0xff, 0x11, 0x22, 0x33], (ARGB::from(0xff112233) * ARGB::from(0xffffffff)).to_array());
-		assert_eq!([0x7f, 0x03, 0x00, 0x14], (ARGB::from(0x7f330066) * ARGB::from(0xff112233)).to_array());
-		assert_eq!([0x7f, 0x03, 0x00, 0x14], (ARGB::from(0xff112233) * ARGB::from(0x7f330066)).to_array());
+	fn rgba_multiplication() {
+		assert_eq!([0x11, 0x22, 0x33, 0xff], (RGBA::from(0xffffffff) * RGBA::from(0x112233ff)).to_array());
+		assert_eq!([0x11, 0x22, 0x33, 0xff], (RGBA::from(0x112233ff) * RGBA::from(0xffffffff)).to_array());
+		assert_eq!([0x03, 0x00, 0x14, 0x7f], (RGBA::from(0x3300667f) * RGBA::from(0x112233ff)).to_array());
+		assert_eq!([0x03, 0x00, 0x14, 0x7f], (RGBA::from(0x112233ff) * RGBA::from(0x3300667f)).to_array());
 
-		let mut color = ARGB::from(0xffffffff);
-		color *= ARGB::from(0xff112233);
-		assert_eq!([0xff, 0x11, 0x22, 0x33], color.to_array());
-		let mut color = ARGB::from(0xff112233);
-		color *= ARGB::from(0xffffffff);
-		assert_eq!([0xff, 0x11, 0x22, 0x33], color.to_array());
-		let mut color = ARGB::from(0x7f330066);
-		color *= ARGB::from(0xff112233);
-		assert_eq!([0x7f, 0x03, 0x00, 0x14], color.to_array());
-		let mut color = ARGB::from(0xff112233);
-		color *= ARGB::from(0x7f330066);
-		assert_eq!([0x7f, 0x03, 0x00, 0x14], color.to_array());
+		let mut color = RGBA::from(0xffffffff);
+		color *= RGBA::from(0x112233ff);
+		assert_eq!([0x11, 0x22, 0x33, 0xff], color.to_array());
+		let mut color = RGBA::from(0x112233ff);
+		color *= RGBA::from(0xffffffff);
+		assert_eq!([0x11, 0x22, 0x33, 0xff], color.to_array());
+		let mut color = RGBA::from(0x3300667f);
+		color *= RGBA::from(0x112233ff);
+		assert_eq!([0x03, 0x00, 0x14, 0x7f], color.to_array());
+		let mut color = RGBA::from(0x112233ff);
+		color *= RGBA::from(0x3300667f);
+		assert_eq!([0x03, 0x00, 0x14, 0x7f], color.to_array());
 	}
 
 	#[test]
-	fn argb_lerping() {
-		assert_eq!([0x7f, 0x11, 0x22, 0x33], (ARGB::from(0x7f112233).lerp(ARGB::from(0xffaabbcc), 0.0).to_array()));
-		assert_eq!([0xbf, 0x5d, 0x6e, 0x7f], (ARGB::from(0x7f112233).lerp(ARGB::from(0xffaabbcc), 0.5).to_array()));
-		assert_eq!([0xff, 0xaa, 0xbb, 0xcc], (ARGB::from(0x7f112233).lerp(ARGB::from(0xffaabbcc), 1.0).to_array()));
+	fn rgba_lerping() {
+		assert_eq!([0x11, 0x22, 0x33, 0x7f], (RGBA::from(0x1122337f).lerp(RGBA::from(0xaabbccff), 0.0).to_array()));
+		assert_eq!([0x5d, 0x6e, 0x7f, 0xbf], (RGBA::from(0x1122337f).lerp(RGBA::from(0xaabbccff), 0.5).to_array()));
+		assert_eq!([0xaa, 0xbb, 0xcc, 0xff], (RGBA::from(0x1122337f).lerp(RGBA::from(0xaabbccff), 1.0).to_array()));
 	}
 
 	#[test]
 	#[rustfmt::skip]
-	fn argb_blending() {
+	fn rgba_blending() {
 		// TODO: for .blend(), is this really the behaviour we want? the output value's alpha
 		//       is blended, but the source color's alpha is what is ultimately used to control
 		//       the blend operation. what is best here? the output RGB color looks correct at
 		//       any rate, just not sure what the proper output alpha component *should* be in
 		//       all cases.
 
-		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGB::from(0xff112233).blend(ARGB::from(0xff555555)).to_array());
-		assert_eq!([0xbf, 0x33, 0x3b, 0x44], ARGB::from(0x7f112233).blend(ARGB::from(0xff555555)).to_array());
-		assert_eq!([0xff, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend(ARGB::from(0xff555555)).to_array());
+		assert_eq!([0x11, 0x22, 0x33, 0xff], RGBA::from(0x112233ff).blend(RGBA::from(0x555555ff)).to_array());
+		assert_eq!([0x33, 0x3b, 0x44, 0xbf], RGBA::from(0x1122337f).blend(RGBA::from(0x555555ff)).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0xff], RGBA::from(0x11223300).blend(RGBA::from(0x555555ff)).to_array());
 
-		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGB::from(0xff112233).blend(ARGB::from(0x7f555555)).to_array());
-		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGB::from(0x7f112233).blend(ARGB::from(0x7f555555)).to_array());
-		assert_eq!([0x7f, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend(ARGB::from(0x7f555555)).to_array());
+		assert_eq!([0x11, 0x22, 0x33, 0xff], RGBA::from(0x112233ff).blend(RGBA::from(0x5555557f)).to_array());
+		assert_eq!([0x33, 0x3b, 0x44, 0x7f], RGBA::from(0x1122337f).blend(RGBA::from(0x5555557f)).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x7f], RGBA::from(0x11223300).blend(RGBA::from(0x5555557f)).to_array());
 
-		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGB::from(0xff112233).blend_with_alpha(ARGB::from(0xff555555), 255).to_array());
-		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGB::from(0x7f112233).blend_with_alpha(ARGB::from(0xff555555), 255).to_array());
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend_with_alpha(ARGB::from(0xff555555), 255).to_array());
+		assert_eq!([0x11, 0x22, 0x33, 0xff], RGBA::from(0x112233ff).blend_with_alpha(RGBA::from(0x555555ff), 255).to_array());
+		assert_eq!([0x33, 0x3b, 0x44, 0x7f], RGBA::from(0x1122337f).blend_with_alpha(RGBA::from(0x555555ff), 255).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x11223300).blend_with_alpha(RGBA::from(0x555555ff), 255).to_array());
 
-		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGB::from(0xff112233).blend_with_alpha(ARGB::from(0x7f555555), 255).to_array());
-		assert_eq!([0x7f, 0x33, 0x3b, 0x44], ARGB::from(0x7f112233).blend_with_alpha(ARGB::from(0x7f555555), 255).to_array());
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend_with_alpha(ARGB::from(0x7f555555), 255).to_array());
+		assert_eq!([0x11, 0x22, 0x33, 0xff], RGBA::from(0x112233ff).blend_with_alpha(RGBA::from(0x5555557f), 255).to_array());
+		assert_eq!([0x33, 0x3b, 0x44, 0x7f], RGBA::from(0x1122337f).blend_with_alpha(RGBA::from(0x5555557f), 255).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x11223300).blend_with_alpha(RGBA::from(0x5555557f), 255).to_array());
 
-		assert_eq!([0x80, 0x32, 0x3b, 0x43], ARGB::from(0xff112233).blend_with_alpha(ARGB::from(0xff555555), 128).to_array());
-		assert_eq!([0x3f, 0x44, 0x48, 0x4c], ARGB::from(0x7f112233).blend_with_alpha(ARGB::from(0xff555555), 128).to_array());
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend_with_alpha(ARGB::from(0xff555555), 128).to_array());
+		assert_eq!([0x32, 0x3b, 0x43, 0x80], RGBA::from(0x112233ff).blend_with_alpha(RGBA::from(0x555555ff), 128).to_array());
+		assert_eq!([0x44, 0x48, 0x4c, 0x3f], RGBA::from(0x1122337f).blend_with_alpha(RGBA::from(0x555555ff), 128).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x11223300).blend_with_alpha(RGBA::from(0x555555ff), 128).to_array());
 
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0xff112233).blend_with_alpha(ARGB::from(0xff555555), 0).to_array());
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0x7f112233).blend_with_alpha(ARGB::from(0xff555555), 0).to_array());
-		assert_eq!([0x00, 0x55, 0x55, 0x55], ARGB::from(0x00112233).blend_with_alpha(ARGB::from(0xff555555), 0).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x112233ff).blend_with_alpha(RGBA::from(0x555555ff), 0).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x1122337f).blend_with_alpha(RGBA::from(0x555555ff), 0).to_array());
+		assert_eq!([0x55, 0x55, 0x55, 0x00], RGBA::from(0x11223300).blend_with_alpha(RGBA::from(0x555555ff), 0).to_array());
 	}
 
 	#[test]
-	fn argb_tinting() {
-		assert_eq!([0xff, 0x11, 0x22, 0x33], ARGB::from(0xffffffff).tint(ARGB::from(0xff112233)).to_array());
-		assert_eq!([0xff, 0x88, 0x90, 0x99], ARGB::from(0xffffffff).tint(ARGB::from(0x7f112233)).to_array());
-		assert_eq!([0xff, 0xff, 0xff, 0xff], ARGB::from(0xffffffff).tint(ARGB::from(0x00112233)).to_array());
+	fn rgba_tinting() {
+		assert_eq!([0x11, 0x22, 0x33, 0xff], RGBA::from(0xffffffff).tint(RGBA::from(0x112233ff)).to_array());
+		assert_eq!([0x88, 0x90, 0x99, 0xff], RGBA::from(0xffffffff).tint(RGBA::from(0x1122337f)).to_array());
+		assert_eq!([0xff, 0xff, 0xff, 0xff], RGBA::from(0xffffffff).tint(RGBA::from(0x11223300)).to_array());
 	}
 
 	#[test]
-	fn argb_bytes_to_colors_casting() {
+	fn rgba_bytes_to_colors_casting() {
 		let mut bytes =
-			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff];
+			[0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff];
 
 		let colors = unsafe { bytes.as_colors() };
 		assert_eq!(
 			colors,
 			[
-				ARGB::from_argb([0xff, 0xff, 0x00, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0xff, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0x00, 0xff]),
-				ARGB::from_argb([0xff, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0x00, 0xff, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0xff, 0xff]),
 			]
 		);
 
@@ -716,26 +716,26 @@ mod tests {
 		assert_eq!(
 			colors,
 			[
-				ARGB::from_argb([0xff, 0xff, 0x00, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0xff, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0x00, 0xff]),
-				ARGB::from_argb([0xff, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0x00, 0xff, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0xff, 0xff]),
 			]
 		);
 
 		// bytes slice which is NOT an exact multiple of 4
 		let mut bytes = [
-			0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0x7f, 0x7f,
+			0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0x7f, 0x7f,
 		];
 
 		let colors = unsafe { bytes.as_colors() };
 		assert_eq!(
 			colors,
 			[
-				ARGB::from_argb([0xff, 0xff, 0x00, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0xff, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0x00, 0xff]),
-				ARGB::from_argb([0xff, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0x00, 0xff, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0xff, 0xff]),
 			]
 		);
 
@@ -743,68 +743,68 @@ mod tests {
 		assert_eq!(
 			colors,
 			[
-				ARGB::from_argb([0xff, 0xff, 0x00, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0xff, 0x00]),
-				ARGB::from_argb([0xff, 0x00, 0x00, 0xff]),
-				ARGB::from_argb([0xff, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0xff, 0x00, 0xff]),
+				RGBA::from_rgba([0x00, 0x00, 0xff, 0xff]),
+				RGBA::from_rgba([0xff, 0x00, 0xff, 0xff]),
 			]
 		);
 	}
 
 	#[test]
-	fn argb_colors_to_bytes_casting() {
+	fn rgba_colors_to_bytes_casting() {
 		let mut colors = [
-			ARGB::from_argb([0xff, 0xff, 0x00, 0x00]),
-			ARGB::from_argb([0xff, 0x00, 0xff, 0x00]),
-			ARGB::from_argb([0xff, 0x00, 0x00, 0xff]),
-			ARGB::from_argb([0xff, 0xff, 0x00, 0xff]),
+			RGBA::from_rgba([0xff, 0x00, 0x00, 0xff]),
+			RGBA::from_rgba([0x00, 0xff, 0x00, 0xff]),
+			RGBA::from_rgba([0x00, 0x00, 0xff, 0xff]),
+			RGBA::from_rgba([0xff, 0x00, 0xff, 0xff]),
 		];
 
 		let bytes = colors.as_bytes();
 		assert_eq!(
 			bytes,
-			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff]
+			[0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff]
 		);
 
 		let bytes = colors.as_bytes_mut();
 		assert_eq!(
 			bytes,
-			[0xff, 0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff]
+			[0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff]
 		);
 	}
 
 	#[test]
-	fn argbf() {
-		let mut color = ARGBf(simd::f32x4::from_array([0.5, 0.1, 0.2, 0.3]));
-		assert_eq!(color.a(), 0.5);
+	fn rgbaf() {
+		let mut color = RGBAf(simd::f32x4::from_array([0.1, 0.2, 0.3, 0.5]));
 		assert_eq!(color.r(), 0.1);
 		assert_eq!(color.g(), 0.2);
 		assert_eq!(color.b(), 0.3);
-		assert_eq!(color.to_array(), [0.5, 0.1, 0.2, 0.3]);
+		assert_eq!(color.a(), 0.5);
+		assert_eq!(color.to_array(), [0.1, 0.2, 0.3, 0.5]);
 
 		color.set_a(1.0);
-		assert_eq!(color.to_array(), [1.0, 0.1, 0.2, 0.3]);
+		assert_eq!(color.to_array(), [0.1, 0.2, 0.3, 1.0]);
 		color.set_r(0.4);
-		assert_eq!(color.to_array(), [1.0, 0.4, 0.2, 0.3]);
+		assert_eq!(color.to_array(), [0.4, 0.2, 0.3, 1.0]);
 		color.set_g(0.5);
-		assert_eq!(color.to_array(), [1.0, 0.4, 0.5, 0.3]);
+		assert_eq!(color.to_array(), [0.4, 0.5, 0.3, 1.0]);
 		color.set_b(0.6);
-		assert_eq!(color.to_array(), [1.0, 0.4, 0.5, 0.6]);
+		assert_eq!(color.to_array(), [0.4, 0.5, 0.6, 1.0]);
 
-		let color = ARGBf::from_argb([0.5, 0.1, 0.2, 0.3]);
-		assert_eq!(color.to_array(), [0.5, 0.1, 0.2, 0.3]);
+		let color = RGBAf::from_rgba([0.1, 0.2, 0.3, 0.5]);
+		assert_eq!(color.to_array(), [0.1, 0.2, 0.3, 0.5]);
 
-		let color = ARGBf::from_rgb([0.1, 0.2, 0.3]);
-		assert_eq!(color.to_array(), [1.0, 0.1, 0.2, 0.3]);
+		let color = RGBAf::from_rgb([0.1, 0.2, 0.3]);
+		assert_eq!(color.to_array(), [0.1, 0.2, 0.3, 1.0]);
 
-		let color: ARGBf = 0x7f19334c.into();
+		let color: RGBAf = 0x19334c7f.into();
 		assert!(color.a().nearly_equal(0.5, 0.01));
 		assert!(color.r().nearly_equal(0.1, 0.01));
 		assert!(color.g().nearly_equal(0.2, 0.01));
 		assert!(color.b().nearly_equal(0.3, 0.01));
 
-		let other = ARGB::from_argb([0x7f, 0x19, 0x33, 0x4c]);
-		let color: ARGBf = other.into();
+		let other = RGBA::from_rgba([0x19, 0x33, 0x4c, 0x7f]);
+		let color: RGBAf = other.into();
 		assert!(color.a().nearly_equal(0.5, 0.01));
 		assert!(color.r().nearly_equal(0.1, 0.01));
 		assert!(color.g().nearly_equal(0.2, 0.01));

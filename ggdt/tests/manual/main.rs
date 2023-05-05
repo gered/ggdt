@@ -22,7 +22,7 @@ mod system_resources_standard;
 
 use ggdt::prelude::*;
 
-const BACKGROUND_COLOR: ARGB = ARGB::from_rgb([0x2c, 0x30, 0x41]);
+const BACKGROUND_COLOR: RGBA = RGBA::from_rgb([0x2c, 0x30, 0x41]);
 
 fn draw_base_screen<BitmapType>(
 	dest: &mut BitmapType,

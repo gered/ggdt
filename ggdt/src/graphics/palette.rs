@@ -7,7 +7,7 @@ use std::path::Path;
 use byteorder::{ReadBytesExt, WriteBytesExt};
 use thiserror::Error;
 
-use crate::graphics::{IndexedBitmap, ARGB};
+use crate::graphics::{IndexedBitmap, RGBA};
 use crate::utils::abs_diff;
 
 const NUM_COLORS: usize = 256;
@@ -29,16 +29,16 @@ fn to_6bit(value: u8) -> u8 {
 }
 
 // vga bios (0-63) format
-fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[ARGB; NUM_COLORS], PaletteError> {
+fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[RGBA; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [ARGB::from_argb([255, 0, 0, 0]); NUM_COLORS];
+	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = ARGB::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
+		let color = RGBA::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -46,7 +46,7 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 
 fn write_palette_6bit<T: WriteBytesExt>(
 	writer: &mut T,
-	colors: &[ARGB; NUM_COLORS],
+	colors: &[RGBA; NUM_COLORS],
 	num_colors: usize,
 ) -> Result<(), PaletteError> {
 	if num_colors > NUM_COLORS {
@@ -61,16 +61,16 @@ fn write_palette_6bit<T: WriteBytesExt>(
 }
 
 // normal (0-255) format
-fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[ARGB; NUM_COLORS], PaletteError> {
+fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Result<[RGBA; NUM_COLORS], PaletteError> {
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	let mut colors = [ARGB::from_argb([255, 0, 0, 0]); NUM_COLORS];
+	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
 	for i in 0..num_colors {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = ARGB::from_rgb([r, g, b]);
+		let color = RGBA::from_rgb([r, g, b]);
 		colors[i] = color;
 	}
 	Ok(colors)
@@ -78,7 +78,7 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 
 fn write_palette_8bit<T: WriteBytesExt>(
 	writer: &mut T,
-	colors: &[ARGB; NUM_COLORS],
+	colors: &[RGBA; NUM_COLORS],
 	num_colors: usize,
 ) -> Result<(), PaletteError> {
 	if num_colors > NUM_COLORS {
@@ -112,18 +112,18 @@ pub enum PaletteFormat {
 /// colors are all stored individually as 32-bit packed values in the format 0xAARRGGBB.
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Palette {
-	colors: [ARGB; NUM_COLORS],
+	colors: [RGBA; NUM_COLORS],
 }
 
 impl Palette {
 	/// Creates a new Palette with all black colors.
 	pub fn new() -> Palette {
-		Palette { colors: [ARGB::from_rgb([0, 0, 0]); NUM_COLORS] }
+		Palette { colors: [RGBA::from_rgb([0, 0, 0]); NUM_COLORS] }
 	}
 
 	/// Creates a new Palette with all initial colors having the RGB values specified.
 	pub fn new_with_default(r: u8, g: u8, b: u8) -> Palette {
-		Palette { colors: [ARGB::from_rgb([r, g, b]); NUM_COLORS] }
+		Palette { colors: [RGBA::from_rgb([r, g, b]); NUM_COLORS] }
 	}
 
 	/// Creates a new Palette, pre-loaded with the default VGA BIOS colors.
@@ -327,7 +327,7 @@ impl Palette {
 		}
 
 		if modified {
-			self.colors[color as usize] = ARGB::from_rgb([r, g, b]);
+			self.colors[color as usize] = RGBA::from_rgb([r, g, b]);
 		}
 
 		(target_r == r) && (target_g == g) && (target_b == b)
@@ -472,7 +472,7 @@ impl Palette {
 }
 
 impl Index<u8> for Palette {
-	type Output = ARGB;
+	type Output = RGBA;
 
 	#[inline]
 	fn index(&self, index: u8) -> &Self::Output {
@@ -506,11 +506,11 @@ mod tests {
 	#[test]
 	fn get_and_set_colors() {
 		let mut palette = Palette::new();
-		assert_eq!(ARGB::from_rgb([0, 0, 0]), palette[0]);
-		assert_eq!(ARGB::from_rgb([0, 0, 0]), palette[1]);
+		assert_eq!(RGBA::from_rgb([0, 0, 0]), palette[0]);
+		assert_eq!(RGBA::from_rgb([0, 0, 0]), palette[1]);
 		palette[0] = 0x11223344.into();
-		assert_eq!(ARGB::from(0x11223344), palette[0]);
-		assert_eq!(ARGB::from_rgb([0, 0, 0]), palette[1]);
+		assert_eq!(RGBA::from(0x11223344), palette[0]);
+		assert_eq!(RGBA::from_rgb([0, 0, 0]), palette[1]);
 	}
 
 	fn assert_ega_colors(palette: &Palette) {
