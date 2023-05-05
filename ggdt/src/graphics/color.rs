@@ -532,12 +532,30 @@ pub fn tinted_blend_argb_simd(tint: SimdColor4u8, src: SimdColor4u8, dest: SimdC
 ///////////////////////////////////////////////////////////////////////////////
 
 pub trait BytesAsColors<T> {
+	/// Casts a slice of bytes to a slice of structured color values.
+	///
+	/// # Safety
+	///
+	/// The returned slice may not include all of the original slice's bytes if there is some remainder number of bytes
+	/// that is too small to fit into the structured color type.
 	unsafe fn as_colors(&self) -> &[T];
+
+	/// Casts a mutable slice of bytes to a mutable slice of structured color values. Changes made to the returned
+	/// slice will be reflected in the original slice's bytes.
+	///
+	/// # Safety
+	///
+	/// The returned slice may not include all of the original slice's bytes if there is some remainder number of bytes
+	/// that is too small to fit into the structured color type.
 	unsafe fn as_colors_mut(&mut self) -> &mut [T];
 }
 
 pub trait ColorsAsBytes {
+	/// Casts a slice of structured color values to a slice of raw bytes that make up those same color values.
 	fn as_bytes(&self) -> &[u8];
+
+	/// Casts a mutable slice of structure color values to a mutable slice of raw bytes that make up those same color
+	/// values. Changes made to the returned slice will be reflected in the original slice's color values.
 	fn as_bytes_mut(&mut self) -> &mut [u8];
 }
 
@@ -550,56 +568,96 @@ pub struct ARGBu8x4(pub simd::u8x4);
 impl ARGBu8x4 {
 	pub const SIZE: usize = std::mem::size_of::<Self>();
 
+	/// Returns a color value composed of the provided ARGB color components.
+	///
+	/// # Arguments
+	///
+	/// * `argb`: the 4 color components (0-255) in the order: alpha, red, green, blue
+	///
+	/// returns: the composed color value
 	#[inline]
 	pub const fn from_argb(argb: [u8; 4]) -> Self {
 		ARGBu8x4(simd::u8x4::from_array(argb))
 	}
 
+	/// Returns a color value composed of the provided RGB color components. Substitutes a value of 255 for the
+	/// missing alpha component.
+	///
+	/// # Arguments
+	///
+	/// * `rgb`: the 3 color components (0-255) in the order: red, green, blue
+	///
+	/// returns: the composed color value
 	#[inline]
 	pub const fn from_rgb(rgb: [u8; 3]) -> Self {
 		ARGBu8x4(simd::u8x4::from_array([255, rgb[0], rgb[1], rgb[2]]))
 	}
 
+	/// Returns the current alpha component value (0-255) of this color.
 	#[inline]
 	pub const fn a(&self) -> u8 {
 		self.0.to_array()[0]
 	}
 
+	/// Returns the current red component value (0-255) of this color.
 	#[inline]
 	pub const fn r(&self) -> u8 {
 		self.0.to_array()[1]
 	}
 
+	/// Returns the current green component value (0-255) of this color.
 	#[inline]
 	pub const fn g(&self) -> u8 {
 		self.0.to_array()[2]
 	}
 
+	/// Returns the current blue component value (0-255) of this color.
 	#[inline]
 	pub const fn b(&self) -> u8 {
 		self.0.to_array()[3]
 	}
 
+	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new alpha component value to be set (0-255)
 	#[inline]
 	pub fn set_a(&mut self, value: u8) {
 		self.0[0] = value
 	}
 
+	/// Sets the red component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new red component value to be set (0-255)
 	#[inline]
 	pub fn set_r(&mut self, value: u8) {
 		self.0[1] = value
 	}
 
+	/// Sets the green component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new green component value to be set (0-255)
 	#[inline]
 	pub fn set_g(&mut self, value: u8) {
 		self.0[2] = value
 	}
 
+	/// Sets the blue component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new blue component value to be set (0-255)
 	#[inline]
 	pub fn set_b(&mut self, value: u8) {
 		self.0[3] = value
 	}
 
+	/// Returns an array with all of this color's ARGB components, in the order: alpha, red, green, blue.
 	#[inline]
 	pub const fn to_array(&self) -> [u8; 4] {
 		self.0.to_array()
@@ -612,11 +670,34 @@ impl ARGBu8x4 {
 		ARGBu8x4((((src.0.cast() * strength) + (dest.0.cast() * (max - strength))) / max).cast())
 	}
 
+	/// Alpha blends two colors together, using this color as the source color and the other provided color as the
+	/// destination color.
+	///
+	/// # Arguments
+	///
+	/// * `dest`: the destination color that this color is being blended into
+	///
+	/// returns: the blended color result
 	#[inline]
 	pub fn blend(&self, dest: Self) -> Self {
 		ARGBu8x4::blend_components(self.a(), *self, dest)
 	}
 
+	/// Alpha blends two colors together, where the alpha value used to blend the colors is derived from the given
+	/// alpha value multiplied with the source color's alpha component. This allows for more flexibility versus the
+	/// [`ARGBu8x4::blend`] method allowing direct control over how transparent the source color is when blended over
+	/// top of the destination. The blend is performed using this color as the source color and the other provided
+	/// color as the destination color.
+	///
+	/// # Arguments
+	///
+	/// * `dest`: the destination color that this color is being blended into. the alpha component of this color is
+	///           ignored for the purposes of the blending operation.
+	/// * `alpha`: the transparency or opacity of the source color over the destination color. this is multiplied
+	///            together with the source color's (this color) alpha component to arrive at the final alpha value
+	///            used for blending the two color's RGB components together.
+	///
+	/// returns: the blended color result
 	#[inline]
 	pub fn blend_with_alpha(&self, dest: Self, alpha: u8) -> Self {
 		let alpha = ((alpha as u16 * self.a() as u16) / 255) as u8;
@@ -625,6 +706,15 @@ impl ARGBu8x4 {
 		blended
 	}
 
+	/// Applies a tint to a color, using the tint color's alpha component as the strength of the tint, where 0 means
+	/// no tint, and 255 means full tint. The original color's alpha component is preserved in the result.
+	///
+	/// # Arguments
+	///
+	/// * `tint`: the tint color to be applied to this color, where the alpha component represents the strength of
+	///           the tint to be applied
+	///
+	/// returns: the tinted color result
 	#[inline]
 	pub fn tint(&self, mut tint: Self) -> Self {
 		let strength = tint.a();
@@ -632,11 +722,20 @@ impl ARGBu8x4 {
 		ARGBu8x4::blend_components(strength, tint, *self)
 	}
 
+	/// Linearly interpolates between this color and another color.
+	///
+	/// # Arguments
+	///
+	/// * `other`: the other color to interpolate between, used as the "high" or "end" color value
+	/// * `t`: the amount to interpolate between the two values, specified as a fraction
+	///
+	/// returns: the interpolated color result
 	#[inline]
 	pub fn lerp(&self, other: Self, t: f32) -> Self {
 		ARGBu8x4((self.0.cast() + (other.0 - self.0).cast() * simd::f32x4::splat(t)).cast())
 	}
 
+	/// Calculates this color's luminance, returned as a value between 0.0 and 1.0.
 	#[inline]
 	pub fn luminance(&self) -> f32 {
 		(LUMINANCE_RED * srgb_to_linearized(self.r()))
@@ -644,6 +743,8 @@ impl ARGBu8x4 {
 			+ (LUMINANCE_BLUE * srgb_to_linearized(self.b()))
 	}
 
+	/// Calculates the approximate "brightness" / grey-scale value for this color, returned as a value between
+	/// 0 and 255.
 	#[inline]
 	pub fn greyscale(&self) -> u8 {
 		(brightness(self.luminance()) * 255.0) as u8
@@ -653,6 +754,8 @@ impl ARGBu8x4 {
 impl Mul for ARGBu8x4 {
 	type Output = ARGBu8x4;
 
+	/// Multiplies two colors together, returning the result. The multiplication is performed by individually
+	/// multiplying each color component using the formula `(component * component) / 255`.
 	#[inline]
 	fn mul(self, rhs: Self) -> Self::Output {
 		ARGBu8x4(((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast())
@@ -660,6 +763,8 @@ impl Mul for ARGBu8x4 {
 }
 
 impl MulAssign for ARGBu8x4 {
+	/// Multiplies two colors together, assigning the result of the multiplication to this color. The multiplication is
+	/// performed by individually multiplying each color component using the formula `(component * component) / 255`.
 	#[inline]
 	fn mul_assign(&mut self, rhs: Self) {
 		self.0 = ((self.0.cast::<u32>() * rhs.0.cast::<u32>()) / simd::u32x4::splat(255)).cast()
@@ -667,6 +772,8 @@ impl MulAssign for ARGBu8x4 {
 }
 
 impl From<u32> for ARGBu8x4 {
+	/// Returns a color value constructed by unpacking ARGB color components from the given u32 value. The u32 value
+	/// provided is parsed assuming the following locations of each color component: 0xAARRGGBB.
 	#[inline]
 	fn from(value: u32) -> Self {
 		ARGBu8x4::from_argb([
@@ -679,6 +786,8 @@ impl From<u32> for ARGBu8x4 {
 }
 
 impl From<ARGBu8x4> for u32 {
+	/// Returns a u32 containing packed ARGB color components from this color. The returned u32 value contains the
+	/// color components packed in format 0xAARRGGBB.
 	#[inline]
 	fn from(value: ARGBu8x4) -> Self {
 		(value.b() as u32) // b
@@ -689,6 +798,7 @@ impl From<ARGBu8x4> for u32 {
 }
 
 impl From<ARGBf32x4> for ARGBu8x4 {
+	/// Converts a [`ARGBf32x4`] color to an equivalent [`ARGBu8x4`] color value.
 	#[inline]
 	fn from(value: ARGBf32x4) -> Self {
 		ARGBu8x4::from_argb([
@@ -779,56 +889,96 @@ impl ReadType for ARGBu8x4 {
 pub struct ARGBf32x4(pub simd::f32x4);
 
 impl ARGBf32x4 {
+	/// Returns a color value composed of the provided ARGB color components.
+	///
+	/// # Arguments
+	///
+	/// * `argb`: the 4 color components (0.0 to 1.0) in the order: alpha, red, green, blue
+	///
+	/// returns: the composed color value
 	#[inline]
 	pub const fn from_argb(argb: [f32; 4]) -> Self {
 		ARGBf32x4(simd::f32x4::from_array(argb))
 	}
 
+	/// Returns a color value composed of the provided RGB color components. Substitutes a value of 1.0 for the
+	/// missing alpha component.
+	///
+	/// # Arguments
+	///
+	/// * `rgb`: the 3 color components (0.0 to 1.0) in the order: red, green, blue
+	///
+	/// returns: the composed color value
 	#[inline]
 	pub const fn from_rgb(rgb: [f32; 3]) -> Self {
 		ARGBf32x4(simd::f32x4::from_array([1.0, rgb[0], rgb[1], rgb[2]]))
 	}
 
+	/// Returns the current alpha component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn a(&self) -> f32 {
 		self.0.to_array()[0]
 	}
 
+	/// Returns the current red component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn r(&self) -> f32 {
 		self.0.to_array()[1]
 	}
 
+	/// Returns the current green component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn g(&self) -> f32 {
 		self.0.to_array()[2]
 	}
 
+	/// Returns the current blue component value (0.0 to 1.0) of this color.
 	#[inline]
 	pub const fn b(&self) -> f32 {
 		self.0.to_array()[3]
 	}
 
+	/// Sets the alpha component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new alpha component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_a(&mut self, value: f32) {
 		self.0[0] = value
 	}
 
+	/// Sets the red component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new red component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_r(&mut self, value: f32) {
 		self.0[1] = value
 	}
 
+	/// Sets the green component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new green component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_g(&mut self, value: f32) {
 		self.0[2] = value
 	}
 
+	/// Sets the blue component value of this color leaving the other components in the color unchanged.
+	///
+	/// # Arguments
+	///
+	/// * `value`: the new blue component value to be set (0.0 to 1.0)
 	#[inline]
 	pub fn set_b(&mut self, value: f32) {
 		self.0[3] = value
 	}
 
+	/// Returns an array with all of this color's ARGB components, in the order: alpha, red, green, blue.
 	#[inline]
 	pub const fn to_array(&self) -> [f32; 4] {
 		self.0.to_array()
@@ -836,6 +986,8 @@ impl ARGBf32x4 {
 }
 
 impl From<u32> for ARGBf32x4 {
+	/// Returns a color value constructed by unpacking ARGB color components from the given u32 value. The u32 value
+	/// provided is parsed assuming the following locations of each color component: 0xAARRGGBB.
 	#[inline]
 	fn from(value: u32) -> Self {
 		ARGBf32x4::from_argb([
@@ -848,6 +1000,7 @@ impl From<u32> for ARGBf32x4 {
 }
 
 impl From<ARGBu8x4> for ARGBf32x4 {
+	/// Converts a [`ARGBf32x4`] color to an equivalent [`ARGBu8x4`] color value.
 	#[inline]
 	fn from(value: ARGBu8x4) -> Self {
 		ARGBf32x4::from_argb([
