@@ -1,8 +1,10 @@
-use crate::context::{CoreContext, GameContext};
-use crate::tilemap::TileMap;
-use ggdt::prelude::*;
 use std::collections::HashMap;
 use std::rc::Rc;
+
+use ggdt::prelude::*;
+
+use crate::context::{CoreContext, GameContext};
+use crate::tilemap::TileMap;
 
 pub const FRICTION: f32 = 0.5;
 pub const DEFAULT_PUSH_STRENGTH: f32 = 0.5;
@@ -211,7 +213,7 @@ impl RandomlyWalksAround {
 	}
 }
 
-pub struct Slime;
+pub struct Slime(pub SlimeColor);
 
 pub struct Sprite {
 	pub atlas: Rc<BitmapAtlas<RgbaBitmap>>,
@@ -738,7 +740,7 @@ pub fn new_slime_entity(
 	let animate_by_activity = AnimateByActivity(context.slime_activity_states.clone());
 	let animation = AnimationInstance::from(animate_by_activity.0.get(&activity).unwrap().clone());
 
-	context.entities.add_component(id, Slime);
+	context.entities.add_component(id, Slime(color));
 	context.entities.add_component(id, Position(Vector2::new(x as f32, y as f32)));
 	context.entities.add_component(id, Velocity(Vector2::ZERO));
 	context.entities.add_component(id, Forces::new());

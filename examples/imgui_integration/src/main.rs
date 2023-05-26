@@ -1,15 +1,16 @@
-mod context;
-mod entities;
-mod support;
-mod tilemap;
-
 use anyhow::Result;
+
+use ggdt::prelude::*;
+use ggdt_imgui::UiSupport;
 
 use crate::context::GameContext;
 use crate::entities::{Forces, Position, Slime};
 use crate::tilemap::{TILE_HEIGHT, TILE_WIDTH};
-use ggdt::prelude::*;
-use ggdt_imgui::UiSupport;
+
+mod context;
+mod entities;
+mod support;
+mod tilemap;
 
 #[derive(Default)]
 pub struct DemoState {
@@ -27,16 +28,25 @@ impl AppState<GameContext> for DemoState {
 		let ui = context.support.imgui.new_frame(&context.core.system.res.video);
 		ui.window("Entities")
 			.position([10.0, 10.0], imgui::Condition::FirstUseEver)
-			.size([200.0, 200.0], imgui::Condition::FirstUseEver)
+			.size([240.0, 200.0], imgui::Condition::FirstUseEver)
 			.build(|| {
 				ui.text(format!("Camera: {}, {}", context.core.camera_x, context.core.camera_y));
 
 				ui.separator();
 				ui.text_colored([1.0, 1.0, 0.0, 1.0], "Slimes");
 				let mut positions = context.core.entities.components_mut::<Position>().unwrap();
+				let mut slime_types = context.core.entities.components::<Slime>();
 				for (slime, _) in context.core.entities.components::<Slime>().unwrap().iter() {
 					let position = positions.get(slime).unwrap();
+					let slime_type = slime_types.get(slime).unwrap();
 					ui.text(format!("{:2} @ {:3.0},{:3.0}", *slime, position.0.x, position.0.y));
+
+					if let Some(slime_type_texture_id) = context.core.slime_texture_id_map.get(&slime_type.0) {
+						ui.same_line();
+						ui.invisible_button("Slime Type", [16.0, 16.0]);
+						let draw_list = ui.get_window_draw_list();
+						draw_list.add_image(*slime_type_texture_id, ui.item_rect_min(), ui.item_rect_max()).build();
+					}
 
 					ui.same_line();
 					let clicked = {

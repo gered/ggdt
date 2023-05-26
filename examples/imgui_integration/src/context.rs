@@ -1,11 +1,14 @@
-use crate::entities::{AnimationDef, EntityActivity, Event};
-use crate::support::{load_bitmap_atlas_autogrid, load_font, load_palette};
-use crate::tilemap::TileMap;
-use anyhow::Result;
-use ggdt::prelude::*;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
+
+use anyhow::Result;
+
+use ggdt::prelude::*;
+
+use crate::entities::{AnimationDef, EntityActivity, Event, SlimeColor};
+use crate::support::{load_bitmap_atlas_autogrid, load_font, load_palette};
+use crate::tilemap::TileMap;
 
 pub struct CoreContext {
 	pub delta: f32,
@@ -25,6 +28,7 @@ pub struct CoreContext {
 	pub tilemap: TileMap,
 	pub slime_activity_states: Rc<HashMap<EntityActivity, Rc<AnimationDef>>>,
 	pub sprite_render_list: Vec<(EntityId, Vector2, RgbaBlitMethod)>,
+	pub slime_texture_id_map: HashMap<SlimeColor, imgui::TextureId>,
 }
 
 impl CoreState<Standard> for CoreContext {
@@ -103,7 +107,15 @@ impl GameContext {
 		let component_systems = ComponentSystems::new();
 		let event_publisher = EventPublisher::new();
 		let event_listeners = EventListeners::new();
-		let imgui = ggdt_imgui::ImGui::new();
+		let mut imgui = ggdt_imgui::ImGui::new();
+
+		let mut slime_texture_id_map = HashMap::new();
+		slime_texture_id_map
+			.insert(SlimeColor::Green, imgui.texture_map_mut().insert(green_slime.clone_tile(0).unwrap()));
+		slime_texture_id_map
+			.insert(SlimeColor::Blue, imgui.texture_map_mut().insert(blue_slime.clone_tile(0).unwrap()));
+		slime_texture_id_map
+			.insert(SlimeColor::Orange, imgui.texture_map_mut().insert(orange_slime.clone_tile(0).unwrap()));
 
 		let slime_activity_states = HashMap::from([
 			(EntityActivity::Idle, Rc::new(AnimationDef::new(&[1, 2], true, 1.0, Some(3)))),
@@ -129,6 +141,7 @@ impl GameContext {
 				tilemap,
 				slime_activity_states: Rc::new(slime_activity_states),
 				sprite_render_list: Vec::new(),
+				slime_texture_id_map,
 			},
 			support: SupportContext { component_systems, event_listeners, imgui },
 		})
