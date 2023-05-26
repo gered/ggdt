@@ -2,13 +2,16 @@ use std::ops::Index;
 
 use thiserror::Error;
 
-use crate::graphics::GeneralBitmap;
+use crate::graphics::{GeneralBitmap, GeneralBlitMethod};
 use crate::math::Rect;
 
 #[derive(Error, Debug)]
 pub enum BitmapAtlasError {
 	#[error("Region is out of bounds for the Bitmap used by the BitmapAtlas")]
 	OutOfBounds,
+
+	#[error("Tile index {0} is invalid / out of range")]
+	InvalidTileIndex(usize),
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -117,6 +120,16 @@ where
 	#[inline]
 	pub fn bitmap(&self) -> &BitmapType {
 		&self.bitmap
+	}
+
+	pub fn clone_tile(&self, index: usize) -> Result<BitmapType, BitmapAtlasError> {
+		if let Some(tile_rect) = self.get(index) {
+			let mut tile_bitmap = BitmapType::new(tile_rect.width, tile_rect.height).unwrap();
+			tile_bitmap.blit_region(GeneralBlitMethod::Solid, &self.bitmap, tile_rect, 0, 0);
+			Ok(tile_bitmap)
+		} else {
+			Err(BitmapAtlasError::InvalidTileIndex(index))
+		}
 	}
 }
 
