@@ -2,6 +2,26 @@ use ggdt::graphics::{BlendFunction, RgbaBitmap, RgbaPixelFormat, RGBA};
 use ggdt::math::{Rect, Vector2};
 use imgui::internal::RawWrapper;
 
+fn create_default_texture_map(context: &mut imgui::Context) -> imgui::Textures<RgbaBitmap> {
+	let mut texture_map = imgui::Textures::new();
+
+	// set up a bitmap with the imgui font atlas texture pixels and register a bitmap->texture mapping for it
+	// with imgui
+	let mut font = context.fonts();
+	let mut font_atlas_texture = font.build_rgba32_texture();
+	font.tex_id = texture_map.insert(
+		RgbaBitmap::from_bytes(
+			font_atlas_texture.width,
+			font_atlas_texture.height,
+			RgbaPixelFormat::RGBA,
+			&mut font_atlas_texture.data,
+		)
+		.unwrap(),
+	);
+
+	texture_map
+}
+
 #[derive(Debug)]
 pub struct Renderer {
 	pub texture_map: imgui::Textures<RgbaBitmap>,
@@ -9,23 +29,7 @@ pub struct Renderer {
 
 impl Renderer {
 	pub fn new(context: &mut imgui::Context) -> Self {
-		let mut texture_map = imgui::Textures::new();
-
-		// set up a bitmap with the imgui font atlas texture pixels and register a bitmap->texture mapping for it
-		// with imgui
-		let mut font = context.fonts();
-		let mut font_atlas_texture = font.build_rgba32_texture();
-		font.tex_id = texture_map.insert(
-			RgbaBitmap::from_bytes(
-				font_atlas_texture.width,
-				font_atlas_texture.height,
-				RgbaPixelFormat::RGBA,
-				&mut font_atlas_texture.data,
-			)
-			.unwrap(),
-		);
-
-		Renderer { texture_map }
+		Renderer { texture_map: create_default_texture_map(context) }
 	}
 
 	pub fn render(&mut self, draw_data: &imgui::DrawData, dest: &mut RgbaBitmap) {
@@ -80,5 +84,9 @@ impl Renderer {
 			}
 		}
 		dest.set_clip_region(&original_clip_rect);
+	}
+
+	pub fn reset_textures(&mut self, context: &mut imgui::Context) {
+		self.texture_map = create_default_texture_map(context);
 	}
 }
