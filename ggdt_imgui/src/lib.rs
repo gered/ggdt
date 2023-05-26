@@ -45,6 +45,20 @@ impl ImGui {
 	pub fn context_mut(&mut self) -> &mut imgui::Context {
 		&mut self.context
 	}
+
+	#[inline]
+	pub fn texture_map(&self) -> &imgui::Textures<RgbaBitmap> {
+		&self.renderer.texture_map
+	}
+
+	#[inline]
+	pub fn texture_map_mut(&mut self) -> &mut imgui::Textures<RgbaBitmap> {
+		&mut self.renderer.texture_map
+	}
+
+	pub fn reset_texture_map(&mut self) {
+		self.renderer.reset_textures(&mut self.context);
+	}
 }
 
 impl SystemEventHandler for ImGui {
