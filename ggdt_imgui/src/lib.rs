@@ -70,6 +70,7 @@ impl SystemEventHandler for ImGui {
 pub trait UiSupport {
 	fn is_any_hovered(&self) -> bool;
 	fn is_any_focused(&self) -> bool;
+	fn image(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2]);
 }
 
 impl UiSupport for imgui::Ui {
@@ -79,5 +80,11 @@ impl UiSupport for imgui::Ui {
 
 	fn is_any_focused(&self) -> bool {
 		self.is_window_focused_with_flags(imgui::WindowFocusedFlags::ANY_WINDOW)
+	}
+
+	fn image(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2]) {
+		self.invisible_button(id, size);
+		let draw_list = self.get_window_draw_list();
+		draw_list.add_image(texture_id, self.item_rect_min(), self.item_rect_max()).build();
 	}
 }

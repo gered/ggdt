@@ -43,9 +43,7 @@ impl AppState<GameContext> for DemoState {
 
 					if let Some(slime_type_texture_id) = context.core.slime_texture_id_map.get(&slime_type.0) {
 						ui.same_line();
-						ui.invisible_button("Slime Type", [16.0, 16.0]);
-						let draw_list = ui.get_window_draw_list();
-						draw_list.add_image(*slime_type_texture_id, ui.item_rect_min(), ui.item_rect_max()).build();
+						ui.image("Slime Type", *slime_type_texture_id, [16.0, 16.0]);
 					}
 
 					ui.same_line();
