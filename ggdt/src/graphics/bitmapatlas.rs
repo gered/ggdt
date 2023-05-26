@@ -183,6 +183,16 @@ mod tests {
 		let bmp = IndexedBitmap::new(64, 64).unwrap();
 		let mut atlas = BitmapAtlas::new(bmp);
 
+		assert_eq!(3, atlas.add_grid(32, 32).unwrap());
+		assert_eq!(4, atlas.len());
+		assert_eq!(Rect::new(0, 0, 32, 32), atlas[0]);
+		assert_eq!(Rect::new(32, 0, 32, 32), atlas[1]);
+		assert_eq!(Rect::new(0, 32, 32, 32), atlas[2]);
+		assert_eq!(Rect::new(32, 32, 32, 32), atlas[3]);
+
+		atlas.clear();
+		assert_eq!(0, atlas.len());
+
 		assert_eq!(3, atlas.add_custom_grid(0, 0, 8, 8, 2, 2, 0).unwrap());
 		assert_eq!(4, atlas.len());
 		assert_eq!(Rect::new(0, 0, 8, 8), atlas[0]);
