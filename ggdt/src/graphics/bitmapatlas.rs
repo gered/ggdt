@@ -12,6 +12,9 @@ pub enum BitmapAtlasError {
 
 	#[error("Tile index {0} is invalid / out of range")]
 	InvalidTileIndex(usize),
+
+	#[error("Invalid dimensions for region")]
+	InvalidDimensions,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -38,6 +41,9 @@ where
 	}
 
 	pub fn add(&mut self, rect: Rect) -> Result<usize, BitmapAtlasError> {
+		if rect.width == 0 || rect.height == 0 {
+			return Err(BitmapAtlasError::InvalidDimensions);
+		}
 		if !self.bounds.contains_rect(&rect) {
 			return Err(BitmapAtlasError::OutOfBounds);
 		}
@@ -47,6 +53,9 @@ where
 	}
 
 	pub fn add_grid(&mut self, tile_width: u32, tile_height: u32) -> Result<usize, BitmapAtlasError> {
+		if tile_width == 0 || tile_height == 0 {
+			return Err(BitmapAtlasError::InvalidDimensions);
+		}
 		if self.bounds.width < tile_width || self.bounds.height < tile_height {
 			return Err(BitmapAtlasError::OutOfBounds);
 		}
@@ -73,6 +82,10 @@ where
 		y_tiles: u32,
 		border: u32,
 	) -> Result<usize, BitmapAtlasError> {
+		if tile_width == 0 || tile_height == 0 {
+			return Err(BitmapAtlasError::InvalidDimensions);
+		}
+
 		// figure out of the grid properties given would result in us creating any
 		// rects that lie out of the bounds of this bitmap
 		let grid_region = Rect::new(
@@ -209,5 +222,27 @@ mod tests {
 		assert_eq!(Rect::new(5, 0, 4, 8), atlas[1]);
 		assert_eq!(Rect::new(0, 9, 4, 8), atlas[2]);
 		assert_eq!(Rect::new(5, 9, 4, 8), atlas[3]);
+	}
+
+	#[test]
+	pub fn adding_with_invalid_dimensions_fails() {
+		let bmp = IndexedBitmap::new(64, 64).unwrap();
+		let mut atlas = BitmapAtlas::new(bmp);
+
+		assert_matches!(atlas.add(Rect::new(0, 0, 0, 0)), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add(Rect::new(16, 16, 0, 0)), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add(Rect::new(16, 16, 8, 0)), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add(Rect::new(16, 16, 0, 8)), Err(BitmapAtlasError::InvalidDimensions));
+		assert_eq!(0, atlas.len());
+
+		assert_matches!(atlas.add_grid(0, 0), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add_grid(8, 0), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add_grid(0, 8), Err(BitmapAtlasError::InvalidDimensions));
+		assert_eq!(0, atlas.len());
+
+		assert_matches!(atlas.add_custom_grid(0, 0, 0, 0, 2, 2, 1), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add_custom_grid(0, 0, 8, 0, 2, 2, 1), Err(BitmapAtlasError::InvalidDimensions));
+		assert_matches!(atlas.add_custom_grid(0, 0, 0, 8, 2, 2, 1), Err(BitmapAtlasError::InvalidDimensions));
+		assert_eq!(0, atlas.len());
 	}
 }
