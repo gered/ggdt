@@ -35,10 +35,8 @@ impl AppState<GameContext> for DemoState {
 				ui.separator();
 				ui.text_colored([1.0, 1.0, 0.0, 1.0], "Slimes");
 				let mut positions = context.core.entities.components_mut::<Position>().unwrap();
-				let mut slime_types = context.core.entities.components::<Slime>();
-				for (slime, _) in context.core.entities.components::<Slime>().unwrap().iter() {
+				for (slime, slime_type) in context.core.entities.components::<Slime>().unwrap().iter() {
 					let position = positions.get(slime).unwrap();
-					let slime_type = slime_types.get(slime).unwrap();
 					ui.text(format!("{:2} @ {:3.0},{:3.0}", *slime, position.0.x, position.0.y));
 
 					if let Some(slime_type_texture_id) = context.core.slime_texture_id_map.get(&slime_type.0) {
