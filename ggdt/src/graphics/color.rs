@@ -624,7 +624,7 @@ mod tests {
 		assert_eq!(color.to_array(), [0x19, 0x33, 0x4c, 0x7f]);
 
 		let color = RGBA::from_rgba([0x11, 0x22, 0x33, 0x44]);
-		assert_eq!(0x11223344u32, color.into())
+		assert_eq!(0x11223344u32, u32::from(color))
 	}
 
 	#[test]
