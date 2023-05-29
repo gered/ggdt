@@ -1,4 +1,7 @@
+use std::fs::File;
+use std::io::{BufReader, BufWriter, Read, Write};
 use std::ops::Index;
+use std::path::Path;
 
 use thiserror::Error;
 
@@ -15,6 +18,9 @@ pub enum BitmapAtlasError {
 
 	#[error("Invalid dimensions for region")]
 	InvalidDimensions,
+
+	#[error("No bitmap atlas entries in the descriptor")]
+	NoEntries,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -38,6 +44,27 @@ where
 			bounds,
 			tiles: Vec::new(),
 		}
+	}
+
+	pub fn from_descriptor(descriptor: &BitmapAtlasDescriptor, bitmap: BitmapType) -> Result<Self, BitmapAtlasError> {
+		if descriptor.tiles.is_empty() {
+			return Err(BitmapAtlasError::NoEntries);
+		}
+
+		let mut atlas = BitmapAtlas::new(bitmap);
+		for entry in descriptor.tiles.iter() {
+			use BitmapAtlasDescriptorEntry::*;
+			match entry {
+				Tile { x, y, width, height } => {
+					atlas.add(Rect::new(*x as i32, *y as i32, *width, *height))?;
+				}
+				Autogrid { x, y, tile_width, tile_height, num_tiles_x, num_tiles_y, border } => {
+					atlas.add_custom_grid(*x, *y, *tile_width, *tile_height, *num_tiles_x, *num_tiles_y, *border)?;
+				}
+			}
+		}
+
+		Ok(atlas)
 	}
 
 	pub fn add(&mut self, rect: Rect) -> Result<usize, BitmapAtlasError> {
@@ -155,6 +182,70 @@ where
 	#[inline]
 	fn index(&self, index: usize) -> &Self::Output {
 		self.get(index).unwrap()
+	}
+}
+
+#[derive(Error, Debug)]
+pub enum BitmapAtlasDescriptorError {
+	#[error("Serde Json serialization/deserialization error: {0}")]
+	SerdeJsonError(String),
+
+	#[error("I/O error")]
+	IOError(#[from] std::io::Error),
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum BitmapAtlasDescriptorEntry {
+	Tile {
+		x: u32, //
+		y: u32,
+		width: u32,
+		height: u32,
+	},
+	Autogrid {
+		x: u32, //
+		y: u32,
+		tile_width: u32,
+		tile_height: u32,
+		num_tiles_x: u32,
+		num_tiles_y: u32,
+		border: u32,
+	},
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct BitmapAtlasDescriptor {
+	pub bitmap: String,
+	pub tiles: Vec<BitmapAtlasDescriptorEntry>,
+}
+
+impl BitmapAtlasDescriptor {
+	pub fn load_from_file(path: &Path) -> Result<Self, BitmapAtlasDescriptorError> {
+		let f = File::open(path)?;
+		let mut reader = BufReader::new(f);
+		Self::load_from_bytes(&mut reader)
+	}
+
+	pub fn load_from_bytes<T: Read>(reader: &mut T) -> Result<Self, BitmapAtlasDescriptorError> {
+		match serde_json::from_reader(reader) {
+			Ok(desc) => Ok(desc),
+			Err(error) => Err(BitmapAtlasDescriptorError::SerdeJsonError(error.to_string())),
+		}
+	}
+
+	pub fn to_file(&self, path: &Path) -> Result<(), BitmapAtlasDescriptorError> {
+		let f = File::create(path)?;
+		let mut writer = BufWriter::new(f);
+		self.to_bytes(&mut writer)
+	}
+
+	pub fn to_bytes<T: Write>(&self, writer: &mut T) -> Result<(), BitmapAtlasDescriptorError> {
+		if let Err(error) = serde_json::to_writer_pretty(writer, &self) {
+			Err(BitmapAtlasDescriptorError::SerdeJsonError(error.to_string()))
+		} else {
+			Ok(())
+		}
 	}
 }
 
