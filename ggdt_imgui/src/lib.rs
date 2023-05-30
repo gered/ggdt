@@ -73,6 +73,8 @@ pub trait UiSupport {
 	fn is_any_hovered(&self) -> bool;
 	fn is_any_focused(&self) -> bool;
 	fn image(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2]) -> bool;
+	fn image_region(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2], region: [f32; 4])
+		-> bool;
 }
 
 impl UiSupport for imgui::Ui {
@@ -96,6 +98,24 @@ impl UiSupport for imgui::Ui {
 		let clicked = self.invisible_button(id, size);
 		let draw_list = self.get_window_draw_list();
 		draw_list.add_image(texture_id, self.item_rect_min(), self.item_rect_max()).build();
+		clicked
+	}
+
+	fn image_region(
+		&self,
+		id: impl AsRef<str>,
+		texture_id: imgui::TextureId,
+		size: [f32; 2],
+		region: [f32; 4],
+	) -> bool {
+		let clicked = self.invisible_button(id, size);
+		let draw_list = self.get_window_draw_list();
+
+		draw_list
+			.add_image(texture_id, self.item_rect_min(), self.item_rect_max())
+			.uv_min([region[0], region[1]])
+			.uv_max([region[2], region[3]])
+			.build();
 		clicked
 	}
 }
