@@ -157,6 +157,17 @@ where
 		self.tiles.get(index)
 	}
 
+	pub fn get_uv(&self, index: usize) -> Option<[f32; 4]> {
+		self.tiles.get(index).map(|rect| {
+			[
+				(rect.x as f32 / self.bitmap.width() as f32),
+				(rect.y as f32 / self.bitmap.height() as f32),
+				((rect.x + rect.width as i32) as f32 / self.bitmap.width() as f32),
+				((rect.y + rect.height as i32) as f32 / self.bitmap.height() as f32),
+			]
+		})
+	}
+
 	#[inline]
 	pub fn bitmap(&self) -> &BitmapType {
 		&self.bitmap
