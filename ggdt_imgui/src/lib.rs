@@ -68,12 +68,22 @@ impl SystemEventHandler for ImGui {
 }
 
 pub trait UiSupport {
+	fn display_width(&self) -> f32;
+	fn display_height(&self) -> f32;
 	fn is_any_hovered(&self) -> bool;
 	fn is_any_focused(&self) -> bool;
 	fn image(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2]);
 }
 
 impl UiSupport for imgui::Ui {
+	fn display_width(&self) -> f32 {
+		self.io().display_size[0]
+	}
+
+	fn display_height(&self) -> f32 {
+		self.io().display_size[1]
+	}
+
 	fn is_any_hovered(&self) -> bool {
 		self.is_window_hovered_with_flags(imgui::WindowHoveredFlags::ANY_WINDOW)
 	}
