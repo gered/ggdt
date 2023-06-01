@@ -2,8 +2,6 @@ use sdl2::audio::{AudioFormat, AudioFormatNum, AudioSpecDesired};
 use sdl2::AudioSubsystem;
 use thiserror::Error;
 
-use crate::audio::AudioDevice;
-
 mod buffer;
 mod device;
 mod queue;
