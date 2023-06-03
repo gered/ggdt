@@ -75,6 +75,7 @@ pub trait UiSupport {
 	fn image(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2]) -> bool;
 	fn image_region(&self, id: impl AsRef<str>, texture_id: imgui::TextureId, size: [f32; 2], region: [f32; 4])
 		-> bool;
+	fn clear_window_focus(&self);
 }
 
 impl UiSupport for imgui::Ui {
@@ -117,5 +118,12 @@ impl UiSupport for imgui::Ui {
 			.uv_max([region[2], region[3]])
 			.build();
 		clicked
+	}
+
+	fn clear_window_focus(&self) {
+		unsafe {
+			imgui::sys::igSetWindowFocus_Str(std::ptr::null());
+			imgui::sys::igClearActiveID();
+		}
 	}
 }
