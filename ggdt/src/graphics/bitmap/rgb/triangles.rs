@@ -1,4 +1,5 @@
 use std::simd;
+use std::simd::{SimdFloat, SimdUint};
 
 use crate::graphics::{edge_function, per_pixel_triangle_2d, BlendFunction, RgbaBitmap, RGBA};
 use crate::math::Vector2;

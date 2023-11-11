@@ -4,4 +4,4 @@
 # necessarily see a reason to keep using whatever nightly version is the latest, and would
 # prefer stick with versions that appear to be stable and just periodically do manual updates
 # here to get *some* peace of mind in terms of build stability.
-channel = "nightly-2023-05-30"
+channel = "nightly-2023-11-10"

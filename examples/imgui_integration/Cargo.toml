@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-anyhow = "=1.0.55"
+anyhow = "=1.0.75"
 ggdt = { path = "../../ggdt" }
 ggdt_imgui = { path = "../../ggdt_imgui" }
 imgui = "0.11.0"

@@ -10,4 +10,4 @@ edition = "2021"
 [dependencies]
 ggdt = { path = "../ggdt" }
 imgui = { version = "0.11.0", features = ["docking"] }
-thiserror = "=1.0.30"
+thiserror = "=1.0.50"

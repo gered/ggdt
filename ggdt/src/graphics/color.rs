@@ -1,5 +1,6 @@
 use std::ops::{Mul, MulAssign};
 use std::simd;
+use std::simd::{SimdFloat, SimdUint};
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
 
