@@ -57,7 +57,7 @@ pub trait Font {
 		PixelType: Pixel;
 }
 
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct BitmaskCharacter {
 	bytes: [u8; CHAR_HEIGHT],
 	bounds: Rect,
