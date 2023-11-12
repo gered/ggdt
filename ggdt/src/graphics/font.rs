@@ -21,6 +21,15 @@ pub enum FontError {
 
 	#[error("Font I/O error")]
 	IOError(#[from] std::io::Error),
+
+	#[error("Invalid character dimensions")]
+	InvalidCharacterDimensions,
+
+	#[error("Invalid number of characters")]
+	InvalidNumberOfCharacters,
+
+	#[error("Invalid line height")]
+	InvalidLineHeight,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -51,6 +60,16 @@ pub trait Font {
 pub struct BitmaskCharacter {
 	bytes: [u8; CHAR_HEIGHT],
 	bounds: Rect,
+}
+
+impl BitmaskCharacter {
+	pub fn new(bytes: [u8; CHAR_HEIGHT], width: usize) -> Result<BitmaskCharacter, FontError> {
+		if width < 1 || width > CHAR_FIXED_WIDTH {
+			return Err(FontError::InvalidCharacterDimensions);
+		}
+
+		Ok(BitmaskCharacter { bytes, bounds: Rect::new(0, 0, width as u32, CHAR_HEIGHT as u32) })
+	}
 }
 
 impl Character for BitmaskCharacter {
@@ -116,6 +135,27 @@ impl BitmaskFont {
 		BitmaskFont::load_from_bytes(&mut Cursor::new(VGA_FONT_BYTES))
 	}
 
+	pub fn new(characters: &[BitmaskCharacter], line_height: usize) -> Result<BitmaskFont, FontError> {
+		if characters.len() != NUM_CHARS {
+			return Err(FontError::InvalidNumberOfCharacters);
+		}
+		if line_height < 1 || line_height > CHAR_HEIGHT {
+			return Err(FontError::InvalidLineHeight);
+		}
+
+		let mut font = BitmaskFont {
+			characters: Box::from(characters),
+			line_height: line_height as u8,
+			space_width: characters[' ' as usize].bounds.width as u8,
+		};
+
+		for i in 0..NUM_CHARS {
+			font.characters[i].bounds.height = line_height as u32;
+		}
+
+		Ok(font)
+	}
+
 	pub fn load_from_file(path: &Path) -> Result<BitmaskFont, FontError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
@@ -145,17 +185,8 @@ impl BitmaskFont {
 
 		// read global font height (used for rendering)
 		let line_height = reader.read_u8()?;
-		for i in 0..NUM_CHARS {
-			characters[i].bounds.height = line_height as u32;
-		}
 
-		let space_width = characters[' ' as usize].bounds.width as u8;
-
-		Ok(BitmaskFont {
-			characters: characters.into_boxed_slice(), //
-			line_height,
-			space_width,
-		})
+		Self::new(&characters, line_height as usize)
 	}
 
 	pub fn to_file(&self, path: &Path) -> Result<(), FontError> {
