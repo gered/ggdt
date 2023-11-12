@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Cursor};
+use std::ops::{Index, IndexMut};
 use std::path::Path;
 
 use byteorder::{ReadBytesExt, WriteBytesExt};
@@ -62,13 +63,29 @@ pub struct BitmaskCharacter {
 	bounds: Rect,
 }
 
-impl BitmaskCharacter {
-	pub fn new(bytes: [u8; CHAR_HEIGHT], width: usize) -> Result<BitmaskCharacter, FontError> {
-		if width < 1 || width > CHAR_FIXED_WIDTH {
-			return Err(FontError::InvalidCharacterDimensions);
+impl Default for BitmaskCharacter {
+	fn default() -> Self {
+		BitmaskCharacter {
+			//
+			bytes: [0u8; CHAR_HEIGHT],
+			bounds: Rect::new(0, 0, CHAR_FIXED_WIDTH as u32, CHAR_HEIGHT as u32),
 		}
+	}
+}
 
-		Ok(BitmaskCharacter { bytes, bounds: Rect::new(0, 0, width as u32, CHAR_HEIGHT as u32) })
+impl Index<u8> for BitmaskCharacter {
+	type Output = u8;
+
+	#[inline]
+	fn index(&self, index: u8) -> &Self::Output {
+		&self.bytes[index as usize]
+	}
+}
+
+impl IndexMut<u8> for BitmaskCharacter {
+	#[inline]
+	fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+		&mut self.bytes[index as usize]
 	}
 }
 
@@ -110,6 +127,42 @@ impl Character for BitmaskCharacter {
 				bit_mask >>= 1;
 			}
 		}
+	}
+}
+
+impl BitmaskCharacter {
+	pub fn new(bytes: [u8; CHAR_HEIGHT], width: usize) -> Result<BitmaskCharacter, FontError> {
+		if width < 1 || width > CHAR_FIXED_WIDTH {
+			return Err(FontError::InvalidCharacterDimensions);
+		}
+
+		Ok(BitmaskCharacter { bytes, bounds: Rect::new(0, 0, width as u32, CHAR_HEIGHT as u32) })
+	}
+
+	#[inline]
+	pub fn width(&self) -> u8 {
+		self.bounds.width as u8
+	}
+
+	pub fn set_width(&mut self, width: u8) -> Result<(), FontError> {
+		if width < 1 || width > CHAR_FIXED_WIDTH as u8 {
+			return Err(FontError::InvalidCharacterDimensions);
+		}
+		self.bounds.width = width as u32;
+		Ok(())
+	}
+
+	#[inline]
+	pub fn height(&self) -> u8 {
+		self.bounds.height as u8
+	}
+
+	pub fn set_height(&mut self, height: u8) -> Result<(), FontError> {
+		if height < 1 || height > CHAR_HEIGHT as u8 {
+			return Err(FontError::InvalidCharacterDimensions);
+		}
+		self.bounds.height = height as u32;
+		Ok(())
 	}
 }
 
