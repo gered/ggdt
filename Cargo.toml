@@ -6,6 +6,13 @@ members = [
 ]
 resolver = "2"
 
+[workspace.dependencies]
+anyhow = "=1.0.75"
+imgui = { version = "0.11.0", features = ["docking"] }
+serde = { version = "1.0.192", features = ["derive"] }
+serde_json = "1.0.108"
+thiserror = "=1.0.50"
+
 # some stuff is becoming noticably slow with default dev profile settings (opt-level = 0). especially any of the
 # fancier triangle_2d drawing stuff. while there are many optimizations still left to be made, it seems like a good
 # compromise on build time vs optimizations to keep opt-level at 1 while actively developing.
