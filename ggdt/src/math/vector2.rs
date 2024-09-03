@@ -435,6 +435,7 @@ mod tests {
 		assert!(nearly_equal(crate::math::RIGHT, Vector2::RIGHT.angle(), 0.0001));
 	}
 
+	#[allow(clippy::approx_constant)]
 	#[test]
 	pub fn test_from_angle() {
 		let v = Vector2::from_angle(RADIANS_0);
