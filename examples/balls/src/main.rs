@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use anyhow::Result;
 
 use ggdt::prelude::*;
@@ -26,7 +24,8 @@ fn main() -> Result<()> {
 
 	let font = BitmaskFont::new_vga_font()?;
 
-	let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
+	let (balls_bmp, balls_palette) =
+		IndexedBitmap::load_pcx_file(system.app_root_dir.join("./assets/balls.pcx").as_path())?;
 	system.res.palette = balls_palette.clone();
 
 	let mut sprites = Vec::<IndexedBitmap>::new();

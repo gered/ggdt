@@ -1,6 +1,7 @@
 use thiserror::Error;
 
 use crate::audio::AudioError;
+use crate::utils::app_root_dir;
 
 mod event;
 mod framebuffer;
@@ -51,6 +52,9 @@ pub enum SystemError {
 
 	#[error("SystemResources error: {0}")]
 	SystemResourcesError(#[from] SystemResourcesError),
+
+	#[error("System I/O error")]
+	IOError(#[from] std::io::Error),
 }
 
 /// Builder for configuring and constructing an instance of [`System`].
@@ -195,6 +199,8 @@ impl SystemBuilder {
 
 		let event_pump = SystemEventPump::from(sdl_event_pump);
 
+		let app_root_dir = app_root_dir()?;
+
 		Ok(System {
 			sdl_context,
 			sdl_audio_subsystem,
@@ -202,6 +208,7 @@ impl SystemBuilder {
 			sdl_timer_subsystem,
 			res: system_resources,
 			event_pump,
+			app_root_dir,
 			vsync: self.vsync,
 			target_framerate: self.target_framerate,
 			target_framerate_delta: None,
@@ -231,6 +238,8 @@ where
 	pub res: SystemResType,
 
 	pub event_pump: SystemEventPump,
+
+	pub app_root_dir: std::path::PathBuf,
 }
 
 impl<SystemResType> std::fmt::Debug for System<SystemResType>

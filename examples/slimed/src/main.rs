@@ -1,7 +1,6 @@
 extern crate core;
 
 use std::collections::HashMap;
-use std::path::Path;
 use std::rc::Rc;
 
 use anyhow::{Context, Result};
@@ -108,30 +107,36 @@ impl AppContext<DosLike> for Game {
 
 impl Game {
 	pub fn new(mut system: System<DosLike>) -> Result<Self> {
-		let palette = load_palette(Path::new("./assets/db16.pal"))?;
+		let palette = load_palette(system.app_root_dir.join("./assets/db16.pal").as_path())?;
 		system.res.palette = palette.clone();
 
-		let font = load_font(Path::new("./assets/dp.fnt"))?;
+		let font = load_font(system.app_root_dir.join("./assets/dp.fnt").as_path())?;
 
-		let tiles = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/tiles.pcx"))?);
-		let hero_male = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/hero_male.pcx"))?);
-		let hero_female = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/hero_female.pcx"))?);
-		let green_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/green_slime.pcx"))?);
-		let blue_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/blue_slime.pcx"))?);
-		let orange_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/orange_slime.pcx"))?);
-		let fist = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/fist.pcx"))?);
-		let sword = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/sword.pcx"))?);
-		let particles = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/particles.pcx"))?);
-		let items = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/items.pcx"))?);
+		let tiles = Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/tiles.pcx").as_path())?);
+		let hero_male =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/hero_male.pcx").as_path())?);
+		let hero_female =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/hero_female.pcx").as_path())?);
+		let green_slime =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/green_slime.pcx").as_path())?);
+		let blue_slime =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/blue_slime.pcx").as_path())?);
+		let orange_slime =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/orange_slime.pcx").as_path())?);
+		let fist = Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/fist.pcx").as_path())?);
+		let sword = Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/sword.pcx").as_path())?);
+		let particles =
+			Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/particles.pcx").as_path())?);
+		let items = Rc::new(load_bitmap_atlas_autogrid(system.app_root_dir.join("./assets/items.pcx").as_path())?);
 
-		let mut ui = load_bitmap_atlas(Path::new("./assets/ui.pcx"))?;
+		let mut ui = load_bitmap_atlas(system.app_root_dir.join("./assets/ui.pcx").as_path())?;
 		ui.add(Rect::new(0, 0, 16, 16))?;
 		ui.add(Rect::new(16, 0, 16, 16))?;
 		for i in 0..8 {
 			ui.add(Rect::new(i * 8, 16, 8, 8))?;
 		}
 
-		let tilemap = TileMap::load_from(Path::new("./assets/title_screen.map.json"))?;
+		let tilemap = TileMap::load_from(system.app_root_dir.join("./assets/title_screen.map.json").as_path())?;
 
 		let entities = Entities::new();
 		let component_systems = ComponentSystems::new();
