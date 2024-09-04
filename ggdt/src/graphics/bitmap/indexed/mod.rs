@@ -25,8 +25,8 @@ impl IndexedBitmap {
 		Self::internal_new(width, height, 0)
 	}
 
-	pub fn load_file(path: &Path) -> Result<(Self, Palette), BitmapError> {
-		if let Some(extension) = path.extension() {
+	pub fn load_file(path: impl AsRef<Path>) -> Result<(Self, Palette), BitmapError> {
+		if let Some(extension) = path.as_ref().extension() {
 			let extension = extension.to_ascii_lowercase();
 			match extension.to_str() {
 				Some("png") => {

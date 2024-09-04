@@ -88,7 +88,7 @@ impl AppState<Game> for MainMenuState {
 			State::Pending | State::Resume => {
 				init_everything(
 					context,
-					context.core.system.app_root_dir.join("./assets/title_screen.map.json").as_path(),
+					context.core.system.app_root_dir.join("./assets/title_screen.map.json"),
 					0.2,
 					1.0,
 					32,
@@ -225,7 +225,7 @@ impl AppState<Game> for GamePlayState {
 			State::Pending => {
 				init_everything(
 					context,
-					context.core.system.app_root_dir.join("./assets/arena.map.json").as_path(),
+					context.core.system.app_root_dir.join("./assets/arena.map.json"),
 					0.5,
 					2.0,
 					100,

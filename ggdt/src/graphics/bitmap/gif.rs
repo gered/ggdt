@@ -468,7 +468,7 @@ impl IndexedBitmap {
 		Ok((bitmap.unwrap(), palette.unwrap()))
 	}
 
-	pub fn load_gif_file(path: &Path) -> Result<(IndexedBitmap, Palette), GifError> {
+	pub fn load_gif_file(path: impl AsRef<Path>) -> Result<(IndexedBitmap, Palette), GifError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_gif_bytes(&mut reader)
@@ -520,7 +520,12 @@ impl IndexedBitmap {
 		Ok(())
 	}
 
-	pub fn to_gif_file(&self, path: &Path, palette: &Palette, settings: GifSettings) -> Result<(), GifError> {
+	pub fn to_gif_file(
+		&self,
+		path: impl AsRef<Path>,
+		palette: &Palette,
+		settings: GifSettings,
+	) -> Result<(), GifError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_gif_bytes(&mut writer, palette, settings)
@@ -537,7 +542,7 @@ impl RgbaBitmap {
 		Ok((output, palette))
 	}
 
-	pub fn load_gif_file(path: &Path) -> Result<(RgbaBitmap, Palette), GifError> {
+	pub fn load_gif_file(path: impl AsRef<Path>) -> Result<(RgbaBitmap, Palette), GifError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_gif_file(path)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -556,7 +561,7 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/gif/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
@@ -564,14 +569,14 @@ mod tests {
 	fn load_and_save() -> Result<(), GifError> {
 		let tmp_dir = TempDir::new()?;
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("small.bin"))?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(), //
+			test_assets_file("dp2.pal"), //
 			PaletteFormat::Normal,
 		)
 		.unwrap();
 
-		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file(Path::new("small.gif")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file("small.gif"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -597,9 +602,9 @@ mod tests {
 
 		// first image
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_1.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_1.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file(Path::new("large_1.gif")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file("large_1.gif"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -613,9 +618,9 @@ mod tests {
 
 		// second image
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_2.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_2.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file(Path::new("large_2.gif")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_gif_file(test_file("large_2.gif"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());

@@ -1,12 +1,10 @@
-use std::path::Path;
-
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use ggdt::prelude::*;
 
 pub fn criterion_benchmark(c: &mut Criterion) {
 	let mut framebuffer = IndexedBitmap::new(320, 240).unwrap();
-	let (bmp, _) = IndexedBitmap::load_iff_file(Path::new("./test-assets/test-tiles.lbm")).unwrap();
+	let (bmp, _) = IndexedBitmap::load_iff_file("./test-assets/test-tiles.lbm").unwrap();
 
 	let mut solid_bmp = IndexedBitmap::new(16, 16).unwrap();
 	solid_bmp.blit_region(IndexedBlitMethod::Solid, &bmp, &Rect::new(16, 16, 16, 16), 0, 0);

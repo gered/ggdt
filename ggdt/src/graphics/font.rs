@@ -209,7 +209,7 @@ impl BitmaskFont {
 		Ok(font)
 	}
 
-	pub fn load_from_file(path: &Path) -> Result<BitmaskFont, FontError> {
+	pub fn load_from_file(path: impl AsRef<Path>) -> Result<BitmaskFont, FontError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 
@@ -242,7 +242,7 @@ impl BitmaskFont {
 		Self::new(&characters, line_height as usize)
 	}
 
-	pub fn to_file(&self, path: &Path) -> Result<(), FontError> {
+	pub fn to_file(&self, path: impl AsRef<Path>) -> Result<(), FontError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_bytes(&mut writer)
@@ -327,13 +327,13 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/font/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
 	#[test]
 	pub fn load_font() -> Result<(), FontError> {
-		let font = BitmaskFont::load_from_file(test_file(Path::new("vga.fnt")).as_path())?;
+		let font = BitmaskFont::load_from_file(test_file("vga.fnt"))?;
 		assert_eq!(256, font.characters.len());
 		assert_eq!(CHAR_FIXED_WIDTH as u8, font.space_width);
 		for character in font.characters.iter() {
@@ -347,7 +347,7 @@ mod tests {
 	#[test]
 	pub fn measure_text() -> Result<(), FontError> {
 		{
-			let font = BitmaskFont::load_from_file(test_file(Path::new("vga.fnt")).as_path())?;
+			let font = BitmaskFont::load_from_file(test_file("vga.fnt"))?;
 
 			assert_eq!((40, 8), font.measure("Hello", FontRenderOpts::<u8>::None));
 			assert_eq!((40, 16), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));
@@ -361,7 +361,7 @@ mod tests {
 		}
 
 		{
-			let font = BitmaskFont::load_from_file(test_file(Path::new("small.fnt")).as_path())?;
+			let font = BitmaskFont::load_from_file(test_file("small.fnt"))?;
 
 			assert_eq!((22, 7), font.measure("Hello", FontRenderOpts::<u8>::None));
 			assert_eq!((24, 14), font.measure("Hello\nthere", FontRenderOpts::<u8>::None));

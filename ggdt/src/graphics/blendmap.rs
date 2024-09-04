@@ -239,7 +239,7 @@ impl BlendMap {
 		self.get_mapping(source_color).map(|mapping| mapping[dest_color as usize])
 	}
 
-	pub fn load_from_file(path: &Path) -> Result<Self, BlendMapError> {
+	pub fn load_from_file(path: impl AsRef<Path>) -> Result<Self, BlendMapError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_from_bytes(&mut reader)
@@ -268,7 +268,7 @@ impl BlendMap {
 		})
 	}
 
-	pub fn to_file(&self, path: &Path) -> Result<(), BlendMapError> {
+	pub fn to_file(&self, path: impl AsRef<Path>) -> Result<(), BlendMapError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_bytes(&mut writer)

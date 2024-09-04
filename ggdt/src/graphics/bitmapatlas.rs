@@ -232,7 +232,7 @@ pub struct BitmapAtlasDescriptor {
 }
 
 impl BitmapAtlasDescriptor {
-	pub fn load_from_file(path: &Path) -> Result<Self, BitmapAtlasDescriptorError> {
+	pub fn load_from_file(path: impl AsRef<Path>) -> Result<Self, BitmapAtlasDescriptorError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_from_bytes(&mut reader)
@@ -245,7 +245,7 @@ impl BitmapAtlasDescriptor {
 		}
 	}
 
-	pub fn to_file(&self, path: &Path) -> Result<(), BitmapAtlasDescriptorError> {
+	pub fn to_file(&self, path: impl AsRef<Path>) -> Result<(), BitmapAtlasDescriptorError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_bytes(&mut writer)

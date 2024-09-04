@@ -21,10 +21,10 @@ pub struct TileMap {
 }
 
 impl TileMap {
-	pub fn load_from(path: &Path) -> Result<Self> {
-		let f = File::open(path)?;
+	pub fn load_from(path: impl AsRef<Path>) -> Result<Self> {
+		let f = File::open(&path)?;
 		let reader = BufReader::new(f);
-		serde_json::from_reader(reader).context(format!("Loading json tilemap: {:?}", path))
+		serde_json::from_reader(reader).context(format!("Loading json tilemap: {:?}", path.as_ref()))
 	}
 
 	#[inline]

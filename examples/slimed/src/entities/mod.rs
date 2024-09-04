@@ -381,7 +381,7 @@ pub struct Pickuper;
 
 pub fn init_everything(
 	context: &mut Game,
-	map_file: &Path,
+	map_file: impl AsRef<Path>,
 	min_spawn_time: f32,
 	max_spawn_time: f32,
 	max_slimes: usize,

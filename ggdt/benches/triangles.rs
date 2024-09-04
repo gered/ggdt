@@ -7,7 +7,7 @@ pub fn criterion_benchmark(c: &mut Criterion) {
 	let height = 240;
 
 	let mut dest = RgbaBitmap::new(width, height).unwrap();
-	let (texture, _) = RgbaBitmap::load_gif_file(std::path::Path::new("./test-assets/gif/small.gif")).unwrap();
+	let (texture, _) = RgbaBitmap::load_gif_file("./test-assets/gif/small.gif").unwrap();
 
 	let big_v1 = Vector2::new(47.0, 23.0);
 	let big_v2 = Vector2::new(60.0, 192.0);
