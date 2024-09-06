@@ -58,11 +58,11 @@ fn main() -> Result<()> {
 	let mut volume = 1.0;
 
 	let sounds = [
-		load_and_convert_wav(system.app_root_dir.join("./assets/pickup-coin.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(system.app_root_dir.join("./assets/powerup.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(system.app_root_dir.join("./assets/explosion.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(system.app_root_dir.join("./assets/jump.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(system.app_root_dir.join("./assets/laser-shoot.wav"), system.res.audio.spec())?,
+		load_and_convert_wav("./assets/pickup-coin.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/powerup.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/explosion.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/jump.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/laser-shoot.wav", system.res.audio.spec())?,
 	];
 
 	let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];

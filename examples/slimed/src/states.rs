@@ -86,13 +86,7 @@ impl AppState<Game> for MainMenuState {
 	fn state_change(&mut self, new_state: State, old_state: State, context: &mut Game) {
 		match new_state {
 			State::Pending | State::Resume => {
-				init_everything(
-					context,
-					context.core.system.app_root_dir.join("./assets/title_screen.map.json"),
-					0.2,
-					1.0,
-					32,
-				);
+				init_everything(context, "./assets/title_screen.map.json", 0.2, 1.0, 32);
 			}
 			State::TransitionIn => {
 				self.fade = 0.0;
@@ -223,13 +217,7 @@ impl AppState<Game> for GamePlayState {
 	fn state_change(&mut self, new_state: State, old_state: State, context: &mut Game) {
 		match new_state {
 			State::Pending => {
-				init_everything(
-					context,
-					context.core.system.app_root_dir.join("./assets/arena.map.json"),
-					0.5,
-					2.0,
-					100,
-				);
+				init_everything(context, "./assets/arena.map.json", 0.5, 2.0, 100);
 				spawn_player_randomly(&mut context.core);
 			}
 			State::TransitionIn => {

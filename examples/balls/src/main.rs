@@ -24,7 +24,7 @@ fn main() -> Result<()> {
 
 	let font = BitmaskFont::new_vga_font()?;
 
-	let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file(system.app_root_dir.join("./assets/balls.pcx"))?;
+	let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file("./assets/balls.pcx")?;
 	system.res.palette = balls_palette.clone();
 
 	let mut sprites = Vec::<IndexedBitmap>::new();
