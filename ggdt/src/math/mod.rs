@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 use std::simd;
-use std::simd::{SimdFloat, SimdPartialOrd};
+use std::simd::prelude::{SimdFloat, SimdPartialOrd};
 
 mod circle;
 mod matrix3x3;
