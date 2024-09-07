@@ -175,10 +175,12 @@ mod tests {
 	}
 
 	fn dummy_listener(_event: &TestEvent, _context: &mut DummyContext) -> bool {
+		println!("dummy_listener event fired");
 		false
 	}
 
 	fn other_dummy_listener(_event: &TestEvent, _context: &mut DummyContext) -> bool {
+		println!("other_dummy_listener event fired");
 		false
 	}
 
