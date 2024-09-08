@@ -1,6 +1,6 @@
 use std::ops::{Mul, MulAssign};
 
-use crate::math::{nearly_equal, Vector3};
+use crate::math::{nearly_equal, Vector3, Vector4};
 
 /// Represents a 4x4 column-major matrix and provides common methods for matrix math.
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -384,6 +384,21 @@ impl Mul<Vector3> for Matrix4x4 {
 	}
 }
 
+impl Mul<Vector4> for Matrix4x4 {
+	type Output = Vector4;
+
+	#[rustfmt::skip]
+	#[inline]
+	fn mul(self, rhs: Vector4) -> Self::Output {
+		Vector4 {
+			x: rhs.x * self.m[Matrix4x4::M11] + rhs.y * self.m[Matrix4x4::M12] + rhs.z * self.m[Matrix4x4::M13] + rhs.w * self.m[Matrix4x4::M14],
+			y: rhs.x * self.m[Matrix4x4::M21] + rhs.y * self.m[Matrix4x4::M22] + rhs.z * self.m[Matrix4x4::M23] + rhs.w * self.m[Matrix4x4::M24],
+			z: rhs.x * self.m[Matrix4x4::M31] + rhs.y * self.m[Matrix4x4::M32] + rhs.z * self.m[Matrix4x4::M33] + rhs.w * self.m[Matrix4x4::M34],
+			w: rhs.x * self.m[Matrix4x4::M41] + rhs.y * self.m[Matrix4x4::M42] + rhs.z * self.m[Matrix4x4::M43] + rhs.w * self.m[Matrix4x4::M44],
+		}
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use crate::math::*;
@@ -609,6 +624,23 @@ mod tests {
 		assert!(nearly_equal(127.0, b.m[Matrix4x4::M42], 0.001));
 		assert!(nearly_equal(111.0, b.m[Matrix4x4::M43], 0.001));
 		assert!(nearly_equal(218.0, b.m[Matrix4x4::M44], 0.001));
+	}
+
+	#[rustfmt::skip]
+	#[test]
+	pub fn test_vector4_mul() {
+		let v = Vector4::new(1.0, 2.0, 3.0, 4.0);
+		let m = Matrix4x4::new(
+			1.0, 2.0, 3.0, 4.0,
+			5.0, 6.0, 7.0, 8.0,
+			9.0, 10.0, 11.0, 12.0,
+			13.0, 14.0, 15.0, 16.0,
+		);
+		let t = m * v;
+		assert!(nearly_equal(t.x, 30.0, 0.0001));
+		assert!(nearly_equal(t.y, 70.0, 0.0001));
+		assert!(nearly_equal(t.z, 110.0, 0.0001));
+		assert!(nearly_equal(t.w, 150.0, 0.0001));
 	}
 
 	#[test]
