@@ -243,6 +243,89 @@ impl Matrix4x4 {
 			m14, m24, m34, m44
 		];
 	}
+
+	/// Constructs a camera modelview matrix. This is equivalent to the OpenGL function `gluLookAt`.
+	///
+	/// # Arguments
+	///
+	/// * `position`: The position of the camera (eye).
+	/// * `target`: The direction that the camera is pointing (center).
+	/// * `up`: The up direction, relative to the camera.
+	#[rustfmt::skip]
+	pub fn new_look_at(position: &Vector3, target: &Vector3, up: &Vector3) -> Matrix4x4 {
+		let forward = (*target - *position).normalize();
+		let left = forward.cross(up).normalize();
+		let up = left.cross(&forward);
+
+		let out = Matrix4x4::new(
+			left.x,     left.y,     left.z,     0.0,
+			up.x,       up.y,       up.z,       0.0,
+			-forward.x, -forward.y, -forward.z, 0.0,
+			0.0,        0.0,        0.0,        1.0,
+		);
+
+		out * Matrix4x4::new_translation(position.x, position.y, position.z)
+	}
+
+	/// Constructs an orthogonal projection matrix. This is equivalent to the OpenGL function
+	/// `glOrtho`.
+	///
+	/// # Arguments
+	///
+	/// * `left`: Coordinate of the left vertical clipping plane.
+	/// * `right`: Coordinate of the right vertical clipping plane.
+	/// * `bottom`: Coordinate of the bottom horizontal clipping plane.
+	/// * `top`: Coordinate of the top horizontal clipping plane.
+	/// * `near`: Near clipping plane distance.
+	/// * `far`: Far clipping plane distance.
+	pub fn new_orthographic(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Matrix4x4 {
+		Matrix4x4::new(
+			2.0 / (right - left), 0.0, 0.0, -((right + left) / (right - left)), //
+			0.0, 2.0 / (top - bottom), 0.0, -((top + bottom) / (top - bottom)), //
+			0.0, 0.0, -2.0 / (far - near), -((far + near) / (far - near)), //
+			0.0, 0.0, 0.0, 1.0,
+		)
+	}
+
+	/// Constructs a perspective projection matrix. This is equivalent to a matrix created by the
+	/// OpenGL function `glFrustum`.
+	///
+	/// # Arguments
+	///
+	/// * `left`: Coordinate of the left vertical clipping plane.
+	/// * `right`: Coordinate of the right vertical clipping plane.
+	/// * `bottom`: Coordinate of the bottom horizontal clipping plane.
+	/// * `top`: Coordinate of the top horizontal clipping plane.
+	/// * `near`: Near clipping plane distance.
+	/// * `far`: Far clipping plane distance.
+	pub fn new_perspective(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Matrix4x4 {
+		Matrix4x4::new(
+			(2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0, //
+			0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0, //
+			0.0, 0.0, -((far + near) / (far - near)), -((2.0 * far * near) / (far - near)), //
+			0.0, 0.0, -1.0, 0.0,
+		)
+	}
+
+	/// Constructs a perspective projection matrix. This is equivalent to a matrix created by the
+	/// OpenGL function `gluPerspective`.
+	///
+	/// # Arguments
+	///
+	/// * `fov`: Angle specifying the field of view (in radians).
+	/// * `aspect_ratio`: The aspect ratio of the viewport.
+	/// * `near`: Near clipping plane distance.
+	/// * `far`: Far clipping plane distance.
+	pub fn new_perspective_fov(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Matrix4x4 {
+		let f = 1.0 / (fov / 2.0).tan();
+
+		Matrix4x4::new(
+			f / aspect_ratio, 0.0, 0.0, 0.0, //
+			0.0, f, 0.0, 0.0, //
+			0.0, 0.0, (far + near) / (near - far), (2.0 * far * near) / (near - far), //
+			0.0, 0.0, -1.0, 0.0,
+		)
+	}
 }
 
 #[rustfmt::skip]
