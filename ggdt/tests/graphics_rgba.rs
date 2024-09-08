@@ -29,7 +29,7 @@ const SCREEN_HEIGHT: u32 = 240;
 
 const BASE_PATH: &str = "./tests/ref/rgba/";
 
-fn reference_file(file: &Path) -> PathBuf {
+fn reference_file(file: impl AsRef<Path>) -> PathBuf {
 	PathBuf::from(BASE_PATH).join(file)
 }
 
@@ -38,7 +38,7 @@ fn setup() -> RgbaBitmap {
 }
 
 fn setup_for_blending() -> RgbaBitmap {
-	let (texture, _) = RgbaBitmap::load_file(test_assets_file(Path::new("texture.lbm")).as_path()).unwrap();
+	let (texture, _) = RgbaBitmap::load_file(test_assets_file("texture.lbm")).unwrap();
 	let mut screen = RgbaBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
 	for y in 0..(SCREEN_HEIGHT as f32 / texture.height() as f32).ceil() as i32 {
 		for x in 0..(SCREEN_WIDTH as f32 / texture.width() as f32).ceil() as i32 {
@@ -49,7 +49,7 @@ fn setup_for_blending() -> RgbaBitmap {
 }
 
 fn setup_for_blending_half_solid_half_semi_transparent() -> RgbaBitmap {
-	let (texture, _) = RgbaBitmap::load_file(test_assets_file(Path::new("texture.lbm")).as_path()).unwrap();
+	let (texture, _) = RgbaBitmap::load_file(test_assets_file("texture.lbm")).unwrap();
 	let mut screen = RgbaBitmap::new(SCREEN_WIDTH, SCREEN_HEIGHT).unwrap();
 	for y in 0..(screen.height() as f32 / texture.height() as f32).ceil() as i32 {
 		for x in 0..(screen.width() as f32 / texture.width() as f32).ceil() as i32 {
@@ -69,7 +69,7 @@ fn setup_for_blending_half_solid_half_semi_transparent() -> RgbaBitmap {
 	screen
 }
 
-fn verify_visual(screen: &RgbaBitmap, source: &Path) -> bool {
+fn verify_visual(screen: &RgbaBitmap, source: impl AsRef<Path>) -> bool {
 	let (source_bmp, _) = RgbaBitmap::load_file(source).unwrap();
 	*screen == source_bmp
 }
@@ -115,11 +115,11 @@ fn pixel_addressing() {
 		}
 	}
 
-	let path = reference_file(Path::new("pixel_addressing.png"));
+	let path = &reference_file("pixel_addressing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -169,11 +169,11 @@ fn pixel_drawing() {
 		screen.set_pixel(160, i + 234, COLOR_BRIGHT_WHITE);
 	}
 
-	let path = reference_file(Path::new("pixel_drawing.png"));
+	let path = &reference_file("pixel_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -207,11 +207,11 @@ fn blended_pixel_drawing() {
 		screen.set_blended_pixel(160, i + 234, COLOR_BRIGHT_WHITE_HALF_ALPHA, blend);
 	}
 
-	let path = reference_file(Path::new("blended_pixel_drawing.png"));
+	let path = &reference_file("blended_pixel_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -229,11 +229,11 @@ fn horiz_line_drawing() {
 	screen.horiz_line(100, 200, -10, COLOR_BROWN);
 	screen.horiz_line(20, 80, 250, COLOR_DARK_GRAY);
 
-	let path = reference_file(Path::new("horiz_line_drawing.png"));
+	let path = &reference_file("horiz_line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -253,11 +253,11 @@ fn blended_horiz_line_drawing() {
 	screen.blended_horiz_line(100, 200, -10, COLOR_BROWN_HALF_ALPHA, blend);
 	screen.blended_horiz_line(20, 80, 250, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
 
-	let path = reference_file(Path::new("blended_horiz_line_drawing.png"));
+	let path = &reference_file("blended_horiz_line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -275,11 +275,11 @@ fn vert_line_drawing() {
 	screen.vert_line(-17, 10, 20, COLOR_BROWN);
 	screen.vert_line(400, 100, 300, COLOR_LIGHT_GRAY);
 
-	let path = reference_file(Path::new("vert_line_drawing.png"));
+	let path = &reference_file("vert_line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -299,11 +299,11 @@ fn blended_vert_line_drawing() {
 	screen.blended_vert_line(-17, 10, 20, COLOR_BROWN_HALF_ALPHA, blend);
 	screen.blended_vert_line(400, 100, 300, COLOR_LIGHT_GRAY_HALF_ALPHA, blend);
 
-	let path = reference_file(Path::new("blended_vert_line_drawing.png"));
+	let path = &reference_file("blended_vert_line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -338,11 +338,11 @@ fn line_drawing() {
 	screen.line(-100, 120, -100, 239, COLOR_CYAN);
 	screen.line(320, 99, 320, 199, COLOR_MAGENTA);
 
-	let path = reference_file(Path::new("line_drawing.png"));
+	let path = &reference_file("line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -379,11 +379,11 @@ fn blended_line_drawing() {
 	screen.blended_line(-100, 120, -100, 239, COLOR_CYAN_HALF_ALPHA, blend);
 	screen.blended_line(320, 99, 320, 199, COLOR_MAGENTA_HALF_ALPHA, blend);
 
-	let path = reference_file(Path::new("blended_line_drawing.png"));
+	let path = &reference_file("blended_line_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -409,11 +409,11 @@ fn rect_drawing() {
 	screen.rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA);
 	screen.rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW);
 
-	let path = reference_file(Path::new("rect_drawing.png"));
+	let path = &reference_file("rect_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -441,11 +441,11 @@ fn blended_rect_drawing() {
 	screen.blended_rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA_HALF_ALPHA, blend);
 	screen.blended_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW_HALF_ALPHA, blend);
 
-	let path = reference_file(Path::new("blended_rect_drawing.png"));
+	let path = &reference_file("blended_rect_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -471,11 +471,11 @@ fn filled_rect_drawing() {
 	screen.filled_rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA);
 	screen.filled_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW);
 
-	let path = reference_file(Path::new("filled_rect_drawing.png"));
+	let path = &reference_file("filled_rect_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -503,11 +503,11 @@ fn blended_filled_rect_drawing() {
 	screen.blended_filled_rect(300, 20, 340, -20, COLOR_BRIGHT_MAGENTA_HALF_ALPHA, blend);
 	screen.blended_filled_rect(20, 220, -20, 260, COLOR_BRIGHT_YELLOW_HALF_ALPHA, blend);
 
-	let path = reference_file(Path::new("blended_filled_rect_drawing.png"));
+	let path = &reference_file("blended_filled_rect_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -528,11 +528,11 @@ fn circle_drawing() {
 	screen.circle(319, 1, 22, COLOR_BRIGHT_BLUE);
 	screen.circle(2, 242, 19, COLOR_BRIGHT_GREEN);
 
-	let path = reference_file(Path::new("circle_drawing.png"));
+	let path = &reference_file("circle_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -553,11 +553,11 @@ fn filled_circle_drawing() {
 	screen.filled_circle(319, 1, 22, COLOR_BRIGHT_BLUE);
 	screen.filled_circle(2, 242, 19, COLOR_BRIGHT_GREEN);
 
-	let path = reference_file(Path::new("filled_circle_drawing.png"));
+	let path = &reference_file("filled_circle_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -565,8 +565,8 @@ fn text_drawing() {
 	let mut screen = setup();
 
 	let font = BitmaskFont::new_vga_font().unwrap();
-	let small_font = BitmaskFont::load_from_file(test_assets_file(Path::new("small.fnt")).as_path()).unwrap();
-	let chunky_font = BitmaskFont::load_from_file(test_assets_file(Path::new("chunky.fnt")).as_path()).unwrap();
+	let small_font = BitmaskFont::load_from_file(test_assets_file("small.fnt")).unwrap();
+	let chunky_font = BitmaskFont::load_from_file(test_assets_file("chunky.fnt")).unwrap();
 
 	let message = "Hello, world! HELLO, WORLD!\nTesting 123";
 
@@ -606,11 +606,11 @@ fn text_drawing() {
 	screen.print_string(message, 360, 120, FontRenderOpts::Color(COLOR_LIGHT_GRAY), &font);
 	screen.print_string(message, 200, 250, FontRenderOpts::Color(COLOR_DARK_GRAY), &font);
 
-	let path = reference_file(Path::new("text_drawing.png"));
+	let path = &reference_file("text_drawing.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 fn generate_bitmap(width: i32, height: i32) -> RgbaBitmap {
@@ -737,11 +737,11 @@ fn solid_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("solid_blits.png"));
+	let path = &reference_file("solid_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -808,11 +808,11 @@ fn solid_tinted_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("solid_tinted_blits.png"));
+	let path = &reference_file("solid_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -878,11 +878,11 @@ fn blended_solid_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("blended_solid_blits.png"));
+	let path = &reference_file("blended_solid_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -944,11 +944,11 @@ fn solid_flipped_blits() {
 	screen.blit(SolidFlipped { horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(SolidFlipped { horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("solid_flipped_blits.png"));
+	let path = &reference_file("solid_flipped_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1013,11 +1013,11 @@ fn solid_flipped_tinted_blits() {
 	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(SolidFlippedTinted { tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("solid_flipped_tinted_blits.png"));
+	let path = &reference_file("solid_flipped_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1081,11 +1081,11 @@ fn blended_solid_flipped_blits() {
 	screen.blit(SolidFlippedBlended { horizontal_flip: true, vertical_flip: false, blend }, &bmp, 196, 238);
 	screen.blit(SolidFlippedBlended { horizontal_flip: false, vertical_flip: true, blend }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("blended_solid_flipped_blits.png"));
+	let path = &reference_file("blended_solid_flipped_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -1152,11 +1152,11 @@ fn transparent_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("transparent_blits.png"));
+	let path = &reference_file("transparent_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -1226,11 +1226,11 @@ fn transparent_tinted_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("transparent_tinted_blits.png"));
+	let path = &reference_file("transparent_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -1296,11 +1296,11 @@ fn blended_transparent_blits() {
 	screen.blit(method.clone(), &bmp16, 196, 238);
 	screen.blit(method.clone(), &bmp16, 226, 240);
 
-	let path = reference_file(Path::new("blended_transparent_blits.png"));
+	let path = &reference_file("blended_transparent_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1365,11 +1365,11 @@ fn transparent_flipped_blits() {
 	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlipped { transparent_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("transparent_flipped_blits.png"));
+	let path = &reference_file("transparent_flipped_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1435,11 +1435,11 @@ fn transparent_flipped_tinted_blits() {
 	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedTinted { transparent_color, tint_color, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("transparent_flipped_tinted_blits.png"));
+	let path = &reference_file("transparent_flipped_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1504,11 +1504,11 @@ fn blended_transparent_flipped_blits() {
 	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: true, vertical_flip: false, blend }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedBlended { transparent_color, horizontal_flip: false, vertical_flip: true, blend }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("blended_transparent_flipped_blits.png"));
+	let path = &reference_file("blended_transparent_flipped_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1577,11 +1577,11 @@ fn transparent_single_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("transparent_single_blits.png"));
+	let path = &reference_file("transparent_single_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1646,11 +1646,11 @@ fn transparent_flipped_single_blits() {
 	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: COLOR_BRIGHT_GREEN, horizontal_flip: true, vertical_flip: false }, &bmp, 196, 238);
 	screen.blit(TransparentFlippedSingle { transparent_color, draw_color: COLOR_BRIGHT_GREEN, horizontal_flip: false, vertical_flip: true }, &bmp, 226, 240);
 
-	let path = reference_file(Path::new("transparent_flipped_single_blits.png"));
+	let path = &reference_file("transparent_flipped_single_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -1714,11 +1714,11 @@ fn rotozoom_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("rotozoom_blits.png"));
+	let path = &reference_file("rotozoom_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1785,11 +1785,11 @@ fn rotozoom_tinted_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("rotozoom_tinted_blits.png"));
+	let path = &reference_file("rotozoom_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -1854,11 +1854,11 @@ fn blended_rotozoom_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("blended_rotozoom_blits.png"));
+	let path = &reference_file("blended_rotozoom_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1925,11 +1925,11 @@ fn rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("rotozoom_transparent_blits.png"));
+	let path = &reference_file("rotozoom_transparent_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -1997,11 +1997,11 @@ fn rotozoom_transparent_tinted_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("rotozoom_transparent_tinted_blits.png"));
+	let path = &reference_file("rotozoom_transparent_tinted_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[rustfmt::skip]
@@ -2068,11 +2068,11 @@ fn blended_rotozoom_transparent_blits() {
 	screen.blit(method.clone(), &bmp, 196, 238);
 	screen.blit(method.clone(), &bmp, 226, 240);
 
-	let path = reference_file(Path::new("blended_rotozoom_transparent_blits.png"));
+	let path = &reference_file("blended_rotozoom_transparent_blits.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2095,11 +2095,11 @@ fn blend_function_blend() {
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 130);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 130);
 
-	let path = reference_file(Path::new("blend_function_blend.png"));
+	let path = &reference_file("blend_function_blend.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2142,11 +2142,11 @@ fn blend_function_tinted_blend() {
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
 
-	let path = reference_file(Path::new("blend_function_tinted_blend.png"));
+	let path = &reference_file("blend_function_tinted_blend.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2189,11 +2189,11 @@ fn blend_function_blend_source_with_alpha() {
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
 
-	let path = reference_file(Path::new("blend_function_blend_source_with_alpha.png"));
+	let path = &reference_file("blend_function_blend_source_with_alpha.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2236,11 +2236,11 @@ fn blend_function_multiplied_blend() {
 	screen.blit(method.clone(), &bmp_solid_with_varied_alpha, 100, 195);
 	screen.blit(method.clone(), &bmp_with_varied_alpha, 200, 195);
 
-	let path = reference_file(Path::new("blend_function_multiplied_blend.png"));
+	let path = &reference_file("blend_function_multiplied_blend.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2450,11 +2450,11 @@ fn triangle_2d() {
 		color,
 	});
 
-	let path = reference_file(Path::new("triangle_2d.png"));
+	let path = &reference_file("triangle_2d.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[allow(dead_code)]
@@ -2517,21 +2517,21 @@ fn get_quad(
 			},
 		],
 		TriangleType::SolidTextured => [
-			RgbaTriangle2d::SolidTextured { position: positions_1, texcoord: texcoords_1, bitmap: &texture.unwrap() },
-			RgbaTriangle2d::SolidTextured { position: positions_2, texcoord: texcoords_2, bitmap: &texture.unwrap() },
+			RgbaTriangle2d::SolidTextured { position: positions_1, texcoord: texcoords_1, bitmap: texture.unwrap() },
+			RgbaTriangle2d::SolidTextured { position: positions_2, texcoord: texcoords_2, bitmap: texture.unwrap() },
 		],
 		TriangleType::SolidTexturedColored => [
 			RgbaTriangle2d::SolidTexturedColored {
 				position: positions_1,
 				texcoord: texcoords_1,
 				color: single_color,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 			},
 			RgbaTriangle2d::SolidTexturedColored {
 				position: positions_2,
 				texcoord: texcoords_2,
 				color: single_color,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 			},
 		],
 		TriangleType::SolidTexturedColoredBlended => [
@@ -2539,14 +2539,14 @@ fn get_quad(
 				position: positions_1,
 				texcoord: texcoords_1,
 				color: single_color,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(128),
 			},
 			RgbaTriangle2d::SolidTexturedColoredBlended {
 				position: positions_2,
 				texcoord: texcoords_2,
 				color: single_color,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(128),
 			},
 		],
@@ -2555,13 +2555,13 @@ fn get_quad(
 				position: positions_1,
 				texcoord: texcoords_1,
 				color: colors_1,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 			},
 			RgbaTriangle2d::SolidTexturedMultiColored {
 				position: positions_2,
 				texcoord: texcoords_2,
 				color: colors_2,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 			},
 		],
 		TriangleType::SolidTexturedMultiColoredBlended => [
@@ -2569,14 +2569,14 @@ fn get_quad(
 				position: positions_1,
 				texcoord: texcoords_1,
 				color: colors_1,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(192),
 			},
 			RgbaTriangle2d::SolidTexturedMultiColoredBlended {
 				position: positions_2,
 				texcoord: texcoords_2,
 				color: colors_2,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(192),
 			},
 		],
@@ -2584,13 +2584,13 @@ fn get_quad(
 			RgbaTriangle2d::SolidTexturedTinted {
 				position: positions_1,
 				texcoord: texcoords_1,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				tint: tint_color,
 			},
 			RgbaTriangle2d::SolidTexturedTinted {
 				position: positions_2,
 				texcoord: texcoords_2,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				tint: tint_color,
 			},
 		],
@@ -2598,13 +2598,13 @@ fn get_quad(
 			RgbaTriangle2d::SolidTexturedBlended {
 				position: positions_1,
 				texcoord: texcoords_1,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(128),
 			},
 			RgbaTriangle2d::SolidTexturedBlended {
 				position: positions_2,
 				texcoord: texcoords_2,
-				bitmap: &texture.unwrap(),
+				bitmap: texture.unwrap(),
 				blend: BlendFunction::BlendSourceWithAlpha(128),
 			},
 		],
@@ -2716,11 +2716,11 @@ fn triangle_2d_solid_blended() {
 
 	draw_triangles(&mut screen, TriangleType::SolidBlended, None);
 
-	let path = reference_file(Path::new("triangle_2d_solid_blended.png"));
+	let path = &reference_file("triangle_2d_solid_blended.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2729,11 +2729,11 @@ fn triangle_2d_solid_multicolor_blended() {
 
 	draw_triangles(&mut screen, TriangleType::SolidMultiColorBlended, None);
 
-	let path = reference_file(Path::new("triangle_2d_solid_multicolor_blended.png"));
+	let path = &reference_file("triangle_2d_solid_multicolor_blended.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2745,11 +2745,11 @@ fn triangle_2d_solid_textured() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTextured, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured.png"));
+	let path = &reference_file("triangle_2d_solid_textured.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2761,11 +2761,11 @@ fn triangle_2d_solid_textured_colored() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedColored, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_colored.png"));
+	let path = &reference_file("triangle_2d_solid_textured_colored.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2776,11 +2776,11 @@ fn triangle_2d_solid_textured_colored_blended() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedColoredBlended, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_colored_blended.png"));
+	let path = &reference_file("triangle_2d_solid_textured_colored_blended.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2792,11 +2792,11 @@ fn triangle_2d_solid_textured_multicolored() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedMultiColored, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_multicolored.png"));
+	let path = &reference_file("triangle_2d_solid_textured_multicolored.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2807,11 +2807,11 @@ fn triangle_2d_solid_textured_multicolored_blended() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedMultiColoredBlended, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_multicolored_blended.png"));
+	let path = &reference_file("triangle_2d_solid_textured_multicolored_blended.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2823,11 +2823,11 @@ fn triangle_2d_solid_textured_tinted() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedTinted, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_tinted.png"));
+	let path = &reference_file("triangle_2d_solid_textured_tinted.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }
 
 #[test]
@@ -2838,9 +2838,9 @@ fn triangle_2d_solid_textured_blended() {
 
 	draw_triangles(&mut screen, TriangleType::SolidTexturedBlended, Some(&texture));
 
-	let path = reference_file(Path::new("triangle_2d_solid_textured_blended.png"));
+	let path = &reference_file("triangle_2d_solid_textured_blended.png");
 	if cfg!(recreate_ref_test_images) {
-		screen.to_png_file(path.as_path(), PngFormat::RGBA).unwrap();
+		screen.to_png_file(path, PngFormat::RGBA).unwrap();
 	}
-	assert!(verify_visual(&screen, &path), "bitmap differs from source image: {:?}", path);
+	assert!(verify_visual(&screen, path), "bitmap differs from source image: {:?}", path);
 }

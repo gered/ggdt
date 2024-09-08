@@ -60,8 +60,8 @@ impl RgbaBitmap {
 		Ok(bitmap)
 	}
 
-	pub fn load_file(path: &Path) -> Result<(Self, Option<Palette>), BitmapError> {
-		if let Some(extension) = path.extension() {
+	pub fn load_file(path: impl AsRef<Path>) -> Result<(Self, Option<Palette>), BitmapError> {
+		if let Some(extension) = path.as_ref().extension() {
 			let extension = extension.to_ascii_lowercase();
 			match extension.to_str() {
 				Some("png") => Ok(Self::load_png_file(path)?),

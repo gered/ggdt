@@ -55,6 +55,12 @@ impl<EventType> EventPublisher<EventType> {
 	}
 }
 
+impl<EventType> Default for EventPublisher<EventType> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// A manager for application event listeners/handlers that can dispatch events queued up by a
 /// [`EventPublisher`] to each of the event listeners/handlers registered with this manager.
 ///
@@ -150,6 +156,12 @@ impl<EventType, ContextType> EventListeners<EventType, ContextType> {
 	}
 }
 
+impl<EventType, ContextType> Default for EventListeners<EventType, ContextType> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 	use super::*;
@@ -175,10 +187,12 @@ mod tests {
 	}
 
 	fn dummy_listener(_event: &TestEvent, _context: &mut DummyContext) -> bool {
+		println!("dummy_listener event fired");
 		false
 	}
 
 	fn other_dummy_listener(_event: &TestEvent, _context: &mut DummyContext) -> bool {
+		println!("other_dummy_listener event fired");
 		false
 	}
 

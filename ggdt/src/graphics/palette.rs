@@ -34,12 +34,11 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
-	for i in 0..num_colors {
+	for color in colors.iter_mut().take(num_colors) {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = RGBA::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
-		colors[i] = color;
+		*color = RGBA::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
 	}
 	Ok(colors)
 }
@@ -52,10 +51,10 @@ fn write_palette_6bit<T: WriteBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	for i in 0..num_colors {
-		writer.write_u8(to_6bit(colors[i].r()))?;
-		writer.write_u8(to_6bit(colors[i].g()))?;
-		writer.write_u8(to_6bit(colors[i].b()))?;
+	for color in colors.iter().take(num_colors) {
+		writer.write_u8(to_6bit(color.r()))?;
+		writer.write_u8(to_6bit(color.g()))?;
+		writer.write_u8(to_6bit(color.b()))?;
 	}
 	Ok(())
 }
@@ -66,12 +65,11 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
-	for i in 0..num_colors {
+	for color in colors.iter_mut().take(num_colors) {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = RGBA::from_rgb([r, g, b]);
-		colors[i] = color;
+		*color = RGBA::from_rgb([r, g, b]);
 	}
 	Ok(colors)
 }
@@ -84,10 +82,10 @@ fn write_palette_8bit<T: WriteBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	for i in 0..num_colors {
-		writer.write_u8(colors[i].r())?;
-		writer.write_u8(colors[i].g())?;
-		writer.write_u8(colors[i].b())?;
+	for color in colors.iter().take(num_colors) {
+		writer.write_u8(color.r())?;
+		writer.write_u8(color.g())?;
+		writer.write_u8(color.b())?;
 	}
 	Ok(())
 }
@@ -137,7 +135,7 @@ impl Palette {
 	///
 	/// * `path`: the path of the palette file to be loaded
 	/// * `format`: the format that the palette data is expected to be in
-	pub fn load_from_file(path: &Path, format: PaletteFormat) -> Result<Palette, PaletteError> {
+	pub fn load_from_file(path: impl AsRef<Path>, format: PaletteFormat) -> Result<Palette, PaletteError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_from_bytes(&mut reader, format)
@@ -168,7 +166,7 @@ impl Palette {
 	/// * `format`: the format that the palette data is expected to be in
 	/// * `num_colors`: the expected number of colors in the palette to be loaded (<= 256)
 	pub fn load_num_colors_from_file(
-		path: &Path,
+		path: impl AsRef<Path>,
 		format: PaletteFormat,
 		num_colors: usize,
 	) -> Result<Palette, PaletteError> {
@@ -208,7 +206,7 @@ impl Palette {
 	///
 	/// * `path`: the path of the file to save the palette to
 	/// * `format`: the format to write the palette data in
-	pub fn to_file(&self, path: &Path, format: PaletteFormat) -> Result<(), PaletteError> {
+	pub fn to_file(&self, path: impl AsRef<Path>, format: PaletteFormat) -> Result<(), PaletteError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_bytes(&mut writer, format)
@@ -239,7 +237,7 @@ impl Palette {
 	/// * `num_colors`: the number of colors from this palette to write out to the file (<= 256)
 	pub fn num_colors_to_file(
 		&self,
-		path: &Path,
+		path: impl AsRef<Path>,
 		format: PaletteFormat,
 		num_colors: usize,
 	) -> Result<(), PaletteError> {
@@ -471,6 +469,12 @@ impl Palette {
 	}
 }
 
+impl Default for Palette {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Index<u8> for Palette {
 	type Output = RGBA;
 
@@ -499,7 +503,7 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/palette/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
@@ -538,7 +542,7 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette = Palette::load_from_file(test_file(Path::new("vga.pal")).as_path(), PaletteFormat::Vga)?;
+		let palette = Palette::load_from_file(test_file("vga.pal"), PaletteFormat::Vga)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format.pal");
@@ -548,7 +552,7 @@ mod tests {
 
 		// normal rgb format (8-bit)
 
-		let palette = Palette::load_from_file(test_file(Path::new("dp2.pal")).as_path(), PaletteFormat::Normal)?;
+		let palette = Palette::load_from_file(test_file("dp2.pal"), PaletteFormat::Normal)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format.pal");
 		palette.to_file(&save_path, PaletteFormat::Normal)?;
@@ -564,8 +568,7 @@ mod tests {
 
 		// vga rgb format (6-bit)
 
-		let palette =
-			Palette::load_num_colors_from_file(test_file(Path::new("ega_6bit.pal")).as_path(), PaletteFormat::Vga, 16)?;
+		let palette = Palette::load_num_colors_from_file(test_file("ega_6bit.pal"), PaletteFormat::Vga, 16)?;
 		assert_ega_colors(&palette);
 
 		let save_path = tmp_dir.path().join("test_save_vga_format_16_colors.pal");
@@ -575,11 +578,7 @@ mod tests {
 
 		// normal rgb format (8-bit)
 
-		let palette = Palette::load_num_colors_from_file(
-			test_file(Path::new("ega_8bit.pal")).as_path(),
-			PaletteFormat::Normal,
-			16,
-		)?;
+		let palette = Palette::load_num_colors_from_file(test_file("ega_8bit.pal"), PaletteFormat::Normal, 16)?;
 
 		let save_path = tmp_dir.path().join("test_save_normal_format_16_colors.pal");
 		palette.to_file(&save_path, PaletteFormat::Normal)?;

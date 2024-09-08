@@ -85,11 +85,12 @@ impl AppState<GameContext> for DemoState {
 				}
 			});
 
-		if !ui.is_any_hovered() && !ui.is_any_focused() {
-			if context.core.system.res.mouse.is_button_down(MouseButton::Right) {
-				context.core.camera_x -= context.core.system.res.mouse.x_delta() * 2;
-				context.core.camera_y -= context.core.system.res.mouse.y_delta() * 2;
-			}
+		if !ui.is_any_hovered()
+			&& !ui.is_any_focused()
+			&& context.core.system.res.mouse.is_button_down(MouseButton::Right)
+		{
+			context.core.camera_x -= context.core.system.res.mouse.x_delta() * 2;
+			context.core.camera_y -= context.core.system.res.mouse.y_delta() * 2;
 		}
 
 		context.support.do_events(&mut context.core);

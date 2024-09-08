@@ -1,7 +1,6 @@
 extern crate core;
 
 use std::collections::HashMap;
-use std::path::Path;
 use std::rc::Rc;
 
 use anyhow::{Context, Result};
@@ -108,30 +107,30 @@ impl AppContext<DosLike> for Game {
 
 impl Game {
 	pub fn new(mut system: System<DosLike>) -> Result<Self> {
-		let palette = load_palette(Path::new("./assets/db16.pal"))?;
+		let palette = load_palette("./assets/db16.pal")?;
 		system.res.palette = palette.clone();
 
-		let font = load_font(Path::new("./assets/dp.fnt"))?;
+		let font = load_font("./assets/dp.fnt")?;
 
-		let tiles = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/tiles.pcx"))?);
-		let hero_male = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/hero_male.pcx"))?);
-		let hero_female = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/hero_female.pcx"))?);
-		let green_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/green_slime.pcx"))?);
-		let blue_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/blue_slime.pcx"))?);
-		let orange_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/orange_slime.pcx"))?);
-		let fist = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/fist.pcx"))?);
-		let sword = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/sword.pcx"))?);
-		let particles = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/particles.pcx"))?);
-		let items = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/items.pcx"))?);
+		let tiles = Rc::new(load_bitmap_atlas_autogrid("./assets/tiles.pcx")?);
+		let hero_male = Rc::new(load_bitmap_atlas_autogrid("./assets/hero_male.pcx")?);
+		let hero_female = Rc::new(load_bitmap_atlas_autogrid("./assets/hero_female.pcx")?);
+		let green_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/green_slime.pcx")?);
+		let blue_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/blue_slime.pcx")?);
+		let orange_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/orange_slime.pcx")?);
+		let fist = Rc::new(load_bitmap_atlas_autogrid("./assets/fist.pcx")?);
+		let sword = Rc::new(load_bitmap_atlas_autogrid("./assets/sword.pcx")?);
+		let particles = Rc::new(load_bitmap_atlas_autogrid("./assets/particles.pcx")?);
+		let items = Rc::new(load_bitmap_atlas_autogrid("./assets/items.pcx")?);
 
-		let mut ui = load_bitmap_atlas(Path::new("./assets/ui.pcx"))?;
+		let mut ui = load_bitmap_atlas("./assets/ui.pcx")?;
 		ui.add(Rect::new(0, 0, 16, 16))?;
 		ui.add(Rect::new(16, 0, 16, 16))?;
 		for i in 0..8 {
 			ui.add(Rect::new(i * 8, 16, 8, 8))?;
 		}
 
-		let tilemap = TileMap::load_from(Path::new("./assets/title_screen.map.json"))?;
+		let tilemap = TileMap::load_from("./assets/title_screen.map.json")?;
 
 		let entities = Entities::new();
 		let component_systems = ComponentSystems::new();

@@ -50,3 +50,12 @@ harness = false
 [[bench]]
 name = "triangles"
 harness = false
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(recreate_ref_test_images)'] }
+
+[lints.clippy]
+too_long_first_doc_paragraph = "allow"
+tabs_in_doc_comments = "allow"   # fuck off
+too_many_arguments = "allow"
+

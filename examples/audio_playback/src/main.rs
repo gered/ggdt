@@ -11,15 +11,15 @@ struct AudioChannelStatus {
 	playing: bool,
 }
 
-fn load_and_convert_wav(path: &Path, target_spec: &AudioSpec) -> Result<AudioBuffer> {
-	let sound = AudioBuffer::load_wav_file(path)?;
+fn load_and_convert_wav(path: impl AsRef<Path>, target_spec: &AudioSpec) -> Result<AudioBuffer> {
+	let sound = AudioBuffer::load_wav_file(&path)?;
 	let original_spec = *sound.spec();
 	let sound = sound.convert(target_spec)?;
 	let final_spec = *sound.spec();
 	if original_spec != final_spec {
-		println!("{:?} was converted from {:?} to {:?}", path, original_spec, final_spec);
+		println!("{:?} was converted from {:?} to {:?}", path.as_ref(), original_spec, final_spec);
 	} else {
-		println!("{:?} did not need to be converted from {:?}", path, original_spec);
+		println!("{:?} did not need to be converted from {:?}", path.as_ref(), original_spec);
 	}
 	Ok(sound)
 }
@@ -28,6 +28,7 @@ pub struct SineWaveGenerator {
 	t: usize,
 }
 
+#[allow(clippy::new_without_default)]
 impl SineWaveGenerator {
 	pub fn new() -> Self {
 		SineWaveGenerator { t: 0 }
@@ -58,11 +59,11 @@ fn main() -> Result<()> {
 	let mut volume = 1.0;
 
 	let sounds = [
-		load_and_convert_wav(Path::new("./assets/pickup-coin.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/powerup.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/explosion.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/jump.wav"), system.res.audio.spec())?,
-		load_and_convert_wav(Path::new("./assets/laser-shoot.wav"), system.res.audio.spec())?,
+		load_and_convert_wav("./assets/pickup-coin.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/powerup.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/explosion.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/jump.wav", system.res.audio.spec())?,
+		load_and_convert_wav("./assets/laser-shoot.wav", system.res.audio.spec())?,
 	];
 
 	let mut statuses = [AudioChannelStatus { size: 0, position: 0, playing: false }; NUM_CHANNELS];
@@ -154,7 +155,7 @@ fn main() -> Result<()> {
 
 		for index in 0..NUM_CHANNELS {
 			let channel = &audio_device[index];
-			let mut status = &mut statuses[index];
+			let status = &mut statuses[index];
 			status.playing = channel.playing;
 			status.position = channel.position;
 			status.size = channel.data.len();
@@ -183,8 +184,7 @@ fn main() -> Result<()> {
 		system.res.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.res.font);
 
 		let mut y = 48;
-		for index in 0..NUM_CHANNELS {
-			let status = &statuses[index];
+		for (index, status) in statuses.iter().enumerate() {
 			system.res.video.print_string(
 				&format!(
 					"channel {} - {} {}",

@@ -178,7 +178,7 @@ impl IndexedBitmap {
 		Ok((bmp, palette))
 	}
 
-	pub fn load_pcx_file(path: &Path) -> Result<(IndexedBitmap, Palette), PcxError> {
+	pub fn load_pcx_file(path: impl AsRef<Path>) -> Result<(IndexedBitmap, Palette), PcxError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_pcx_bytes(&mut reader)
@@ -250,7 +250,7 @@ impl IndexedBitmap {
 		Ok(())
 	}
 
-	pub fn to_pcx_file(&self, path: &Path, palette: &Palette) -> Result<(), PcxError> {
+	pub fn to_pcx_file(&self, path: impl AsRef<Path>, palette: &Palette) -> Result<(), PcxError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_pcx_bytes(&mut writer, palette)
@@ -267,7 +267,7 @@ impl RgbaBitmap {
 		Ok((output, palette))
 	}
 
-	pub fn load_pcx_file(path: &Path) -> Result<(RgbaBitmap, Palette), PcxError> {
+	pub fn load_pcx_file(path: impl AsRef<Path>) -> Result<(RgbaBitmap, Palette), PcxError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_pcx_file(path)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -286,7 +286,7 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/pcx/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
@@ -294,14 +294,14 @@ mod tests {
 	pub fn load_and_save() -> Result<(), PcxError> {
 		let tmp_dir = TempDir::new()?;
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("small.bin"))?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(), //
+			test_assets_file("dp2.pal"), //
 			PaletteFormat::Normal,
 		)
 		.unwrap();
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("small.pcx")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file("small.pcx"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -324,9 +324,9 @@ mod tests {
 
 		// first image
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_1.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_1.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("large_1.pcx")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file("large_1.pcx"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -340,9 +340,9 @@ mod tests {
 
 		// second image
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_2.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_2.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file(Path::new("large_2.pcx")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_pcx_file(test_file("large_2.pcx"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());

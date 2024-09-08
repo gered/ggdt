@@ -7,7 +7,7 @@ fn create_default_texture_map(context: &mut imgui::Context) -> imgui::Textures<R
 
 	// set up a bitmap with the imgui font atlas texture pixels and register a bitmap->texture mapping for it
 	// with imgui
-	let mut font = context.fonts();
+	let font = context.fonts();
 	let mut font_atlas_texture = font.build_rgba32_texture();
 	font.tex_id = texture_map.insert(
 		RgbaBitmap::from_bytes(

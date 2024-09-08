@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::path::Path;
 use std::rc::Rc;
 
 use anyhow::Result;
@@ -91,17 +90,17 @@ impl AppContext<Standard> for GameContext {
 
 impl GameContext {
 	pub fn new(system: System<Standard>) -> Result<Self> {
-		let palette = load_palette(Path::new("./assets/db16.pal"))?;
+		let palette = load_palette("./assets/db16.pal")?;
 
-		let font = load_font(Path::new("./assets/dp.fnt"))?;
-		let small_font = load_font(Path::new("./assets/small.fnt"))?;
+		let font = load_font("./assets/dp.fnt")?;
+		let small_font = load_font("./assets/small.fnt")?;
 
-		let tiles = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/tiles.pcx"))?);
-		let green_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/green_slime.pcx"))?);
-		let blue_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/blue_slime.pcx"))?);
-		let orange_slime = Rc::new(load_bitmap_atlas_autogrid(Path::new("./assets/orange_slime.pcx"))?);
+		let tiles = Rc::new(load_bitmap_atlas_autogrid("./assets/tiles.pcx")?);
+		let green_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/green_slime.pcx")?);
+		let blue_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/blue_slime.pcx")?);
+		let orange_slime = Rc::new(load_bitmap_atlas_autogrid("./assets/orange_slime.pcx")?);
 
-		let tilemap = TileMap::load_from(Path::new("./assets/arena.map.json"))?;
+		let tilemap = TileMap::load_from("./assets/arena.map.json")?;
 
 		let entities = Entities::new();
 		let component_systems = ComponentSystems::new();

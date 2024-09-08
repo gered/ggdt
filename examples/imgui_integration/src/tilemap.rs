@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use anyhow::{Context, Result};
 use ggdt::prelude::*;
 
@@ -16,10 +18,10 @@ pub struct TileMap {
 }
 
 impl TileMap {
-	pub fn load_from(path: &std::path::Path) -> Result<Self> {
-		let f = std::fs::File::open(path)?;
+	pub fn load_from(path: impl AsRef<Path>) -> Result<Self> {
+		let f = std::fs::File::open(&path)?;
 		let reader = std::io::BufReader::new(f);
-		serde_json::from_reader(reader).context(format!("Loading json tilemap: {:?}", path))
+		serde_json::from_reader(reader).context(format!("Loading json tilemap: {:?}", path.as_ref()))
 	}
 
 	#[inline]

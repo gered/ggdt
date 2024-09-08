@@ -270,7 +270,7 @@ impl AudioBuffer {
 
 	/// Loads a WAV file into an [`AudioBuffer`]. The returned buffer will be in its original
 	/// format and may need to be converted before it can be played.
-	pub fn load_wav_file(path: &Path) -> Result<AudioBuffer, WavError> {
+	pub fn load_wav_file(path: impl AsRef<Path>) -> Result<AudioBuffer, WavError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_wav_bytes(&mut reader)
@@ -287,31 +287,31 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/wav/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
 	#[test]
 	pub fn load_wav_file() -> Result<(), WavError> {
-		let wav_buffer = AudioBuffer::load_wav_file(test_file(Path::new("22khz_8bit_1ch.wav")).as_path())?;
+		let wav_buffer = AudioBuffer::load_wav_file(test_file("22khz_8bit_1ch.wav").as_path())?;
 		assert_eq!(AUDIO_FREQUENCY_22KHZ, wav_buffer.spec().frequency());
 		assert_eq!(1, wav_buffer.spec().channels());
 		assert_eq!(AudioFormat::U8, wav_buffer.spec.format);
 		assert_eq!(11248, wav_buffer.data.len());
 
-		let wav_buffer = AudioBuffer::load_wav_file(test_file(Path::new("44khz_8bit_1ch.wav")).as_path())?;
+		let wav_buffer = AudioBuffer::load_wav_file(test_file("44khz_8bit_1ch.wav").as_path())?;
 		assert_eq!(AUDIO_FREQUENCY_44KHZ, wav_buffer.spec().frequency());
 		assert_eq!(1, wav_buffer.spec().channels());
 		assert_eq!(AudioFormat::U8, wav_buffer.spec.format);
 		assert_eq!(22496, wav_buffer.data.len());
 
-		let wav_buffer = AudioBuffer::load_wav_file(test_file(Path::new("22khz_16bit_1ch.wav")).as_path())?;
+		let wav_buffer = AudioBuffer::load_wav_file(test_file("22khz_16bit_1ch.wav").as_path())?;
 		assert_eq!(AUDIO_FREQUENCY_22KHZ, wav_buffer.spec().frequency());
 		assert_eq!(1, wav_buffer.spec().channels());
 		assert_eq!(AudioFormat::S16LSB, wav_buffer.spec.format);
 		assert_eq!(22496, wav_buffer.data.len());
 
-		let wav_buffer = AudioBuffer::load_wav_file(test_file(Path::new("44khz_16bit_1ch.wav")).as_path())?;
+		let wav_buffer = AudioBuffer::load_wav_file(test_file("44khz_16bit_1ch.wav").as_path())?;
 		assert_eq!(AUDIO_FREQUENCY_44KHZ, wav_buffer.spec().frequency());
 		assert_eq!(1, wav_buffer.spec().channels());
 		assert_eq!(AudioFormat::S16LSB, wav_buffer.spec.format);

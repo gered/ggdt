@@ -213,7 +213,7 @@ fn merge_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 fn extract_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 	let bitmask = 1 << plane;
 	let mut src_base_index = 0;
-	for x in 0..row_size {
+	for dest_pixel in dest.iter_mut().take(row_size) {
 		let mut data = 0;
 		if src[src_base_index] & bitmask != 0 {
 			data |= 128;
@@ -241,7 +241,7 @@ fn extract_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 		}
 
 		src_base_index += 8;
-		dest[x] = data;
+		*dest_pixel = data;
 	}
 }
 
@@ -430,7 +430,7 @@ impl IndexedBitmap {
 		Ok((bitmap.unwrap(), palette.unwrap()))
 	}
 
-	pub fn load_iff_file(path: &Path) -> Result<(IndexedBitmap, Palette), IffError> {
+	pub fn load_iff_file(path: impl AsRef<Path>) -> Result<(IndexedBitmap, Palette), IffError> {
 		let f = File::open(path)?;
 		let mut reader = BufReader::new(f);
 		Self::load_iff_bytes(&mut reader)
@@ -522,7 +522,7 @@ impl IndexedBitmap {
 		Ok(())
 	}
 
-	pub fn to_iff_file(&self, path: &Path, palette: &Palette, format: IffFormat) -> Result<(), IffError> {
+	pub fn to_iff_file(&self, path: impl AsRef<Path>, palette: &Palette, format: IffFormat) -> Result<(), IffError> {
 		let f = File::create(path)?;
 		let mut writer = BufWriter::new(f);
 		self.to_iff_bytes(&mut writer, palette, format)
@@ -539,7 +539,7 @@ impl RgbaBitmap {
 		Ok((output, palette))
 	}
 
-	pub fn load_iff_file(path: &Path) -> Result<(RgbaBitmap, Palette), IffError> {
+	pub fn load_iff_file(path: impl AsRef<Path>) -> Result<(RgbaBitmap, Palette), IffError> {
 		let (temp_bitmap, palette) = IndexedBitmap::load_iff_file(path)?;
 		let output = temp_bitmap.to_rgba(&palette);
 		Ok((output, palette))
@@ -558,7 +558,7 @@ mod tests {
 
 	const BASE_PATH: &str = "./test-assets/iff/";
 
-	fn test_file(file: &Path) -> PathBuf {
+	fn test_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(BASE_PATH).join(file)
 	}
 
@@ -566,16 +566,16 @@ mod tests {
 	pub fn load_and_save() -> Result<(), IffError> {
 		let tmp_dir = TempDir::new()?;
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("small.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("small.bin"))?;
 		let dp2_palette = Palette::load_from_file(
-			test_assets_file(Path::new("dp2.pal")).as_path(), //
+			test_assets_file("dp2.pal"), //
 			PaletteFormat::Normal,
 		)
 		.unwrap();
 
 		// ILBM format
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("small.lbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("small.lbm"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -591,7 +591,7 @@ mod tests {
 
 		// PBM format
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("small.pbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("small.pbm"))?;
 		assert_eq!(16, bmp.width());
 		assert_eq!(16, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -614,9 +614,9 @@ mod tests {
 
 		// first image, PBM format
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_1.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_1.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("large_1.pbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("large_1.pbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -630,7 +630,7 @@ mod tests {
 
 		// first image, ILBM format
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("large_1.lbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("large_1.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -644,9 +644,9 @@ mod tests {
 
 		// second image, PBM format
 
-		let ref_pixels = load_raw_indexed(test_file(Path::new("large_2.bin")).as_path())?;
+		let ref_pixels = load_raw_indexed(test_file("large_2.bin"))?;
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("large_2.lbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("large_2.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());
@@ -660,7 +660,7 @@ mod tests {
 
 		// second image, ILBM format
 
-		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file(Path::new("large_2.lbm")).as_path())?;
+		let (bmp, palette) = IndexedBitmap::load_iff_file(test_file("large_2.lbm"))?;
 		assert_eq!(320, bmp.width());
 		assert_eq!(200, bmp.height());
 		assert_eq!(bmp.pixels(), ref_pixels.as_ref());

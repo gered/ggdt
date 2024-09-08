@@ -30,15 +30,15 @@ mod tests {
 	const TEST_ASSETS_PATH: &str = "./test-assets/";
 
 	#[allow(dead_code)]
-	pub fn assets_file(file: &Path) -> PathBuf {
+	pub fn assets_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(ASSETS_PATH).join(file)
 	}
 
-	pub fn test_assets_file(file: &Path) -> PathBuf {
+	pub fn test_assets_file(file: impl AsRef<Path>) -> PathBuf {
 		PathBuf::from(TEST_ASSETS_PATH).join(file)
 	}
 
-	pub fn load_raw_indexed(bin_file: &Path) -> Result<Box<[u8]>, io::Error> {
+	pub fn load_raw_indexed(bin_file: impl AsRef<Path>) -> Result<Box<[u8]>, io::Error> {
 		let f = File::open(bin_file)?;
 		let mut reader = BufReader::new(f);
 		let mut buffer = Vec::new();
@@ -46,7 +46,7 @@ mod tests {
 		Ok(buffer.into_boxed_slice())
 	}
 
-	pub fn load_raw_rgba(bin_file: &Path) -> Result<Box<[RGBA]>, io::Error> {
+	pub fn load_raw_rgba(bin_file: impl AsRef<Path>) -> Result<Box<[RGBA]>, io::Error> {
 		let f = File::open(bin_file)?;
 		let mut reader = BufReader::new(f);
 		let mut buffer = Vec::new();

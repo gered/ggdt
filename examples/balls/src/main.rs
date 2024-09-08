@@ -1,5 +1,3 @@
-use std::path::Path;
-
 use anyhow::Result;
 
 use ggdt::prelude::*;
@@ -26,7 +24,7 @@ fn main() -> Result<()> {
 
 	let font = BitmaskFont::new_vga_font()?;
 
-	let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
+	let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file("./assets/balls.pcx")?;
 	system.res.palette = balls_palette.clone();
 
 	let mut sprites = Vec::<IndexedBitmap>::new();
@@ -62,8 +60,7 @@ fn main() -> Result<()> {
 		}
 
 		if system.res.keyboard.is_key_up(Scancode::S) {
-			for i in 0..NUM_BALLS {
-				let ball = &mut balls[i];
+			for ball in balls.iter_mut() {
 				ball.x += ball.dir_x;
 				ball.y += ball.dir_y;
 
@@ -72,11 +69,9 @@ fn main() -> Result<()> {
 						ball.dir_x = -ball.dir_x;
 						ball.x = 0;
 					}
-				} else {
-					if ball.x >= (system.res.video.width() - BALL_WIDTH) as i32 {
-						ball.dir_x = -ball.dir_x;
-						ball.x = (system.res.video.width() - BALL_WIDTH) as i32;
-					}
+				} else if ball.x >= (system.res.video.width() - BALL_WIDTH) as i32 {
+					ball.dir_x = -ball.dir_x;
+					ball.x = (system.res.video.width() - BALL_WIDTH) as i32;
 				}
 
 				if ball.dir_y < 0 {
@@ -84,11 +79,9 @@ fn main() -> Result<()> {
 						ball.dir_y = -ball.dir_y;
 						ball.y = 0;
 					}
-				} else {
-					if ball.y >= (system.res.video.height() - BALL_HEIGHT) as i32 {
-						ball.dir_y = -ball.dir_y;
-						ball.y = (system.res.video.height() - BALL_HEIGHT) as i32;
-					}
+				} else if ball.y >= (system.res.video.height() - BALL_HEIGHT) as i32 {
+					ball.dir_y = -ball.dir_y;
+					ball.y = (system.res.video.height() - BALL_HEIGHT) as i32;
 				}
 			}
 		}

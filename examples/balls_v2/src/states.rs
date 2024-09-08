@@ -25,7 +25,7 @@ impl Game {
 	pub fn new(mut system: System<DosLike>) -> Result<Self> {
 		let font = BitmaskFont::new_vga_font()?;
 
-		let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file(Path::new("./assets/balls.pcx"))?;
+		let (balls_bmp, balls_palette) = IndexedBitmap::load_pcx_file("./assets/balls.pcx")?;
 		system.res.palette = balls_palette.clone();
 
 		let mut sprites = Vec::new();

@@ -103,6 +103,12 @@ impl Mouse {
 	}
 }
 
+impl Default for Mouse {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InputDevice for Mouse {
 	fn update(&mut self) {
 		self.x_delta = 0;

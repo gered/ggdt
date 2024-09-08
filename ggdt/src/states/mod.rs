@@ -445,6 +445,12 @@ impl<ContextType> States<ContextType> {
 	}
 }
 
+impl<ContextType> Default for States<ContextType> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
 	use claim::*;

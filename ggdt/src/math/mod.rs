@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul, Sub};
 use std::simd;
-use std::simd::{SimdFloat, SimdPartialOrd};
+use std::simd::prelude::{SimdFloat, SimdPartialOrd};
 
 mod circle;
 mod matrix3x3;
@@ -272,6 +272,7 @@ mod tests {
 		assert!(nearly_equal(0.0, angle, 0.0001));
 	}
 
+	#[allow(clippy::approx_constant)]
 	#[test]
 	pub fn test_angle_to_direction() {
 		let (x, y) = angle_to_direction(RADIANS_0);
