@@ -278,11 +278,12 @@ impl Matrix4x4 {
 	/// * `top`: Coordinate of the top horizontal clipping plane.
 	/// * `near`: Near clipping plane distance.
 	/// * `far`: Far clipping plane distance.
+	#[rustfmt::skip]
 	pub fn new_orthographic(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Matrix4x4 {
 		Matrix4x4::new(
-			2.0 / (right - left), 0.0, 0.0, -((right + left) / (right - left)), //
-			0.0, 2.0 / (top - bottom), 0.0, -((top + bottom) / (top - bottom)), //
-			0.0, 0.0, -2.0 / (far - near), -((far + near) / (far - near)), //
+			2.0 / (right - left), 0.0, 0.0, -((right + left) / (right - left)),
+			0.0, 2.0 / (top - bottom), 0.0, -((top + bottom) / (top - bottom)),
+			0.0, 0.0, -2.0 / (far - near), -((far + near) / (far - near)),
 			0.0, 0.0, 0.0, 1.0,
 		)
 	}
@@ -298,11 +299,12 @@ impl Matrix4x4 {
 	/// * `top`: Coordinate of the top horizontal clipping plane.
 	/// * `near`: Near clipping plane distance.
 	/// * `far`: Far clipping plane distance.
+	#[rustfmt::skip]
 	pub fn new_perspective(left: f32, right: f32, bottom: f32, top: f32, near: f32, far: f32) -> Matrix4x4 {
 		Matrix4x4::new(
-			(2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0, //
-			0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0, //
-			0.0, 0.0, -((far + near) / (far - near)), -((2.0 * far * near) / (far - near)), //
+			(2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0,
+			0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0,
+			0.0, 0.0, -((far + near) / (far - near)), -((2.0 * far * near) / (far - near)),
 			0.0, 0.0, -1.0, 0.0,
 		)
 	}
@@ -316,13 +318,14 @@ impl Matrix4x4 {
 	/// * `aspect_ratio`: The aspect ratio of the viewport.
 	/// * `near`: Near clipping plane distance.
 	/// * `far`: Far clipping plane distance.
+	#[rustfmt::skip]
 	pub fn new_perspective_fov(fov: f32, aspect_ratio: f32, near: f32, far: f32) -> Matrix4x4 {
 		let f = 1.0 / (fov / 2.0).tan();
 
 		Matrix4x4::new(
-			f / aspect_ratio, 0.0, 0.0, 0.0, //
-			0.0, f, 0.0, 0.0, //
-			0.0, 0.0, (far + near) / (near - far), (2.0 * far * near) / (near - far), //
+			f / aspect_ratio, 0.0, 0.0, 0.0,
+			0.0, f, 0.0, 0.0,
+			0.0, 0.0, (far + near) / (near - far), (2.0 * far * near) / (near - far),
 			0.0, 0.0, -1.0, 0.0,
 		)
 	}
