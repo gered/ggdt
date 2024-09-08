@@ -8,6 +8,7 @@ mod matrix4x4;
 mod rect;
 mod vector2;
 mod vector3;
+mod vector4;
 
 pub use circle::*;
 pub use matrix3x3::*;
@@ -15,6 +16,7 @@ pub use matrix4x4::*;
 pub use rect::*;
 pub use vector2::*;
 pub use vector3::*;
+pub use vector4::*;
 
 pub const PI: f32 = std::f32::consts::PI;
 // 180 degrees
