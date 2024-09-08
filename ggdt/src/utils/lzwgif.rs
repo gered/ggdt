@@ -537,8 +537,8 @@ where
 		// this does mean that the size of the table is always 2 less than the number of created codes.
 
 		let mut table = vec![None; 1usize.wrapping_shl(MAX_BITS as u32)];
-		for i in 0..initial_table_size {
-			table[i] = Some(vec![i as u8]);
+		for (i, item) in table.iter_mut().enumerate().take(initial_table_size) {
+			*item = Some(vec![i as u8]);
 		}
 		let mut max_code_value_for_bit_size = get_max_code_value_for_bits(current_bit_size);
 		let mut next_code = initial_table_size as LzwCode + 2;

@@ -126,6 +126,10 @@ pub enum IndexedBlitMethod {
 }
 
 impl IndexedBitmap {
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_blended_blit(
 		&mut self,
 		src: &Self,
@@ -150,6 +154,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_flipped_blended_blit(
 		&mut self,
 		src: &Self,
@@ -178,6 +186,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -198,6 +210,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_flipped_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -222,6 +238,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_blended_blit(
 		&mut self,
 		src: &Self,
@@ -249,6 +269,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_flipped_blended_blit(
 		&mut self,
 		src: &Self,
@@ -280,6 +304,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -303,6 +331,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_flipped_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -330,6 +362,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_blended_blit(
 		&mut self,
 		src: &Self,
@@ -363,6 +399,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_transparent_blended_blit(
 		&mut self,
 		src: &Self,
@@ -399,6 +439,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -426,6 +470,10 @@ impl IndexedBitmap {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_transparent_palette_offset_blit(
 		&mut self,
 		src: &Self,
@@ -522,6 +570,10 @@ impl IndexedBitmap {
 		};
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	#[inline]
 	#[rustfmt::skip]
 	pub unsafe fn blit_region_unchecked(
@@ -606,12 +658,20 @@ impl IndexedBitmap {
 		}
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	#[inline]
 	pub unsafe fn blit_unchecked(&mut self, method: IndexedBlitMethod, src: &Self, x: i32, y: i32) {
 		let src_region = Rect::new(0, 0, src.width, src.height);
 		self.blit_region_unchecked(method, src, &src_region, x, y);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	#[inline]
 	pub unsafe fn blit_atlas_unchecked(
 		&mut self,

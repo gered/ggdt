@@ -24,8 +24,7 @@ impl Circle {
 		let mut max_x = min_x;
 		let mut max_y = min_y;
 
-		for i in 0..points.len() {
-			let point = &points[i];
+		for point in points.iter() {
 			min_x = point.x.min(min_x);
 			min_y = point.y.min(min_y);
 			max_x = point.x.max(max_x);

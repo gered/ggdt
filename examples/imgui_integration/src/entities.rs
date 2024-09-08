@@ -369,7 +369,7 @@ pub fn remove_entity(entities: &mut Entities, entity: EntityId) {
 
 pub fn set_entity_activity(entities: &mut Entities, entity: EntityId, new_activity: EntityActivity) {
 	let mut activities = entities.components_mut::<Activity>();
-	let mut activity = activities.get_mut(&entity).unwrap();
+	let activity = activities.get_mut(&entity).unwrap();
 
 	// only change the activity, and more importantly, the animation if we are actually applying
 	// an actual activity change from what it was before

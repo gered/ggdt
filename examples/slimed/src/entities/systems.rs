@@ -105,7 +105,7 @@ fn move_entity_with_collision(
 
 pub fn set_entity_activity(entities: &mut Entities, entity: EntityId, new_activity: EntityActivity) {
 	let mut activities = entities.components_mut::<Activity>();
-	let mut activity = activities.get_mut(&entity).unwrap();
+	let activity = activities.get_mut(&entity).unwrap();
 
 	// only change the activity, and more importantly, the animation if we are actually applying
 	// an actual activity change from what it was before
@@ -215,7 +215,7 @@ pub fn attack(context: &mut Core, entity: EntityId) {
 	}
 }
 
-pub fn hit_entity(context: &mut Core, target: EntityId, source: EntityId, damage: i32, damage_position: Vector2) {
+pub fn hit_entity(context: &mut Core, target: EntityId, _source: EntityId, damage: i32, damage_position: Vector2) {
 	let position;
 	{
 		let positions = context.entities.components::<Position>();
@@ -248,15 +248,15 @@ pub fn stop_attack(context: &mut Core, entity: EntityId) {
 	remove_entity_attachment(&mut context.entities, entity);
 }
 
-pub fn pickup(context: &mut Core, picked_up_by: EntityId, picked_up: EntityId) {
-	let kind;
+pub fn pickup(context: &mut Core, _picked_up_by: EntityId, picked_up: EntityId) {
+	let _kind;
 	let position;
 	{
 		let positions = context.entities.components::<Position>();
 		position = positions.get(&picked_up).unwrap().0;
 
 		let pickupables = context.entities.components::<Pickupable>();
-		kind = pickupables.get(&picked_up).unwrap().kind;
+		_kind = pickupables.get(&picked_up).unwrap().kind;
 	}
 
 	// TODO: tally up the kinds
@@ -332,7 +332,7 @@ fn update_system_pushing(context: &mut Core) {
 		let pusher_bounds = bounds.get(pusher_entity).unwrap();
 		let pusher_circle = Circle::new(pusher_position.0.x as i32, pusher_position.0.y as i32, pusher_bounds.radius);
 
-		for (pushable_entity, pushable) in pushable.iter() {
+		for (pushable_entity, _pushable) in pushable.iter() {
 			// don't push ourself ...
 			if *pushable_entity == *pusher_entity {
 				continue;
@@ -535,7 +535,7 @@ fn update_system_randomly_spawn_slimes(context: &mut Core) {
 
 fn update_system_camera_follows_player(context: &mut Core) {
 	if let Some((player_entity, _)) = context.entities.components::<Player>().single() {
-		if let Some((_, mut camera)) = context.entities.components_mut::<Camera>().single_mut() {
+		if let Some((_, camera)) = context.entities.components_mut::<Camera>().single_mut() {
 			let positions = context.entities.components::<Position>().unwrap();
 			let position = positions.get(player_entity).unwrap();
 
@@ -569,7 +569,7 @@ fn update_system_turn_attached_entities(context: &mut Core) {
 
 		// change the direction of the attachment (child) to match the parent ... if the
 		// attachment even has a direction itself ...
-		if let Some(mut facing_direction) = facing_directions.get_mut(&attachment.0) {
+		if let Some(facing_direction) = facing_directions.get_mut(&attachment.0) {
 			facing_direction.0 = parent_facing_direction;
 		}
 	}
@@ -593,7 +593,7 @@ fn update_system_position_attached_entities(context: &mut Core) {
 		}
 
 		let attached_entity = attachment.0;
-		if let Some(mut attachment_position) = positions.get_mut(&attached_entity) {
+		if let Some(attachment_position) = positions.get_mut(&attached_entity) {
 			// start off the attachment by placing it directly at the parent
 			attachment_position.0 = parent_position;
 

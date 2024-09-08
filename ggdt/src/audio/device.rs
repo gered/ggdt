@@ -174,6 +174,12 @@ impl AudioChannel {
 	}
 }
 
+impl Default for AudioChannel {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Debug, Error)]

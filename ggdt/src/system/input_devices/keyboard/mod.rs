@@ -55,6 +55,12 @@ impl Keyboard {
 	}
 }
 
+impl Default for Keyboard {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl InputDevice for Keyboard {
 	fn update(&mut self) {
 		for state in self.keyboard.iter_mut() {

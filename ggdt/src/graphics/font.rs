@@ -232,8 +232,8 @@ impl BitmaskFont {
 		}
 
 		// read character widths (used for rendering)
-		for i in 0..NUM_CHARS {
-			characters[i].bounds.width = reader.read_u8()? as u32;
+		for character in characters.iter_mut().take(NUM_CHARS) {
+			character.bounds.width = reader.read_u8()? as u32;
 		}
 
 		// read global font height (used for rendering)

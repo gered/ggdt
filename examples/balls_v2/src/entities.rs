@@ -114,8 +114,8 @@ fn update_system_collision(context: &mut Context) {
 	let mut velocities = context.entities.components_mut::<Velocity>();
 
 	for (entity, _) in bounceables.iter() {
-		let mut position = positions.get_mut(entity).unwrap();
-		let mut velocity = velocities.get_mut(entity).unwrap();
+		let position = positions.get_mut(entity).unwrap();
+		let velocity = velocities.get_mut(entity).unwrap();
 
 		let mut bounced = false;
 		if position.0.x as i32 <= 0 || position.0.x as i32 + BALL_SIZE >= context.system.res.video.right() as i32 {

@@ -89,7 +89,7 @@ impl IndexedBitmap {
 		use IndexedTriangle2d::*;
 		match triangle {
 			Solid { position, color } => self.solid_triangle_2d(position, *color),
-			SolidBlended { position, color, blendmap } => self.solid_blended_triangle_2d(position, *color, *blendmap),
+			SolidBlended { position, color, blendmap } => self.solid_blended_triangle_2d(position, *color, blendmap),
 			SolidTextured { position, texcoord, bitmap } => self.solid_textured_triangle_2d(position, texcoord, bitmap),
 			SolidTexturedBlended { position, texcoord, bitmap, blendmap } => {
 				self.solid_textured_blended_triangle_2d(position, texcoord, bitmap, blendmap)

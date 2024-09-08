@@ -12,8 +12,11 @@ impl RgbaBitmap {
 		);
 	}
 
-	/// Sets the pixel at the given coordinates using a blended color via the specified blend function,
-	/// The coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// Sets the pixel at the given coordinates using a blended color via the specified blend function.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
 	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn set_blended_pixel_unchecked(&mut self, x: i32, y: i32, color: RGBA, blend: BlendFunction) {

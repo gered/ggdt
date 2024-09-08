@@ -31,9 +31,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		}
 	}
 
-	/// Sets the pixel at the given coordinates to the color specified. The coordinates are not
-	/// checked for validity, so it is up to you to ensure they lie within the bounds of the
-	/// bitmap.
+	/// Sets the pixel at the given coordinates to the color specified.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn set_pixel_unchecked(&mut self, x: i32, y: i32, color: PixelType) {
 		let p = self.pixels_at_mut_ptr_unchecked(x, y);
@@ -42,8 +45,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 
 	/// Sets the pixel at the given coordinates to the color returned by the given function. The
 	/// given function is one that accepts a color value that corresponds to the current pixel at
-	/// the given coordinates. The coordinates are not checked for validity, so it is up to you to
-	/// ensure they lie within the bounds of the bitmap.
+	/// the given coordinates.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn set_custom_pixel_unchecked(&mut self, x: i32, y: i32, pixel_fn: impl Fn(PixelType) -> PixelType) {
 		let p = self.pixels_at_mut_ptr_unchecked(x, y);
@@ -57,8 +64,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		self.pixels_at(x, y).map(|pixels| pixels[0])
 	}
 
-	/// Gets the pixel at the given coordinates. The coordinates are not checked for validity, so
-	/// it is up to you to ensure they lie within the bounds of the bitmap.
+	/// Gets the pixel at the given coordinates.
+	///
+	/// # Safety
+	/// 
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn get_pixel_unchecked(&self, x: i32, y: i32) -> PixelType {
 		*(self.pixels_at_ptr_unchecked(x, y))

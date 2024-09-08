@@ -230,6 +230,12 @@ impl Entities {
 	}
 }
 
+impl Default for Entities {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 // TODO: is there some fancy way to get rid of the impl duplication here ... ?
@@ -470,6 +476,12 @@ impl<U, R> ComponentSystems<U, R> {
 	}
 }
 
+impl<U, R> Default for ComponentSystems<U, R> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[cfg(test)]
@@ -667,7 +679,7 @@ mod tests {
 		// modify position components
 		{
 			let mut positions = em.components_mut::<Position>().unwrap();
-			for mut component in positions.values_mut() {
+			for component in positions.values_mut() {
 				component.0 += 5;
 			}
 
@@ -678,7 +690,7 @@ mod tests {
 		// modify health components
 		{
 			let mut healths = em.components_mut::<Health>().unwrap();
-			for mut component in healths.values_mut() {
+			for component in healths.values_mut() {
 				component.0 += 5;
 			}
 			assert_eq!(Health(25), *healths.get(&a).unwrap());
@@ -722,10 +734,10 @@ mod tests {
 
 			println!("entity {}, health: {:?}, position: {:?}", name.0, health, position);
 
-			if let Some(mut health) = health {
+			if let Some(health) = health {
 				health.0 += 5;
 			}
-			if let Some(mut position) = position {
+			if let Some(position) = position {
 				position.0 += 5;
 			}
 		}

@@ -28,6 +28,7 @@ pub struct SineWaveGenerator {
 	t: usize,
 }
 
+#[allow(clippy::new_without_default)]
 impl SineWaveGenerator {
 	pub fn new() -> Self {
 		SineWaveGenerator { t: 0 }
@@ -154,7 +155,7 @@ fn main() -> Result<()> {
 
 		for index in 0..NUM_CHANNELS {
 			let channel = &audio_device[index];
-			let mut status = &mut statuses[index];
+			let status = &mut statuses[index];
 			status.playing = channel.playing;
 			status.position = channel.position;
 			status.size = channel.data.len();
@@ -183,8 +184,7 @@ fn main() -> Result<()> {
 		system.res.video.print_string("Audio Channels", 16, 32, FontRenderOpts::Color(14), &system.res.font);
 
 		let mut y = 48;
-		for index in 0..NUM_CHANNELS {
-			let status = &statuses[index];
+		for (index, status) in statuses.iter().enumerate() {
 			system.res.video.print_string(
 				&format!(
 					"channel {} - {} {}",

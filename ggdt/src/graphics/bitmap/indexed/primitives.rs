@@ -20,8 +20,11 @@ impl IndexedBitmap {
 	}
 
 	/// Sets the pixel at the given coordinates using a blended color via the specified blend map,
-	/// or using the color specified if the blend map does not include the given color. The
-	/// coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// or using the color specified if the blend map does not include the given color.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
 	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn set_blended_pixel_unchecked(&mut self, x: i32, y: i32, color: u8, blend_map: &BlendMap) {

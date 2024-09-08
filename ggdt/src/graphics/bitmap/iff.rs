@@ -213,7 +213,7 @@ fn merge_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 fn extract_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 	let bitmask = 1 << plane;
 	let mut src_base_index = 0;
-	for x in 0..row_size {
+	for dest_pixel in dest.iter_mut().take(row_size) {
 		let mut data = 0;
 		if src[src_base_index] & bitmask != 0 {
 			data |= 128;
@@ -241,7 +241,7 @@ fn extract_bitplane(plane: u32, src: &[u8], dest: &mut [u8], row_size: usize) {
 		}
 
 		src_base_index += 8;
-		dest[x] = data;
+		*dest_pixel = data;
 	}
 }
 

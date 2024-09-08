@@ -34,12 +34,11 @@ fn read_palette_6bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
-	for i in 0..num_colors {
+	for color in colors.iter_mut().take(num_colors) {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = RGBA::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
-		colors[i] = color;
+		*color = RGBA::from_rgb([from_6bit(r), from_6bit(g), from_6bit(b)]);
 	}
 	Ok(colors)
 }
@@ -52,10 +51,10 @@ fn write_palette_6bit<T: WriteBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	for i in 0..num_colors {
-		writer.write_u8(to_6bit(colors[i].r()))?;
-		writer.write_u8(to_6bit(colors[i].g()))?;
-		writer.write_u8(to_6bit(colors[i].b()))?;
+	for color in colors.iter().take(num_colors) {
+		writer.write_u8(to_6bit(color.r()))?;
+		writer.write_u8(to_6bit(color.g()))?;
+		writer.write_u8(to_6bit(color.b()))?;
 	}
 	Ok(())
 }
@@ -66,12 +65,11 @@ fn read_palette_8bit<T: ReadBytesExt>(reader: &mut T, num_colors: usize) -> Resu
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
 	let mut colors = [RGBA::from_rgba([0, 0, 0, 255]); NUM_COLORS];
-	for i in 0..num_colors {
+	for color in colors.iter_mut().take(num_colors) {
 		let r = reader.read_u8()?;
 		let g = reader.read_u8()?;
 		let b = reader.read_u8()?;
-		let color = RGBA::from_rgb([r, g, b]);
-		colors[i] = color;
+		*color = RGBA::from_rgb([r, g, b]);
 	}
 	Ok(colors)
 }
@@ -84,10 +82,10 @@ fn write_palette_8bit<T: WriteBytesExt>(
 	if num_colors > NUM_COLORS {
 		return Err(PaletteError::OutOfRange(num_colors));
 	}
-	for i in 0..num_colors {
-		writer.write_u8(colors[i].r())?;
-		writer.write_u8(colors[i].g())?;
-		writer.write_u8(colors[i].b())?;
+	for color in colors.iter().take(num_colors) {
+		writer.write_u8(color.r())?;
+		writer.write_u8(color.g())?;
+		writer.write_u8(color.b())?;
 	}
 	Ok(())
 }
@@ -469,6 +467,12 @@ impl Palette {
 			}
 		}
 	}
+}
+
+impl Default for Palette {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Index<u8> for Palette {

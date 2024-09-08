@@ -202,6 +202,16 @@ where
 	}
 }
 
+impl<BitmapType> Default for CustomMouseCursor<BitmapType>
+where
+	Self: DefaultMouseCursorBitmaps<BitmapType>,
+	BitmapType: GeneralBitmap,
+{
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DefaultMouseCursorBitmaps<IndexedBitmap> for CustomMouseCursor<IndexedBitmap> {
 	fn get_default() -> MouseCursorBitmap<IndexedBitmap> {
 		#[rustfmt::skip]

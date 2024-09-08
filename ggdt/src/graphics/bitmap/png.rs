@@ -42,10 +42,10 @@ pub enum PngFormat {
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 enum ColorFormat {
 	Grayscale = 0,
-	RGB = 2,
+	Rgb = 2,
 	IndexedColor = 3,
 	GrayscaleAlpha = 4,
-	RGBA = 6,
+	Rgba = 6,
 }
 
 impl ColorFormat {
@@ -53,10 +53,10 @@ impl ColorFormat {
 		use ColorFormat::*;
 		match value {
 			0 => Ok(Grayscale),
-			2 => Ok(RGB),
+			2 => Ok(Rgb),
 			3 => Ok(IndexedColor),
 			4 => Ok(GrayscaleAlpha),
-			6 => Ok(RGBA),
+			6 => Ok(Rgba),
 			_ => Err(PngError::UnsupportedColorType(value)),
 		}
 	}
@@ -202,8 +202,8 @@ impl ScanlineBuffer {
 	pub fn new(ihdr: &ImageHeaderChunk) -> Result<Self, PngError> {
 		let bpp = match ihdr.format {
 			ColorFormat::IndexedColor => 1,
-			ColorFormat::RGB => 3,
-			ColorFormat::RGBA => 4,
+			ColorFormat::Rgb => 3,
+			ColorFormat::Rgba => 4,
 			_ => return Err(PngError::BadFile(format!("Unsupported color format: {:?}", ihdr.format))),
 		};
 		let stride = ihdr.width as usize * bpp;
@@ -333,13 +333,13 @@ impl ScanlinePixelConverter<RGBA> for ScanlineBuffer {
 					)))
 				}
 			}
-			ColorFormat::RGB => {
+			ColorFormat::Rgb => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
 				Ok(RGBA::from_rgb([r, g, b]))
 			}
-			ColorFormat::RGBA => {
+			ColorFormat::Rgba => {
 				let r = self.current[offset];
 				let g = self.current[offset + 1];
 				let b = self.current[offset + 2];
@@ -353,13 +353,13 @@ impl ScanlinePixelConverter<RGBA> for ScanlineBuffer {
 	fn write_pixel(&mut self, x: usize, pixel: RGBA) -> Result<(), PngError> {
 		let offset = x * self.bpp;
 		match self.format {
-			ColorFormat::RGB => {
+			ColorFormat::Rgb => {
 				self.current[offset] = pixel.r();
 				self.current[offset + 1] = pixel.g();
 				self.current[offset + 2] = pixel.b();
 				Ok(())
 			}
-			ColorFormat::RGBA => {
+			ColorFormat::Rgba => {
 				self.current[offset] = pixel.r();
 				self.current[offset + 1] = pixel.g();
 				self.current[offset + 2] = pixel.b();
@@ -400,8 +400,8 @@ where
 		return Err(PngError::BadFile(String::from("Unsupported color bit depth.")));
 	}
 	if ihdr.format != ColorFormat::IndexedColor // .
-		&& ihdr.format != ColorFormat::RGB
-		&& ihdr.format != ColorFormat::RGBA
+		&& ihdr.format != ColorFormat::Rgb
+		&& ihdr.format != ColorFormat::Rgba
 	{
 		return Err(PngError::BadFile(String::from("Unsupported pixel color format.")));
 	}
@@ -593,8 +593,8 @@ impl RgbaBitmap {
 			writer,
 			self,
 			match format {
-				PngFormat::RGB => ColorFormat::RGB,
-				PngFormat::RGBA => ColorFormat::RGBA,
+				PngFormat::RGB => ColorFormat::Rgb,
+				PngFormat::RGBA => ColorFormat::Rgba,
 			},
 			None,
 		)

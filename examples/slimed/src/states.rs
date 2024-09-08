@@ -43,7 +43,7 @@ impl AppState<Game> for MainMenuState {
 		None
 	}
 
-	fn render(&mut self, state: State, context: &mut Game) {
+	fn render(&mut self, _state: State, context: &mut Game) {
 		context.core.tilemap.draw(&mut context.core.system.res.video, &context.core.tiles, 0, 0);
 		context.support.component_systems.render(&mut context.core);
 
@@ -83,7 +83,7 @@ impl AppState<Game> for MainMenuState {
 		update_fade_transition(state, &mut self.fade, context.core.delta * 3.0, context)
 	}
 
-	fn state_change(&mut self, new_state: State, old_state: State, context: &mut Game) {
+	fn state_change(&mut self, new_state: State, _old_state: State, context: &mut Game) {
 		match new_state {
 			State::Pending | State::Resume => {
 				init_everything(context, "./assets/title_screen.map.json", 0.2, 1.0, 32);
@@ -170,7 +170,7 @@ impl AppState<Game> for GamePlayState {
 		None
 	}
 
-	fn render(&mut self, state: State, context: &mut Game) {
+	fn render(&mut self, _state: State, context: &mut Game) {
 		if let Some((_, camera)) = context.core.entities.components::<Camera>().single() {
 			context.core.tilemap.draw(&mut context.core.system.res.video, &context.core.tiles, camera.x, camera.y);
 		}
@@ -214,7 +214,7 @@ impl AppState<Game> for GamePlayState {
 		update_fade_transition(state, &mut self.fade, context.core.delta * 3.0, context)
 	}
 
-	fn state_change(&mut self, new_state: State, old_state: State, context: &mut Game) {
+	fn state_change(&mut self, new_state: State, _old_state: State, context: &mut Game) {
 		match new_state {
 			State::Pending => {
 				init_everything(context, "./assets/arena.map.json", 0.5, 2.0, 100);

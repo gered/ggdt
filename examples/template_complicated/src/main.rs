@@ -108,16 +108,16 @@ impl AppState<App> for DemoState {
 		None
 	}
 
-	fn render(&mut self, state: State, context: &mut App) {
+	fn render(&mut self, _state: State, context: &mut App) {
 		context.core.system.res.video.clear(0);
 		context.support.component_systems.render(&mut context.core);
 	}
 
-	fn transition(&mut self, state: State, context: &mut App) -> bool {
+	fn transition(&mut self, _state: State, _context: &mut App) -> bool {
 		true
 	}
 
-	fn state_change(&mut self, new_state: State, old_state: State, context: &mut App) {
+	fn state_change(&mut self, new_state: State, _old_state: State, context: &mut App) {
 		match new_state {
 			State::Pending => {
 				self.init(context);

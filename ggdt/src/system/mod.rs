@@ -217,6 +217,12 @@ impl SystemBuilder {
 	}
 }
 
+impl Default for SystemBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// Holds all primary structures necessary for interacting with the operating system and for
 /// applications to render to the display, react to input device events, etc. through the
 /// "virtual machine" exposed by this library.

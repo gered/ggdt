@@ -61,6 +61,12 @@ impl ImGui {
 	}
 }
 
+impl Default for ImGui {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl SystemEventHandler for ImGui {
 	fn handle_event(&mut self, event: &SystemEvent) -> bool {
 		self.platform.handle_event(&mut self.context, event)

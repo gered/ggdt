@@ -212,8 +212,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	}
 
 	/// Returns an unsafe reference to the subset of the raw pixels in this bitmap beginning at the
-	/// given coordinates and extending to the end of the bitmap. The coordinates are not checked
-	/// for validity, so it is up to you to ensure they lie within the bounds of the bitmap.
+	/// given coordinates and extending to the end of the bitmap.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn pixels_at_unchecked(&self, x: i32, y: i32) -> &[PixelType] {
 		let offset = self.get_offset_to_xy(x, y);
@@ -221,8 +225,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	}
 
 	/// Returns a mutable unsafe reference to the subset of the raw pixels in this bitmap beginning
-	/// at the given coordinates and extending to the end of the bitmap. The coordinates are not
-	/// checked for validity, so it is up to you to ensure they lie within the bounds of the bitmap.
+	/// at the given coordinates and extending to the end of the bitmap.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn pixels_at_mut_unchecked(&mut self, x: i32, y: i32) -> &mut [PixelType] {
 		let offset = self.get_offset_to_xy(x, y);
@@ -236,10 +244,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// coordinates. If the coordinates given are outside the bitmap's current clipping region,
 	/// None is returned.
 	#[inline]
-	pub unsafe fn pixels_at_ptr(&self, x: i32, y: i32) -> Option<*const PixelType> {
+	pub fn pixels_at_ptr(&self, x: i32, y: i32) -> Option<*const PixelType> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
-			Some(self.pixels.as_ptr().add(offset))
+			Some(unsafe { self.pixels.as_ptr().add(offset) })
 		} else {
 			None
 		}
@@ -249,18 +257,22 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	/// given coordinates. If the coordinates given are outside the bitmap's current clipping
 	/// region, None is returned.
 	#[inline]
-	pub unsafe fn pixels_at_mut_ptr(&mut self, x: i32, y: i32) -> Option<*mut PixelType> {
+	pub fn pixels_at_mut_ptr(&mut self, x: i32, y: i32) -> Option<*mut PixelType> {
 		if self.is_xy_visible(x, y) {
 			let offset = self.get_offset_to_xy(x, y);
-			Some(self.pixels.as_mut_ptr().add(offset))
+			Some(unsafe { self.pixels.as_mut_ptr().add(offset) })
 		} else {
 			None
 		}
 	}
 
 	/// Returns an unsafe pointer to the subset of the raw pixels in this bitmap beginning at the
-	/// given coordinates. The coordinates are not checked for validity, so it is up to you to
-	/// ensure they lie within the bounds of the bitmap.
+	/// given coordinates.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn pixels_at_ptr_unchecked(&self, x: i32, y: i32) -> *const PixelType {
 		let offset = self.get_offset_to_xy(x, y);
@@ -268,8 +280,12 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 	}
 
 	/// Returns a mutable unsafe pointer to the subset of the raw pixels in this bitmap beginning
-	/// at the given coordinates. The coordinates are not checked for validity, so it is up to you
-	/// to ensure they lie within the bounds of the bitmap.
+	/// at the given coordinates.
+	///
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the bitmap.
 	#[inline]
 	pub unsafe fn pixels_at_mut_ptr_unchecked(&mut self, x: i32, y: i32) -> *mut PixelType {
 		let offset = self.get_offset_to_xy(x, y);
@@ -482,15 +498,15 @@ mod tests {
 		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
-		assert_eq!(None, unsafe { bmp.pixels_at_ptr(-1, -1) });
+		assert_eq!(None, bmp.pixels_at_ptr(-1, -1));
 
 		let offset = bmp.get_offset_to_xy(1, 1);
-		let pixels = unsafe { bmp.pixels_at_ptr(0, 0).unwrap() };
+		let pixels = bmp.pixels_at_ptr(0, 0).unwrap();
 		assert_eq!(0, unsafe { *pixels });
 		assert_eq!(1, unsafe { *(pixels.add(offset)) });
 		assert_eq!(2, unsafe { *(pixels.add(63)) });
 
-		let pixels = unsafe { bmp.pixels_at_ptr(1, 1).unwrap() };
+		let pixels = bmp.pixels_at_ptr(1, 1).unwrap();
 		assert_eq!(1, unsafe { *pixels });
 		assert_eq!(2, unsafe { *(pixels.add(54)) });
 	}
@@ -500,15 +516,15 @@ mod tests {
 		let mut bmp = Bitmap::<u8>::new(8, 8).unwrap();
 		bmp.pixels_mut().copy_from_slice(RAW_BMP_PIXELS);
 
-		assert_eq!(None, unsafe { bmp.pixels_at_mut_ptr(-1, -1) });
+		assert_eq!(None, bmp.pixels_at_mut_ptr(-1, -1));
 
 		let offset = bmp.get_offset_to_xy(1, 1);
-		let pixels = unsafe { bmp.pixels_at_mut_ptr(0, 0).unwrap() };
+		let pixels = bmp.pixels_at_mut_ptr(0, 0).unwrap();
 		assert_eq!(0, unsafe { *pixels });
 		assert_eq!(1, unsafe { *(pixels.add(offset)) });
 		assert_eq!(2, unsafe { *(pixels.add(63)) });
 
-		let pixels = unsafe { bmp.pixels_at_mut_ptr(1, 1).unwrap() };
+		let pixels = bmp.pixels_at_mut_ptr(1, 1).unwrap();
 		assert_eq!(1, unsafe { *pixels });
 		assert_eq!(2, unsafe { *(pixels.add(54)) });
 	}

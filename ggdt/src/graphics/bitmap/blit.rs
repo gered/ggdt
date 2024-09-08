@@ -127,6 +127,10 @@ fn get_flipped_blit_properties<PixelType: Pixel>(
 	(x_inc, src_start_x, src_start_y, src_next_row_inc)
 }
 
+/// # Safety
+///
+/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+/// bounds of the source and destination bitmaps.
 #[inline]
 pub unsafe fn per_pixel_blit<PixelType: Pixel>(
 	dest: &mut Bitmap<PixelType>,
@@ -153,6 +157,10 @@ pub unsafe fn per_pixel_blit<PixelType: Pixel>(
 	}
 }
 
+/// # Safety
+///
+/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+/// bounds of the source and destination bitmaps.
 #[inline]
 pub unsafe fn per_pixel_flipped_blit<PixelType: Pixel>(
 	dest: &mut Bitmap<PixelType>,
@@ -183,6 +191,10 @@ pub unsafe fn per_pixel_flipped_blit<PixelType: Pixel>(
 	}
 }
 
+/// # Safety
+///
+/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+/// bounds of the source and destination bitmaps.
 #[inline]
 pub unsafe fn per_pixel_rotozoom_blit<PixelType: Pixel>(
 	dest: &mut Bitmap<PixelType>,
@@ -280,6 +292,10 @@ pub unsafe fn per_pixel_rotozoom_blit<PixelType: Pixel>(
 }
 
 impl<PixelType: Pixel> Bitmap<PixelType> {
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_blit(&mut self, src: &Self, src_region: &Rect, dest_x: i32, dest_y: i32) {
 		let src_row_length = src_region.width as usize;
 		let src_pitch = src.width as usize;
@@ -294,6 +310,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		}
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn solid_flipped_blit(
 		&mut self,
 		src: &Self,
@@ -317,6 +337,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_blit(
 		&mut self,
 		src: &Self,
@@ -339,6 +363,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_flipped_blit(
 		&mut self,
 		src: &Self,
@@ -365,6 +393,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_single_color_blit(
 		&mut self,
 		src: &Self,
@@ -388,6 +420,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn transparent_flipped_single_color_blit(
 		&mut self,
 		src: &Self,
@@ -415,6 +451,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_blit(
 		&mut self,
 		src: &Self,
@@ -440,6 +480,10 @@ impl<PixelType: Pixel> Bitmap<PixelType> {
 		);
 	}
 
+	/// # Safety
+	///
+	/// Coordinates are not checked for validity, so it is up to you to ensure they lie within the
+	/// bounds of the source and destination bitmaps.
 	pub unsafe fn rotozoom_transparent_blit(
 		&mut self,
 		src: &Self,
