@@ -78,6 +78,37 @@ impl Matrix4x4 {
 		rotate_z * rotate_y * rotate_x
 	}
 
+	// Creates a new rotation matrix about the specified axis.
+	//
+	// # Arguments
+	//
+	// * `radians`: angle to rotate by (in radians)
+	// * `x`: the x component of the axis vector to rotate around
+	// * `y`: the y component of the axis vector to rotate around
+	// * `z`: the z component of the axis vector to rotate around
+	pub fn new_rotation(radians: f32, x: f32, y: f32, z: f32) -> Matrix4x4 {
+		let (s, c) = radians.sin_cos();
+
+		Matrix4x4::new(
+			(x * x) * (1.0 - c) + c, 
+			(x * y) * (1.0 - c) - (z * s),
+			(x * z) * (1.0 - c) + (y * s),
+			0.0,
+			(y * x) * (1.0 - c) + (z * s),
+			(y * y) * (1.0 - c) + c,
+			(y * z) * (1.0 - c) - (x * s),
+			0.0,
+			(z * x) * (1.0 - c) - (y * s),
+			(z * y) * (1.0 - c) + (x * s),
+			(z * z) * (1.0 - c) + c,
+			0.0,
+			0.0,
+			0.0,
+			0.0,
+			1.0,
+		)
+	}
+
 	/// Creates a new rotation matrix for rotation around the x axis.
 	///
 	/// # Arguments
