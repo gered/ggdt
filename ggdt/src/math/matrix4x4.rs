@@ -255,7 +255,7 @@ impl Matrix4x4 {
 	pub fn new_look_at(position: &Vector3, target: &Vector3, up: &Vector3) -> Matrix4x4 {
 		let forward = (*target - *position).normalize();
 		let left = forward.cross(up).normalize();
-		let up = left.cross(&forward);
+		let up = left.cross(&forward).normalize();
 
 		let out = Matrix4x4::new(
 			left.x,     left.y,     left.z,     0.0,
